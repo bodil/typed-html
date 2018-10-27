@@ -12,12 +12,12 @@ fn main() {
                 <title>"Hello Kitty!"</title>
             </head>
             <body>
-                <h1>"Hello Kitty!"</h1>
+                <h1 data-lol="foo">"Hello Kitty!"</h1>
                 <p class=splain_class>"She is not a cat. She is a human girl."</p>
                 <p class="mind-blown">{the_big_question}</p>
                 {
                     (1..4).map(|i| {
-                        html!(<p>{ TextNode::new(format!("Generated paragraph {}", i)) }</p>)
+                        html!(<p>{ TextNode::new(format!("{}. Ceci n'est pas une chatte.", i)) }</p>)
                     })
                 }
             </body>

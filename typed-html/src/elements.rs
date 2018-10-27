@@ -9,7 +9,12 @@ pub type CssId = String;
 pub type CssClass = String;
 
 pub trait Node: Display {}
-pub trait Element: Node {}
+
+pub trait Element: Node {
+    fn attributes() -> &'static [&'static str];
+    fn required_children() -> &'static [&'static str];
+}
+
 pub trait MetadataContent: Node {}
 pub trait FlowContent: Node {}
 pub trait PhrasingContent: Node {}
