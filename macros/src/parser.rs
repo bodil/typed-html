@@ -1,6 +1,6 @@
 use pom::combinator::*;
 use pom::{Error, Parser};
-use proc_macro2::{Group, Ident, Literal, Punct, TokenStream, TokenTree};
+use proc_macro::{Group, Ident, Literal, Punct, TokenStream, TokenTree};
 
 pub fn unit<'a, I: 'a, A: Clone>(value: A) -> Combinator<impl Parser<'a, I, Output = A>> {
     comb(move |_, start| Ok((value.clone(), start)))
@@ -29,7 +29,7 @@ pub fn ident<'a>() -> Combinator<impl Parser<'a, TokenTree, Output = Ident>> {
 pub fn ident_match<'a>(name: String) -> Combinator<impl Parser<'a, TokenTree, Output = ()>> {
     comb(move |input: &[TokenTree], start| match input.get(start) {
         Some(TokenTree::Ident(i)) => {
-            if *i == name {
+            if i.to_string() == name {
                 Ok(((), start + 1))
             } else {
                 Err(Error::Mismatch {
@@ -93,8 +93,7 @@ pub fn html_ident<'a>() -> Combinator<impl Parser<'a, TokenTree, Output = Ident>
                 (
                     match span {
                         None => Some(token.span()),
-                        // FIXME: Some(span) => Some(span.join(token.span())),
-                        span => span,
+                        Some(span) => span.join(token.span()),
                     },
                     match token {
                         TokenTree::Ident(ident) => name + &ident.to_string(),

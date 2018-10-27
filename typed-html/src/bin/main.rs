@@ -2,6 +2,7 @@
 
 #[macro_use]
 extern crate typed_html;
+extern crate typed_html_macros;
 
 use typed_html_macros::html;
 

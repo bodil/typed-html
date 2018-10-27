@@ -1,11 +1,10 @@
 use pom::combinator::*;
 use pom::Parser;
-use proc_macro2::{Group, Ident, Literal, TokenStream, TokenTree};
-use quote::quote;
-use std::collections::BTreeMap;
+use proc_macro::{quote, Group, Ident, Literal, TokenStream, TokenTree};
 
-use crate::config::required_children;
-use crate::parser::*;
+use config::required_children;
+use map::StringyMap;
+use parser::*;
 
 #[derive(Clone)]
 enum Node {
@@ -19,7 +18,8 @@ impl Node {
         match self {
             Node::Element(el) => el.into_token_stream(),
             Node::Text(text) => {
-                quote!(Box::new(typed_html::elements::TextNode::new(#text.to_string())))
+                let text = TokenTree::Literal(text);
+                quote!(Box::new(typed_html::elements::TextNode::new($text.to_string())))
             }
             Node::Block(_) => panic!("cannot have a block in this position"),
         }
@@ -30,20 +30,23 @@ impl Node {
             Node::Element(el) => {
                 let el = el.into_token_stream();
                 quote!(
-                    element.children.push(#el);
+                    element.children.push($el);
                 )
             }
             tx @ Node::Text(_) => {
                 let tx = tx.into_token_stream();
                 quote!(
-                    element.children.push(#tx);
+                    element.children.push($tx);
                 )
             }
-            Node::Block(group) => quote!(
-                for child in #group.into_iter() {
+            Node::Block(group) => {
+                let group: TokenTree = group.into();
+                quote!(
+                for child in $group.into_iter() {
                     element.children.push(child);
                 }
-            ),
+            )
+            }
         }
     }
 }
@@ -51,12 +54,12 @@ impl Node {
 #[derive(Clone)]
 struct Element {
     name: Ident,
-    attributes: BTreeMap<Ident, TokenTree>,
+    attributes: StringyMap<Ident, TokenTree>,
     children: Vec<Node>,
 }
 
-fn extract_data_attrs(attrs: &mut BTreeMap<Ident, TokenTree>) -> BTreeMap<String, TokenTree> {
-    let mut data = BTreeMap::new();
+fn extract_data_attrs(attrs: &mut StringyMap<Ident, TokenTree>) -> StringyMap<String, TokenTree> {
+    let mut data = StringyMap::new();
     let keys: Vec<Ident> = attrs.keys().cloned().collect();
     for key in keys {
         let key_name = key.to_string();
@@ -73,7 +76,7 @@ impl Element {
     fn new(name: Ident) -> Self {
         Element {
             name,
-            attributes: BTreeMap::new(),
+            attributes: StringyMap::new(),
             children: Vec::new(),
         }
     }
@@ -81,7 +84,7 @@ impl Element {
     fn into_token_stream(mut self) -> TokenStream {
         let name = self.name;
         let name_str = name.to_string();
-        let typename = Ident::new(&format!("Element_{}", &name_str), name.span());
+        let typename: TokenTree = Ident::new(&format!("Element_{}", &name_str), name.span()).into();
         let req_names = required_children(&name_str);
         if req_names.len() > self.children.len() {
             panic!(
@@ -92,34 +95,44 @@ impl Element {
             );
         }
         let data_attrs = extract_data_attrs(&mut self.attributes);
-        let data_keys = data_attrs.keys().cloned();
-        let data_values = data_attrs.values().cloned();
-        let keys: Vec<_> = self
-            .attributes
-            .keys()
-            .map(|key| Ident::new(&format!("attr_{}", key), key.span()))
-            .collect();
-        let values: Vec<TokenTree> = self.attributes.values().cloned().collect();
+        let attrs = self.attributes.iter().map(|(key, value)| {
+            (
+                TokenTree::Ident(Ident::new(&format!("attr_{}", key), key.span())),
+                value.clone(),
+            )
+        });
         let opt_children = self
             .children
             .split_off(req_names.len())
             .into_iter()
             .map(Node::into_child_stream);
         let req_children = self.children.into_iter().map(Node::into_token_stream);
+
+        let mut body = TokenStream::new();
+        for (key, value) in attrs {
+            body.extend(quote!(
+                element.$key = Some($value.into());
+            ));
+        }
+        for (key, value) in data_attrs
+            .iter()
+            .map(|(k, v)| (TokenTree::from(Literal::string(&k)), v.clone()))
+        {
+            body.extend(quote!(
+                element.data_attributes.insert($key.into(), $value.into());
+            ));
+        }
+        body.extend(opt_children);
+
+        let mut args = TokenStream::new();
+        for arg in req_children {
+            args.extend(quote!( $arg, ));
+        }
+
         quote!(
             {
-                let mut element = typed_html::elements::#typename::new(
-                    #({ #req_children }),*
-                );
-                #(
-                    element.#keys = Some(#values.into());
-                )*
-                #(
-                    element.data_attributes.insert(#data_keys.into(), #data_values.into());
-                )*
-                #(
-                    #opt_children
-                )*
+                let mut element = typed_html::elements::$typename::new($args);
+                $body
                 Box::new(element)
             }
         )

@@ -2,12 +2,9 @@
 name = "typed-html-macros"
 version = "0.1.0"
 authors = ["Bodil Stokke <bodil@bodil.org>"]
-edition = "2018"
 
 [lib]
 proc-macro = true
 
 [dependencies]
-quote = "0.6.8"
 pom = "2.0.1"
-proc-macro2 = "0.4.20"
