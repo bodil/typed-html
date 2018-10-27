@@ -88,7 +88,7 @@ impl Declare {
             pub struct #elem_name {
                 #( pub #attr_name: Option<#attr_type>, )*
                 pub data_attributes: std::collections::BTreeMap<String, String>,
-                #( pub #req_child_name: #req_child_type, )*
+                #( pub #req_child_name: Box<#req_child_type>, )*
                 #children
             }
         )
@@ -108,7 +108,7 @@ impl Declare {
 
         quote!(
             impl #elem_name {
-                pub fn new(#(#req_child_name: #req_child_type),*) -> Self {
+                pub fn new(#(#req_child_name: Box<#req_child_type>),*) -> Self {
                     #elem_name {
                         #( #attr_name: None, )*
                         data_attributes: std::collections::BTreeMap::new(),

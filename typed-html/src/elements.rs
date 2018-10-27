@@ -28,7 +28,26 @@ impl IntoIterator for TextNode {
     }
 }
 
+impl IntoIterator for Box<TextNode> {
+    type Item = Box<TextNode>;
+    type IntoIter = std::vec::IntoIter<Box<TextNode>>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        vec![self].into_iter()
+    }
+}
+
 pub struct TextNode(String);
+
+#[macro_export]
+macro_rules! text {
+    ($t:expr) => {
+        Box::new($crate::elements::TextNode::new($t))
+    };
+    ($format:tt, $($tail:tt),*) => {
+        Box::new($crate::elements::TextNode::new(format!($format, $($tail),*)))
+    };
+}
 
 impl TextNode {
     pub fn new<S: Into<String>>(s: S) -> Self {

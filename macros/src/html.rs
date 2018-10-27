@@ -18,7 +18,9 @@ impl Node {
     fn into_token_stream(self) -> TokenStream {
         match self {
             Node::Element(el) => el.into_token_stream(),
-            Node::Text(text) => quote!(typed_html::elements::TextNode::new(#text.to_string())),
+            Node::Text(text) => {
+                quote!(Box::new(typed_html::elements::TextNode::new(#text.to_string())))
+            }
             Node::Block(_) => panic!("cannot have a block in this position"),
         }
     }
@@ -28,21 +30,20 @@ impl Node {
             Node::Element(el) => {
                 let el = el.into_token_stream();
                 quote!(
-                    element.children.push(Box::new(#el));
+                    element.children.push(#el);
                 )
             }
             tx @ Node::Text(_) => {
                 let tx = tx.into_token_stream();
                 quote!(
-                    element.children.push(Box::new(#tx));
+                    element.children.push(#tx);
                 )
             }
-            Node::Block(group) => quote!({
-                let iter = #group.into_iter();
-                for child in iter {
-                    element.children.push(Box::new(child));
+            Node::Block(group) => quote!(
+                for child in #group.into_iter() {
+                    element.children.push(child);
                 }
-            }),
+            ),
         }
     }
 }
@@ -119,7 +120,7 @@ impl Element {
                 #(
                     #opt_children
                 )*
-                element
+                Box::new(element)
             }
         )
     }
