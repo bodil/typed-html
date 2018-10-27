@@ -1,6 +1,6 @@
 use pom::combinator::*;
 use pom::{Error, Parser};
-use proc_macro::{Group, Ident, Literal, Punct, TokenStream, TokenTree};
+use proc_macro::{Delimiter, Group, Ident, Literal, Punct, TokenStream, TokenTree};
 
 pub fn unit<'a, I: 'a, A: Clone>(value: A) -> Combinator<impl Parser<'a, I, Output = A>> {
     comb(move |_, start| Ok((value.clone(), start)))
@@ -79,6 +79,20 @@ pub fn type_spec<'a>() -> Combinator<impl Parser<'a, TokenTree, Output = TokenSt
         | punct('&').map(TokenTree::Punct)
         | punct('\'').map(TokenTree::Punct);
     valid.repeat(1..).collect().map(to_stream)
+}
+
+pub fn dotted_ident<'a>() -> Combinator<impl Parser<'a, TokenTree, Output = TokenTree>> {
+    (ident()
+        + ((punct('.') + ident()).discard() | (punct(':').repeat(2) + ident()).discard())
+            .repeat(0..))
+    .collect()
+    .map(|tokens| {
+        if tokens.len() == 1 {
+            tokens[0].clone()
+        } else {
+            Group::new(Delimiter::Brace, to_stream(tokens)).into()
+        }
+    })
 }
 
 /// Read a sequence of idents and dashes, and merge them into a single ident

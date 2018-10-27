@@ -1,6 +1,6 @@
 use pom::combinator::*;
 use pom::Parser;
-use proc_macro::{quote, Group, Ident, Literal, TokenStream, TokenTree};
+use proc_macro::{quote, Delimiter, Group, Ident, Literal, TokenStream, TokenTree};
 
 use config::required_children;
 use map::StringyMap;
@@ -72,6 +72,25 @@ fn extract_data_attrs(attrs: &mut StringyMap<Ident, TokenTree>) -> StringyMap<St
     data
 }
 
+fn process_value(value: &TokenTree) -> TokenStream {
+    match value {
+        TokenTree::Group(g) if g.delimiter() == Delimiter::Bracket => {
+            let content = g.stream();
+            quote!( [ $content ] )
+        }
+        TokenTree::Group(g) if g.delimiter() == Delimiter::Parenthesis => {
+            let content = g.stream();
+            quote!( ( $content ) )
+        }
+        v => v.clone().into(),
+    }
+}
+
+fn is_string_literal(literal: &Literal) -> bool {
+    // This is the worst API
+    literal.to_string().starts_with('"')
+}
+
 impl Element {
     fn new(name: Ident) -> Self {
         Element {
@@ -97,8 +116,9 @@ impl Element {
         let data_attrs = extract_data_attrs(&mut self.attributes);
         let attrs = self.attributes.iter().map(|(key, value)| {
             (
+                key.to_string(),
                 TokenTree::Ident(Ident::new(&format!("attr_{}", key), key.span())),
-                value.clone(),
+                value,
             )
         });
         let opt_children = self
@@ -109,10 +129,35 @@ impl Element {
         let req_children = self.children.into_iter().map(Node::into_token_stream);
 
         let mut body = TokenStream::new();
-        for (key, value) in attrs {
-            body.extend(quote!(
-                element.$key = Some($value.into());
-            ));
+        for (attr_str, key, value) in attrs {
+            match value {
+                TokenTree::Literal(l) if is_string_literal(l) => {
+                    let value = value.clone();
+                    let tag_name: TokenTree = Literal::string(&name_str).into();
+                    let attr_str: TokenTree = Literal::string(&attr_str).into();
+                    let span = value.span();
+                    let pos = format!(
+                        "{}:{}:{}",
+                        span.source_file().path().to_str().unwrap_or("unknown"),
+                        span.start().line,
+                        span.start().column
+                    );
+                    let pos_str: TokenTree = Literal::string(&pos).into();
+                    body.extend(quote!(
+                        element.attrs.$key = Some($value.parse().unwrap_or_else(|err| {
+                            eprintln!("ERROR: {}: <{} {}={:?}> attribute value was not accepted: {:?}",
+                                      $pos_str, $tag_name, $attr_str, $value, err);
+                            panic!();
+                        }));
+                    ));
+                }
+                value => {
+                    let value = process_value(value);
+                    body.extend(quote!(
+                        element.attrs.$key = Some(std::convert::TryInto::try_into($value).unwrap());
+                    ));
+                }
+            }
         }
         for (key, value) in data_attrs
             .iter()
@@ -144,7 +189,7 @@ fn element_start<'a>() -> Combinator<impl Parser<'a, TokenTree, Output = Element
 }
 
 fn attr_value<'a>() -> Combinator<impl Parser<'a, TokenTree, Output = TokenTree>> {
-    literal().map(TokenTree::Literal) | ident().map(TokenTree::Ident)
+    literal().map(TokenTree::Literal) | dotted_ident() | group().map(TokenTree::Group)
 }
 
 fn attr<'a>() -> Combinator<impl Parser<'a, TokenTree, Output = (Ident, TokenTree)>> {

@@ -15,8 +15,22 @@ pub fn global_attrs(span: Span) -> StringyMap<Ident, TokenStream> {
     {
         let mut insert =
             |key, value: &str| attrs.insert(Ident::new(key, span), value.parse().unwrap());
-        insert("id", "crate::elements::CssId");
-        insert("class", "crate::elements::CssClass");
+
+        insert("id", "crate::types::Id");
+        insert("class", "crate::types::ClassList");
+
+        insert("accesskey", "String");
+        insert("autocapitalize", "String");
+        insert("contenteditable", "bool");
+        insert("contextmenu", "crate::types::Id");
+        insert("dir", "String");
+        insert("draggable", "bool");
+        insert("hidden", "bool");
+        insert("is", "String");
+        insert("lang", "crate::types::LanguageTag");
+        insert("style", "String");
+        insert("tabindex", "isize");
+        insert("title", "String");
     }
     attrs
 }
