@@ -6,3 +6,4 @@ edition = "2018"
 
 [dependencies]
 typed-html-macros = { path = "../macros" }
+http = "0.1.13"

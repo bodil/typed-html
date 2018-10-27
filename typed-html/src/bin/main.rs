@@ -1,10 +1,10 @@
 #![feature(proc_macro_hygiene)]
 
-use typed_html::Node;
+use typed_html::elements::TextNode;
 use typed_html_macros::html;
 
 fn main() {
-    let the_big_question = Node::text("How does she eat?");
+    let the_big_question = TextNode::new("How does she eat?");
     let splain_class = "well-actually";
     let doc = html!(
         <html>
@@ -17,7 +17,7 @@ fn main() {
                 <p class="mind-blown">{the_big_question}</p>
                 {
                     (1..4).map(|i| {
-                        html!(<p>{ Node::text(format!("Generated paragraph {}", i)) }</p>)
+                        html!(<p>{ TextNode::new(format!("Generated paragraph {}", i)) }</p>)
                     })
                 }
             </body>
