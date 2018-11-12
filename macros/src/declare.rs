@@ -96,11 +96,6 @@ impl Declare {
 
         let mut body = TokenStream::new();
 
-        body.extend(quote!(
-            pub attrs: $attr_type_name,
-            pub data_attributes: std::collections::BTreeMap<String, String>,
-        ));
-
         for (child_name, child_type, _) in self.req_children() {
             body.extend(quote!( pub $child_name: Box<$child_type>, ));
         }
@@ -112,6 +107,8 @@ impl Declare {
 
         quote!(
             pub struct $elem_name {
+                pub attrs: $attr_type_name,
+                pub data_attributes: std::collections::BTreeMap<String, String>,
                 $body
             }
         )
@@ -154,10 +151,58 @@ impl Declare {
         )
     }
 
+    fn impl_vnode(&self) -> TokenStream {
+        let elem_name = TokenTree::Literal(Literal::string(self.name.to_string().as_str()));
+        let mut req_children = TokenStream::new();
+        for (child_name, _, _) in self.req_children() {
+            req_children.extend(quote!(
+                children.push(self.$child_name.vnode());
+            ));
+        }
+        let mut opt_children = TokenStream::new();
+        if self.opt_children.is_some() {
+            opt_children.extend(quote!(for child in &self.children {
+                children.push(child.vnode());
+            }));
+        }
+
+        let mut push_attrs = TokenStream::new();
+        for (attr_name, _, attr_str) in self.attrs() {
+            push_attrs.extend(quote!(
+                if let Some(ref value) = self.attrs.$attr_name {
+                    attributes.push(($attr_str.to_string(), value.to_string()));
+                }
+            ));
+        }
+
+        quote!(
+            let mut attributes = Vec::new();
+            $push_attrs
+            for (key, value) in &self.data_attributes {
+                attributes.push((format!("data-{}", key), value.to_string()));
+            }
+
+            let mut children = Vec::new();
+            $req_children
+            $opt_children
+
+            ::elements::VNode::Element(::elements::VElement {
+                name: $elem_name,
+                attributes,
+                children
+            })
+        )
+    }
+
     fn impl_node(&self) -> TokenStream {
         let elem_name = self.elem_name();
+        let vnode = self.impl_vnode();
         quote!(
-            impl ::elements::Node for $elem_name {}
+            impl ::elements::Node for $elem_name {
+                fn vnode(&self) -> ::elements::VNode {
+                    $vnode
+                }
+            }
         )
     }
 
@@ -270,7 +315,7 @@ impl Declare {
         quote!(
             impl std::fmt::Display for $elem_name {
                 fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
-                    write!(f, "<{}", $name);
+                    write!(f, "<{}", $name)?;
                     $print_attrs
                     for (key, value) in &self.data_attributes {
                         write!(f, " data-{}={:?}", key, value)?;

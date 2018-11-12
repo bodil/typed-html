@@ -6,7 +6,22 @@ use typed_html_macros::declare_element;
 
 use super::types::*;
 
-pub trait Node: Display {}
+#[derive(Clone, Debug)]
+pub enum VNode {
+    Text(String),
+    Element(VElement),
+}
+
+#[derive(Clone, Debug)]
+pub struct VElement {
+    pub name: &'static str,
+    pub attributes: Vec<(String, String)>,
+    pub children: Vec<VNode>,
+}
+
+pub trait Node: Display {
+    fn vnode(&self) -> VNode;
+}
 
 pub trait Element: Node {
     fn name() -> &'static str;
@@ -61,7 +76,11 @@ impl Display for TextNode {
     }
 }
 
-impl Node for TextNode {}
+impl Node for TextNode {
+    fn vnode(&self) -> VNode {
+        VNode::Text(self.0.clone())
+    }
+}
 impl FlowContent for TextNode {}
 impl PhrasingContent for TextNode {}
 

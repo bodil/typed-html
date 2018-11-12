@@ -5,6 +5,7 @@
 extern crate typed_html;
 extern crate typed_html_macros;
 
+use typed_html::elements::Node;
 use typed_html::types::*;
 use typed_html_macros::html;
 
@@ -37,4 +38,5 @@ fn main() {
         </html>
     );
     println!("{}", doc.to_string());
+    println!("{:?}", doc.vnode());
 }
