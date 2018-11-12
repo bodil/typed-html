@@ -1,6 +1,7 @@
 use std::convert::TryFrom;
 use std::fmt::{Display, Error, Formatter};
 use std::ops::Deref;
+use std::str::FromStr;
 
 use super::Class;
 
@@ -39,6 +40,13 @@ impl Id {
         Self::try_new(id.clone()).unwrap_or_else(|err| {
             panic!("typed_html::types::Id: {:?} is not a valid ID: {}", id, err)
         })
+    }
+}
+
+impl FromStr for Id {
+    type Err = &'static str;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Id::try_new(s)
     }
 }
 

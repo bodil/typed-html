@@ -1,6 +1,7 @@
 use std::convert::TryFrom;
 use std::fmt::{Display, Error, Formatter};
 use std::ops::Deref;
+use std::str::FromStr;
 
 use super::Id;
 
@@ -44,6 +45,13 @@ impl Class {
                 id, err
             )
         })
+    }
+}
+
+impl FromStr for Class {
+    type Err = &'static str;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Class::try_new(s)
     }
 }
 

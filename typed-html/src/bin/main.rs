@@ -26,7 +26,7 @@ fn main() {
             <body>
                 <h1 data-lol="omg" data-foo=wibble.foo>"Hello Kitty!"</h1>
                 <p class=splain_class>
-                    "She is not a "<em>"cat"</em>". She is a "<em>"human girl"</em>"."
+                    "She is not a "<em><a href="https://en.wikipedia.org/wiki/Cat">"cat"</a></em>". She is a "<em>"human girl"</em>"."
                 </p>
                 <p class=["foo", "bar"]>{the_big_question}</p>
                 {

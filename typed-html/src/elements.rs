@@ -32,7 +32,17 @@ pub trait Element: Node {
 
 pub trait MetadataContent: Node {}
 pub trait FlowContent: Node {}
-pub trait PhrasingContent: Node {}
+pub trait SectioningContent: Node {}
+pub trait HeadingContent: Node {}
+// Phrasing content seems to be entirely a subclass of FlowContent
+pub trait PhrasingContent: FlowContent {}
+pub trait EmbeddedContent: Node {}
+pub trait InteractiveContent: Node {}
+pub trait FormContent: Node {}
+
+// Traits for elements that are more picky about their children
+pub trait DescriptionListContent: Node {}
+pub trait HGroupContent: Node {}
 
 impl IntoIterator for TextNode {
     type Item = TextNode;
@@ -93,7 +103,7 @@ declare_element!(body {} [] FlowContent);
 // Metadata content
 declare_element!(base {
     href: Uri,
-    target: String,
+    target: Target,
 } [] [MetadataContent]);
 declare_element!(link {
     as: Mime,
@@ -121,15 +131,151 @@ declare_element!(style {
 declare_element!(title {} [] [MetadataContent] TextNode);
 
 // Flow content
+declare_element!(a {
+    download: String,
+    href: Uri,
+    hreflang: LanguageTag,
+    ping: SpacedList<Uri>,
+    rel: SpacedList<LinkType>,
+    target: Target,
+    type: Mime,
+} [] [FlowContent, PhrasingContent, InteractiveContent] FlowContent);
+declare_element!(abbr {} [] [FlowContent, PhrasingContent] PhrasingContent);
+declare_element!(address {} [] [FlowContent] FlowContent); // FIXME it has additional constraints on FlowContent
+declare_element!(article {} [] [FlowContent, SectioningContent] FlowContent);
+declare_element!(aside {} [] [FlowContent, SectioningContent] FlowContent);
+declare_element!(audio {
+    autoplay: bool,
+    controls: bool,
+    crossorigin: CrossOrigin,
+    loop: bool,
+    muted: bool,
+    preload: Preload,
+    src: Uri,
+} [] [FlowContent, PhrasingContent]);
+declare_element!(b {} [] [FlowContent, PhrasingContent] PhrasingContent);
+declare_element!(bdo {} [] [FlowContent, PhrasingContent] PhrasingContent);
+declare_element!(bdi {} [] [FlowContent, PhrasingContent] PhrasingContent);
+declare_element!(blockquote {
+    cite: Uri,
+} [] [FlowContent] FlowContent);
+declare_element!(br {} [] [FlowContent, PhrasingContent]);
+declare_element!(button {
+    autofocus: bool,
+    disabled: bool,
+    form: Id,
+    formaction: Uri,
+    formenctype: FormEncodingType,
+    formmethod: FormMethod,
+    formnovalidate: bool,
+    formtarget: Target,
+    name: Id,
+    type: ButtonType,
+    value: String,
+} [] [FlowContent, PhrasingContent, InteractiveContent, FormContent] PhrasingContent);
+declare_element!(canvas {
+    height: usize,
+    width: usize,
+} [] [FlowContent] FlowContent); // FIXME has additional child constraints
+declare_element!(cite {} [] [FlowContent, PhrasingContent] PhrasingContent);
+declare_element!(code {} [] [FlowContent, PhrasingContent] PhrasingContent);
+declare_element!(data {
+    value: String,
+} [] [FlowContent, PhrasingContent] PhrasingContent);
+declare_element!(datalist {} [] [FlowContent, PhrasingContent] Element_option);
+declare_element!(del {
+    cite: Uri,
+    datetime: String, // FIXME should be "a valid date string with an optional time",
+                      //       but I have other hells to live in right now.
+} [] [FlowContent, PhrasingContent] FlowContent);
+declare_element!(details {
+    open: bool,
+} [summary] [FlowContent, SectioningContent, InteractiveContent] FlowContent);
+declare_element!(dfn {} [] [FlowContent, PhrasingContent] PhrasingContent);
 declare_element!(div {} [] [FlowContent] FlowContent);
-declare_element!(p {} [] [FlowContent] PhrasingContent);
-declare_element!(h1 {} [] [FlowContent] PhrasingContent);
-declare_element!(h2 {} [] [FlowContent] PhrasingContent);
-declare_element!(h3 {} [] [FlowContent] PhrasingContent);
-declare_element!(h4 {} [] [FlowContent] PhrasingContent);
-declare_element!(h5 {} [] [FlowContent] PhrasingContent);
-declare_element!(h6 {} [] [FlowContent] PhrasingContent);
+declare_element!(dl {} [] [FlowContent] DescriptionListContent);
 declare_element!(em {} [] [FlowContent, PhrasingContent] PhrasingContent);
+declare_element!(embed {
+    height: usize,
+    src: Uri,
+    type: Mime,
+    width: usize,
+} [] [FlowContent, PhrasingContent, EmbeddedContent, InteractiveContent]);
+// FIXME the legend attribute should be optional
+declare_element!(fieldset {} [legend] [FlowContent, SectioningContent, FormContent] FlowContent);
+// FIXME the figcaption attribute should be optional
+declare_element!(figure {} [figcaption] [FlowContent, SectioningContent] FlowContent);
+declare_element!(footer {} [] [FlowContent] FlowContent);
+declare_element!(form {
+    accept-charset: SpacedList<CharacterEncoding>,
+    action: Uri,
+    autocomplete: OnOff,
+    enctype: FormEncodingType,
+    method: FormMethod,
+    name: Id,
+    novalidate: bool,
+    target: Target,
+} [] [FlowContent] FlowContent);
+declare_element!(h1 {} [] [FlowContent, HeadingContent, HGroupContent] PhrasingContent);
+declare_element!(h2 {} [] [FlowContent, HeadingContent, HGroupContent] PhrasingContent);
+declare_element!(h3 {} [] [FlowContent, HeadingContent, HGroupContent] PhrasingContent);
+declare_element!(h4 {} [] [FlowContent, HeadingContent, HGroupContent] PhrasingContent);
+declare_element!(h5 {} [] [FlowContent, HeadingContent, HGroupContent] PhrasingContent);
+declare_element!(h6 {} [] [FlowContent, HeadingContent, HGroupContent] PhrasingContent);
+declare_element!(header {} [] [FlowContent] FlowContent);
+declare_element!(hgroup {} [] [FlowContent, HeadingContent] HGroupContent);
+declare_element!(hr {} [] [FlowContent]);
+declare_element!(i {} [] [FlowContent, PhrasingContent] PhrasingContent);
+declare_element!(iframe {
+    allow: FeaturePolicy,
+    allowfullscreen: bool,
+    allowpaymentrequest: bool,
+    height: usize,
+    name: Id,
+    referrerpolicy: ReferrerPolicy,
+    sandbox: SpacedSet<Sandbox>,
+    src: Uri,
+    srcdoc: Uri,
+    width: usize,
+} [] [FlowContent, PhrasingContent, EmbeddedContent, InteractiveContent] FlowContent);
+declare_element!(img {
+    alt: String,
+    crossorigin: CrossOrigin,
+    decoding: ImageDecoding,
+    height: usize,
+    ismap: bool,
+    sizes: SpacedList<String>, // FIXME it's not really just a string
+    src: Uri,
+    srcset: String, // FIXME this is much more complicated
+    usemap: String, // FIXME should be a fragment starting with '#'
+    width: usize,
+} [] [FlowContent, PhrasingContent, EmbeddedContent]);
+declare_element!(input {
+    autocomplete: String,
+    autofocus: bool,
+    disabled: bool,
+    form: Id,
+    list: Id,
+    name: Id,
+    required: bool,
+    tabindex: usize,
+    type: InputType,
+    value: String,
+} [] [FlowContent, FormContent, PhrasingContent]);
+declare_element!(p {} [] [FlowContent] PhrasingContent);
+
+// Non-content elements
+declare_element!(dd {} [] [DescriptionListContent] FlowContent);
+declare_element!(dt {} [] [DescriptionListContent] FlowContent);
+declare_element!(figcaption {} [] [] FlowContent);
+declare_element!(legend {} [] [] PhrasingContent);
+declare_element!(option {
+    disabled: bool,
+    label: String,
+    selected: bool,
+    value: String,
+} [] [] TextNode);
+declare_element!(summary {} [] [] PhrasingContent);
 
 // Don't @ me
 declare_element!(blink {} [] [FlowContent, PhrasingContent] PhrasingContent);
