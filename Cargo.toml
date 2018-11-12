@@ -1,5 +1,6 @@
 [workspace]
 members = [
     "typed-html",
-    "macros"
+    "macros",
+    "wasm"
 ]
