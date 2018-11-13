@@ -16,9 +16,38 @@ pub use http::Uri;
 pub use language_tags::LanguageTag;
 pub use mime::Mime;
 
-pub type Target = String;
 pub type CharacterEncoding = String;
+pub type Datetime = String;
 pub type FeaturePolicy = String;
+pub type Integrity = String;
+pub type Nonce = String;
+pub type Target = String;
+
+enum_set_type! {
+    #[derive(EnumString, Display)]
+    pub enum AreaShape {
+        #[strum(to_string = "rect")]
+        Rectangle,
+        #[strum(to_string = "circle")]
+        Circle,
+        #[strum(to_string = "poly")]
+        Polygon,
+        #[strum(to_string = "default")]
+        Default,
+    }
+}
+
+enum_set_type! {
+    #[derive(EnumString, Display)]
+    pub enum BoolOrDefault {
+        #[strum(to_string = "true")]
+        True,
+        #[strum(to_string = "default")]
+        Default,
+        #[strum(to_string = "false")]
+        False,
+    }
+}
 
 enum_set_type! {
     #[derive(EnumString, Display)]
@@ -188,6 +217,22 @@ enum_set_type! {
 
 enum_set_type! {
     #[derive(EnumString, Display)]
+    pub enum OrderedListType {
+        #[strum(to_string = "a")]
+        LowerCaseLetters,
+        #[strum(to_string = "A")]
+        UpperCaseLetters,
+        #[strum(to_string = "i")]
+        LowerCaseRomanNumerals,
+        #[strum(to_string = "I")]
+        UpperCaseRomanNumerals,
+        #[strum(to_string = "1")]
+        Numbers,
+    }
+}
+
+enum_set_type! {
+    #[derive(EnumString, Display)]
     pub enum Preload {
         #[strum(to_string = "none")]
         None,
@@ -244,10 +289,54 @@ enum_set_type! {
 
 enum_set_type! {
     #[derive(EnumString, Display)]
+    pub enum TableHeaderScope {
+        #[strum(to_string = "row")]
+        Row,
+        #[strum(to_string = "col")]
+        Column,
+        #[strum(to_string = "rowgroup")]
+        RowGroup,
+        #[strum(to_string = "colgroup")]
+        ColGroup,
+        #[strum(to_string = "auto")]
+        Auto,
+    }
+}
+
+enum_set_type! {
+    #[derive(EnumString, Display)]
     pub enum TextDirection {
         #[strum(to_string = "ltr")]
         LeftToRight,
         #[strum(to_string = "rtl")]
         RightToLeft,
+    }
+}
+
+enum_set_type! {
+    #[derive(EnumString, Display)]
+    pub enum VideoKind {
+        #[strum(to_string = "subtitles")]
+        Subtitles,
+        #[strum(to_string = "captions")]
+        Captions,
+        #[strum(to_string = "descriptions")]
+        Descriptions,
+        #[strum(to_string = "chapters")]
+        Chapters,
+        #[strum(to_string = "metadata")]
+        Metadata,
+    }
+}
+
+enum_set_type! {
+    #[derive(EnumString, Display)]
+    pub enum Wrap {
+        #[strum(to_string = "hard")]
+        Hard,
+        #[strum(to_string = "soft")]
+        Soft,
+        #[strum(to_string = "off")]
+        Off,
     }
 }

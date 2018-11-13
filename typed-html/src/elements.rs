@@ -43,6 +43,11 @@ pub trait FormContent: Node {}
 // Traits for elements that are more picky about their children
 pub trait DescriptionListContent: Node {}
 pub trait HGroupContent: Node {}
+pub trait MapContent: Node {}
+pub trait MediaContent: Node {} // <audio> and <video>
+pub trait SelectContent: Node {}
+pub trait TableContent: Node {}
+pub trait TableColumnContent: Node {}
 
 impl IntoIterator for TextNode {
     type Item = TextNode;
@@ -125,7 +130,7 @@ declare_element!(meta {
 declare_element!(style {
     type: Mime,
     media: String, // FIXME media query
-    nonce: String, // bigint?
+    nonce: Nonce,
     title: String, // FIXME
 } [] [MetadataContent] TextNode);
 declare_element!(title {} [] [MetadataContent] TextNode);
@@ -152,7 +157,7 @@ declare_element!(audio {
     muted: bool,
     preload: Preload,
     src: Uri,
-} [] [FlowContent, PhrasingContent]);
+} [] [FlowContent, PhrasingContent, EmbeddedContent] MediaContent);
 declare_element!(b {} [] [FlowContent, PhrasingContent] PhrasingContent);
 declare_element!(bdo {} [] [FlowContent, PhrasingContent] PhrasingContent);
 declare_element!(bdi {} [] [FlowContent, PhrasingContent] PhrasingContent);
@@ -176,7 +181,7 @@ declare_element!(button {
 declare_element!(canvas {
     height: usize,
     width: usize,
-} [] [FlowContent] FlowContent); // FIXME has additional child constraints
+} [] [FlowContent, PhrasingContent, EmbeddedContent] FlowContent); // FIXME has additional child constraints
 declare_element!(cite {} [] [FlowContent, PhrasingContent] PhrasingContent);
 declare_element!(code {} [] [FlowContent, PhrasingContent] PhrasingContent);
 declare_element!(data {
@@ -185,8 +190,7 @@ declare_element!(data {
 declare_element!(datalist {} [] [FlowContent, PhrasingContent] Element_option);
 declare_element!(del {
     cite: Uri,
-    datetime: String, // FIXME should be "a valid date string with an optional time",
-                      //       but I have other hells to live in right now.
+    datetime: Datetime,
 } [] [FlowContent, PhrasingContent] FlowContent);
 declare_element!(details {
     open: bool,
@@ -262,20 +266,186 @@ declare_element!(input {
     type: InputType,
     value: String,
 } [] [FlowContent, FormContent, PhrasingContent]);
+declare_element!(ins {
+    cite: Uri,
+    datetime: Datetime,
+} [] [FlowContent, PhrasingContent] FlowContent);
+declare_element!(kbd {} [] [FlowContent, PhrasingContent] PhrasingContent);
+declare_element!(label {
+    for: Id,
+    form: Id,
+} [] [FlowContent, PhrasingContent, InteractiveContent, FormContent] PhrasingContent);
+declare_element!(main {} [] [FlowContent] FlowContent);
+declare_element!(map {
+    name: Id,
+} [] [FlowContent, PhrasingContent] MapContent);
+declare_element!(mark {} [] [FlowContent, PhrasingContent] PhrasingContent);
+// TODO the <math> element
+declare_element!(meter {
+    value: isize,
+    min: isize,
+    max: isize,
+    low: isize,
+    high: isize,
+    optimum: isize,
+    form: Id,
+} [] [FlowContent, PhrasingContent] PhrasingContent);
+declare_element!(nav {} [] [FlowContent, SectioningContent] PhrasingContent);
+declare_element!(noscript {} [] [MetadataContent, FlowContent, PhrasingContent] Node);
+declare_element!(object {
+    data: Uri,
+    form: Id,
+    height: usize,
+    name: Id,
+    type: Mime,
+    typemustmatch: bool,
+    usemap: String, // TODO should be a fragment starting with '#'
+    width: usize,
+} [] [FlowContent, PhrasingContent, EmbeddedContent, InteractiveContent, FormContent] Element_param);
+declare_element!(ol {
+    reversed: bool,
+    start: isize,
+    type: OrderedListType,
+} [] [FlowContent] Element_li);
+declare_element!(output {
+    for: SpacedSet<Id>,
+    form: Id,
+    name: Id,
+} [] [FlowContent, PhrasingContent, FormContent] PhrasingContent);
 declare_element!(p {} [] [FlowContent] PhrasingContent);
+declare_element!(pre {} [] [FlowContent] PhrasingContent);
+declare_element!(progress {
+    max: f64,
+    value: f64,
+} [] [FlowContent, PhrasingContent] PhrasingContent);
+declare_element!(q {
+    cite: Uri,
+} [] [FlowContent, PhrasingContent] PhrasingContent);
+declare_element!(ruby {} [] [FlowContent, PhrasingContent] PhrasingContent);
+declare_element!(s {} [] [FlowContent, PhrasingContent] PhrasingContent);
+declare_element!(samp {} [] [FlowContent, PhrasingContent] PhrasingContent);
+declare_element!(script {
+    async: bool,
+    crossorigin: CrossOrigin,
+    defer: bool,
+    integrity: Integrity,
+    nomodule: bool,
+    nonce: Nonce,
+    src: Uri,
+    text: String,
+    type: String, // TODO could be an enum
+} [] [MetadataContent, FlowContent, PhrasingContent, TableColumnContent] TextNode);
+declare_element!(section {} [] [FlowContent, SectioningContent] FlowContent);
+declare_element!(select {
+    autocomplete: String,
+    autofocus: bool,
+    disabled: bool,
+    form: Id,
+    multiple: bool,
+    name: Id,
+    required: bool,
+    size: usize,
+} [] [FlowContent, PhrasingContent, InteractiveContent, FormContent] SelectContent);
+declare_element!(small {} [] [FlowContent, PhrasingContent] PhrasingContent);
+declare_element!(span {} [] [FlowContent, PhrasingContent] PhrasingContent);
+declare_element!(strong {} [] [FlowContent, PhrasingContent] PhrasingContent);
+declare_element!(sub {} [] [FlowContent, PhrasingContent] PhrasingContent);
+declare_element!(sup {} [] [FlowContent, PhrasingContent] PhrasingContent);
+// TODO the <svg> element
+declare_element!(table {} [] [FlowContent] TableContent);
+declare_element!(template {} [] [MetadataContent, FlowContent, PhrasingContent, TableColumnContent] Node);
+declare_element!(textarea {
+    autocomplete: OnOff,
+    autofocus: bool,
+    cols: usize,
+    disabled: bool,
+    form: Id,
+    maxlength: usize,
+    minlength: usize,
+    name: Id,
+    placeholder: String,
+    readonly: bool,
+    required: bool,
+    rows: usize,
+    spellcheck: BoolOrDefault,
+    wrap: Wrap,
+} [] [FlowContent, PhrasingContent, InteractiveContent, FormContent] TextNode);
+declare_element!(time {
+    datetime: Datetime,
+} [] [FlowContent, PhrasingContent] PhrasingContent);
+declare_element!(ul {} [] [FlowContent] Element_li);
+declare_element!(var {} [] [FlowContent, PhrasingContent] PhrasingContent);
+declare_element!(video {} [] [FlowContent, PhrasingContent, EmbeddedContent] MediaContent);
+declare_element!(wbr {} [] [FlowContent, PhrasingContent]);
 
-// Non-content elements
+// Non-group elements
+declare_element!(area {
+    alt: String,
+    coords: String, // TODO could perhaps be validated
+    download: bool,
+    href: Uri,
+    hreflang: LanguageTag,
+    ping: SpacedList<Uri>,
+    rel: SpacedSet<LinkType>,
+    shape: AreaShape,
+    target: Target,
+} [] [MapContent]);
+declare_element!(caption {} [] [TableContent] FlowContent);
+declare_element!(col {
+    span: usize,
+} [] []);
+declare_element!(colgroup {
+    span: usize,
+} [] [TableContent] Element_col);
 declare_element!(dd {} [] [DescriptionListContent] FlowContent);
 declare_element!(dt {} [] [DescriptionListContent] FlowContent);
 declare_element!(figcaption {} [] [] FlowContent);
 declare_element!(legend {} [] [] PhrasingContent);
+declare_element!(li {
+    value: isize,
+} [] [] FlowContent);
 declare_element!(option {
     disabled: bool,
     label: String,
     selected: bool,
     value: String,
-} [] [] TextNode);
+} [] [SelectContent] TextNode);
+declare_element!(optgroup {
+    disabled: bool,
+    label: String,
+} [] [SelectContent] Element_option);
+declare_element!(param {
+    name: String,
+    value: String,
+} [] []);
+declare_element!(source {
+    src: Uri,
+    type: Mime,
+} [] [MediaContent]);
 declare_element!(summary {} [] [] PhrasingContent);
+declare_element!(tbody {} [] [TableContent] Element_tr);
+declare_element!(td {
+    colspan: usize,
+    headers: SpacedSet<Id>,
+    rowspan: usize,
+} [] [TableColumnContent] FlowContent);
+declare_element!(tfoot {} [] [TableContent] Element_tr);
+declare_element!(th {
+    abbr: String,
+    colspan: usize,
+    headers: SpacedSet<Id>,
+    rowspan: usize,
+    scope: TableHeaderScope,
+} [] [TableColumnContent] FlowContent);
+declare_element!(thead {} [] [TableContent] Element_tr);
+declare_element!(tr {} [] [TableContent] TableColumnContent);
+declare_element!(track {
+    default: bool,
+    kind: VideoKind,
+    label: String,
+    src: Uri,
+    srclang: LanguageTag,
+} [] [MediaContent]);
 
 // Don't @ me
 declare_element!(blink {} [] [FlowContent, PhrasingContent] PhrasingContent);
