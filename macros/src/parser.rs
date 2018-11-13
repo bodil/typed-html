@@ -1,6 +1,8 @@
 use pom::combinator::*;
 use pom::{Error, Parser};
-use proc_macro::{Delimiter, Group, Ident, Literal, Punct, TokenStream, TokenTree};
+use proc_macro::{
+    Delimiter, Diagnostic, Group, Ident, Level, Literal, Punct, TokenStream, TokenTree,
+};
 
 pub fn unit<'a, I: 'a, A: Clone>(value: A) -> Combinator<impl Parser<'a, I, Output = A>> {
     comb(move |_, start| Ok((value.clone(), start)))
@@ -102,7 +104,7 @@ pub fn html_ident<'a>() -> Combinator<impl Parser<'a, TokenTree, Output = Ident>
     let next = punct('-') * ident();
     (start * next.repeat(0..)).collect().map(|stream| {
         let (span, name) = stream
-            .into_iter()
+            .iter()
             .fold((None, String::new()), |(span, name), token| {
                 (
                     match span {
@@ -120,39 +122,39 @@ pub fn html_ident<'a>() -> Combinator<impl Parser<'a, TokenTree, Output = Ident>
     })
 }
 
-fn error_location(input: &[TokenTree], position: usize) -> String {
-    format!("{:?}", input[position].span())
-}
-
-pub fn parse_error(input: &[TokenTree], error: &pom::Error) -> String {
+/// Turn a parser error into a proc_macro diagnostic.
+pub fn parse_error(input: &[TokenTree], error: &pom::Error) -> Diagnostic {
     match error {
-        pom::Error::Incomplete => "Incomplete token stream".to_string(),
+        pom::Error::Incomplete => Diagnostic::new(Level::Error, "unexpected end of macro!"),
         pom::Error::Mismatch { message, position } => {
-            format!("{}: {}", error_location(input, *position), message)
+            Diagnostic::spanned(input[*position].span(), Level::Error, message.as_str())
         }
         pom::Error::Conversion { message, position } => {
-            format!("{}: {}", error_location(input, *position), message)
+            Diagnostic::spanned(input[*position].span(), Level::Error, message.as_str())
         }
         pom::Error::Expect {
             message,
             position,
             inner,
-        } => format!(
-            "{}: {}\n{}",
-            error_location(input, *position),
-            message,
-            parse_error(input, &inner)
-        ),
+        } => {
+            let mut diag =
+                Diagnostic::spanned(input[*position].span(), Level::Error, message.as_str());
+            let child = parse_error(input, &inner);
+            diag.span_error(child.spans(), child.message())
+        }
         pom::Error::Custom {
             message,
             position,
             inner,
         } => {
-            let mut out = format!("{}: {}", error_location(input, *position), message);
-            if let Some(error) = inner {
-                out += &format!("\n{}", parse_error(input, error));
+            let mut diag =
+                Diagnostic::spanned(input[*position].span(), Level::Error, message.as_str());
+            if let Some(inner) = inner {
+                let child = parse_error(input, &inner);
+                diag.span_error(child.spans(), child.message())
+            } else {
+                diag
             }
-            out
         }
     }
 }
