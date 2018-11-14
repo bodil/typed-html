@@ -21,7 +21,7 @@ impl Node {
             Node::Element(el) => el.into_token_stream(),
             Node::Text(text) => {
                 let text = TokenTree::Literal(text);
-                quote!(Box::new(typed_html::elements::TextNode::new($text.to_string())))
+                quote!(Box::new(typed_html::dom::TextNode::new($text.to_string())))
             }
             Node::Block(_) => panic!("cannot have a block in this position"),
         }
@@ -97,7 +97,7 @@ impl Element {
     fn into_token_stream(mut self) -> TokenStream {
         let name = self.name;
         let name_str = name.to_string();
-        let typename: TokenTree = Ident::new(&format!("Element_{}", &name_str), name.span()).into();
+        let typename: TokenTree = Ident::new(&name_str, name.span()).into();
         let req_names = required_children(&name_str);
         if req_names.len() > self.children.len() {
             Diagnostic::spanned(
@@ -164,7 +164,7 @@ impl Element {
             .map(|(k, v)| (TokenTree::from(Literal::string(&k)), v.clone()))
         {
             body.extend(quote!(
-                element.data_attributes.insert($key.into(), $value.into());
+                element.data_attributes.push(($key.into(), $value.into()));
             ));
         }
         body.extend(opt_children);

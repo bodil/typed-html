@@ -5,7 +5,7 @@
 extern crate typed_html;
 extern crate typed_html_macros;
 
-use typed_html::elements::Node;
+use typed_html::dom::Node;
 use typed_html::types::*;
 use typed_html_macros::html;
 
@@ -34,6 +34,7 @@ fn main() {
                         html!(<p>{ text!("{}. Ceci n'est pas une chatte.", i) }</p>)
                     })
                 }
+                <p>"<img src=\"javascript:alert('pwned lol')\">"</p>
             </body>
         </html>
     );

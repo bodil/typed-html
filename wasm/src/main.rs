@@ -6,7 +6,7 @@ extern crate typed_html;
 extern crate typed_html_macros;
 
 use stdweb::web::{self, IElement, INode};
-use typed_html::elements::{Node, VNode};
+use typed_html::dom::{Node, VNode};
 use typed_html_macros::html;
 
 fn build(

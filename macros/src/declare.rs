@@ -28,16 +28,12 @@ impl Declare {
     }
 
     fn elem_name(&self) -> TokenTree {
-        Ident::new(
-            &format!("Element_{}", self.name.to_string()),
-            self.name.span(),
-        )
-        .into()
+        Ident::new(&self.name.to_string(), self.name.span()).into()
     }
 
     fn attr_type_name(&self) -> TokenTree {
         Ident::new(
-            &format!("ElementAttrs_{}", self.name.to_string()),
+            &format!("Attrs_{}", self.name.to_string()),
             self.name.span(),
         )
         .into()
@@ -57,7 +53,7 @@ impl Declare {
             let child_name: TokenTree =
                 Ident::new(&format!("child_{}", child.to_string()), child.span()).into();
             let child_type: TokenTree =
-                Ident::new(&format!("Element_{}", child.to_string()), child.span()).into();
+                Ident::new(&format!("{}", child.to_string()), child.span()).into();
             let child_str = Literal::string(&child.to_string()).into();
             (child_name, child_type, child_str)
         })
@@ -107,7 +103,7 @@ impl Declare {
         quote!(
             pub struct $elem_name {
                 pub attrs: $attr_type_name,
-                pub data_attributes: std::collections::BTreeMap<String, String>,
+                pub data_attributes: Vec<(String, String)>,
                 $body
             }
         )
@@ -131,7 +127,7 @@ impl Declare {
         body.extend(quote!(
             attrs: $attr_type_name { $attrs },
         ));
-        body.extend(quote!(data_attributes: std::collections::BTreeMap::new(),));
+        body.extend(quote!(data_attributes: Vec::new(),));
         for (child_name, _, _) in self.req_children() {
             body.extend(quote!( $child_name, ));
         }
@@ -185,7 +181,7 @@ impl Declare {
             $req_children
             $opt_children
 
-            ::elements::VNode::Element(::elements::VElement {
+            ::dom::VNode::Element(::dom::VElement {
                 name: $elem_name,
                 attributes,
                 children
@@ -197,8 +193,8 @@ impl Declare {
         let elem_name = self.elem_name();
         let vnode = self.impl_vnode();
         quote!(
-            impl ::elements::Node for $elem_name {
-                fn vnode(&self) -> ::elements::VNode {
+            impl ::dom::Node for $elem_name {
+                fn vnode(&self) -> ::dom::VNode {
                     $vnode
                 }
             }
@@ -225,7 +221,7 @@ impl Declare {
         }
 
         quote!(
-            impl ::elements::Element for $elem_name {
+            impl ::dom::Element for $elem_name {
                 fn name() -> &'static str {
                     $name
                 }
@@ -306,7 +302,8 @@ impl Declare {
         for (attr_name, _, attr_str) in self.attrs() {
             print_attrs.extend(quote!(
                 if let Some(ref value) = self.attrs.$attr_name {
-                    write!(f, " {}={:?}", $attr_str, value.to_string())?;
+                    write!(f, " {}=\"{}\"", $attr_str,
+                           ::htmlescape::encode_attribute(&value.to_string()))?;
                 }
             ));
         }
@@ -317,7 +314,8 @@ impl Declare {
                     write!(f, "<{}", $name)?;
                     $print_attrs
                     for (key, value) in &self.data_attributes {
-                        write!(f, " data-{}={:?}", key, value)?;
+                        write!(f, " data-{}=\"{}\"", key,
+                               ::htmlescape::encode_attribute(&value))?;
                     }
                     $print_children
                 }

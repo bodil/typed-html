@@ -1,34 +1,11 @@
-#![allow(non_camel_case_types)]
-#![allow(dead_code)]
+//! Types for all standard HTML5 elements.
 
-use std::fmt::Display;
 use typed_html_macros::declare_elements;
 
-use super::types::*;
+use dom::{Node, TextNode};
+use types::*;
 
-#[derive(Clone, Debug)]
-pub enum VNode {
-    Text(String),
-    Element(VElement),
-}
-
-#[derive(Clone, Debug)]
-pub struct VElement {
-    pub name: &'static str,
-    pub attributes: Vec<(String, String)>,
-    pub children: Vec<VNode>,
-}
-
-pub trait Node: Display {
-    fn vnode(&self) -> VNode;
-}
-
-pub trait Element: Node {
-    fn name() -> &'static str;
-    fn attribute_names() -> &'static [&'static str];
-    fn required_children() -> &'static [&'static str];
-    fn attributes(&self) -> Vec<(String, String)>;
-}
+// Marker traits for element content groups
 
 pub trait MetadataContent: Node {}
 pub trait FlowContent: Node {}
@@ -48,56 +25,6 @@ pub trait MediaContent: Node {} // <audio> and <video>
 pub trait SelectContent: Node {}
 pub trait TableContent: Node {}
 pub trait TableColumnContent: Node {}
-
-impl IntoIterator for TextNode {
-    type Item = TextNode;
-    type IntoIter = std::vec::IntoIter<TextNode>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        vec![self].into_iter()
-    }
-}
-
-impl IntoIterator for Box<TextNode> {
-    type Item = Box<TextNode>;
-    type IntoIter = std::vec::IntoIter<Box<TextNode>>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        vec![self].into_iter()
-    }
-}
-
-pub struct TextNode(String);
-
-#[macro_export]
-macro_rules! text {
-    ($t:expr) => {
-        Box::new($crate::elements::TextNode::new($t))
-    };
-    ($format:tt, $($tail:tt),*) => {
-        Box::new($crate::elements::TextNode::new(format!($format, $($tail),*)))
-    };
-}
-
-impl TextNode {
-    pub fn new<S: Into<String>>(s: S) -> Self {
-        TextNode(s.into())
-    }
-}
-
-impl Display for TextNode {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
-        self.0.fmt(f)
-    }
-}
-
-impl Node for TextNode {
-    fn vnode(&self) -> VNode {
-        VNode::Text(self.0.clone())
-    }
-}
-impl FlowContent for TextNode {}
-impl PhrasingContent for TextNode {}
 
 declare_elements!{
     html {
@@ -188,7 +115,7 @@ declare_elements!{
     data {
         value: String,
     } in [FlowContent, PhrasingContent] with PhrasingContent;
-    datalist in [FlowContent, PhrasingContent] with Element_option;
+    datalist in [FlowContent, PhrasingContent] with option;
     del {
         cite: Uri,
         datetime: Datetime,
@@ -302,12 +229,12 @@ declare_elements!{
         typemustmatch: bool,
         usemap: String, // TODO should be a fragment starting with '#'
         width: usize,
-    } in [FlowContent, PhrasingContent, EmbeddedContent, InteractiveContent, FormContent] with Element_param;
+    } in [FlowContent, PhrasingContent, EmbeddedContent, InteractiveContent, FormContent] with param;
     ol {
         reversed: bool,
         start: isize,
         type: OrderedListType,
-    } in [FlowContent] with Element_li;
+    } in [FlowContent] with li;
     output {
         for: SpacedSet<Id>,
         form: Id,
@@ -373,7 +300,7 @@ declare_elements!{
     time {
         datetime: Datetime,
     } in [FlowContent, PhrasingContent] with PhrasingContent;
-    ul in [FlowContent] with Element_li;
+    ul in [FlowContent] with li;
     var in [FlowContent, PhrasingContent] with PhrasingContent;
     video in [FlowContent, PhrasingContent, EmbeddedContent] with MediaContent;
     wbr in [FlowContent, PhrasingContent];
@@ -396,7 +323,7 @@ declare_elements!{
     };
     colgroup {
         span: usize,
-    } in [TableContent] with Element_col;
+    } in [TableContent] with col;
     dd in [DescriptionListContent] with FlowContent;
     dt in [DescriptionListContent] with FlowContent;
     figcaption with FlowContent;
@@ -413,7 +340,7 @@ declare_elements!{
     optgroup {
         disabled: bool,
         label: String,
-    } in [SelectContent] with Element_option;
+    } in [SelectContent] with option;
     param {
         name: String,
         value: String,
@@ -423,13 +350,13 @@ declare_elements!{
         type: Mime,
     } in [MediaContent];
     summary with PhrasingContent;
-    tbody in [TableContent] with Element_tr;
+    tbody in [TableContent] with tr;
     td {
         colspan: usize,
         headers: SpacedSet<Id>,
         rowspan: usize,
     } in [TableColumnContent] with FlowContent;
-    tfoot in [TableContent] with Element_tr;
+    tfoot in [TableContent] with tr;
     th {
         abbr: String,
         colspan: usize,
@@ -437,7 +364,7 @@ declare_elements!{
         rowspan: usize,
         scope: TableHeaderScope,
     } in [TableColumnContent] with FlowContent;
-    thead in [TableContent] with Element_tr;
+    thead in [TableContent] with tr;
     tr in [TableContent] with TableColumnContent;
     track {
         default: bool,

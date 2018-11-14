@@ -1,3 +1,5 @@
+//! Types for attribute values.
+
 mod class;
 pub use self::class::Class;
 
