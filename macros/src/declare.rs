@@ -3,21 +3,22 @@ use pom::Parser;
 use proc_macro::{quote, Group, Ident, Literal, TokenStream, TokenTree};
 
 use config::global_attrs;
+use lexer::{Lexer, ParseError, Token};
 use map::StringyMap;
-use parser::*;
+use parser::{self, *};
 
 // State
 
-struct Declare {
-    name: Ident,
-    attrs: StringyMap<Ident, TokenStream>,
-    req_children: Vec<Ident>,
-    opt_children: Option<TokenStream>,
-    traits: Vec<TokenStream>,
+pub struct Declare {
+    pub name: Ident,
+    pub attrs: StringyMap<Ident, TokenStream>,
+    pub req_children: Vec<Ident>,
+    pub opt_children: Option<TokenStream>,
+    pub traits: Vec<TokenStream>,
 }
 
 impl Declare {
-    fn new(name: Ident) -> Self {
+    pub fn new(name: Ident) -> Self {
         Declare {
             attrs: global_attrs(name.span()),
             req_children: Vec::new(),
@@ -45,8 +46,7 @@ impl Declare {
 
     fn attrs(&self) -> impl Iterator<Item = (TokenTree, TokenStream, TokenTree)> + '_ {
         self.attrs.iter().map(|(key, value)| {
-            let attr_name: TokenTree =
-                Ident::new(&format!("attr_{}", key.to_string()), key.span()).into();
+            let attr_name: TokenTree = Ident::new_raw(&key.to_string(), key.span()).into();
             let attr_type = value.clone();
             let attr_str = Literal::string(&key.to_string()).into();
             (attr_name, attr_type, attr_str)
@@ -64,7 +64,7 @@ impl Declare {
         })
     }
 
-    fn into_token_stream(self) -> TokenStream {
+    pub fn into_token_stream(self) -> TokenStream {
         let mut stream = TokenStream::new();
         stream.extend(self.attr_struct());
         stream.extend(self.struct_());
@@ -379,4 +379,8 @@ fn declare<'a>() -> Combinator<impl Parser<'a, TokenTree, Output = Declare>> {
 
 pub fn expand_declare(input: &[TokenTree]) -> pom::Result<TokenStream> {
     declare().parse(input).map(|decl| decl.into_token_stream())
+}
+
+pub fn expand_declare_lalrpop(input: &[Token]) -> Result<Vec<Declare>, ParseError> {
+    parser::grammar::DeclarationsParser::new().parse(Lexer::new(input))
 }

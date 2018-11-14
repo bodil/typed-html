@@ -1,12 +1,9 @@
+use lalrpop_util::lalrpop_mod;
 use pom::combinator::*;
 use pom::{Error, Parser};
-use proc_macro::{
-    Delimiter, Diagnostic, Group, Ident, Level, Literal, Punct, TokenStream, TokenTree,
-};
+use proc_macro::{Diagnostic, Group, Ident, Level, Punct, TokenStream, TokenTree};
 
-pub fn unit<'a, I: 'a, A: Clone>(value: A) -> Combinator<impl Parser<'a, I, Output = A>> {
-    comb(move |_, start| Ok((value.clone(), start)))
-}
+lalrpop_mod!(pub grammar);
 
 pub fn punct<'a>(punct: char) -> Combinator<impl Parser<'a, TokenTree, Output = Punct>> {
     comb(move |input: &[TokenTree], start| match input.get(start) {
@@ -23,35 +20,6 @@ pub fn ident<'a>() -> Combinator<impl Parser<'a, TokenTree, Output = Ident>> {
         Some(TokenTree::Ident(i)) => Ok((i.clone(), start + 1)),
         _ => Err(Error::Mismatch {
             message: "expected identifier".to_string(),
-            position: start,
-        }),
-    })
-}
-
-pub fn ident_match<'a>(name: String) -> Combinator<impl Parser<'a, TokenTree, Output = ()>> {
-    comb(move |input: &[TokenTree], start| match input.get(start) {
-        Some(TokenTree::Ident(i)) => {
-            if i.to_string() == name {
-                Ok(((), start + 1))
-            } else {
-                Err(Error::Mismatch {
-                    message: format!("expected '</{}>', found '</{}>'", name, i.to_string()),
-                    position: start,
-                })
-            }
-        }
-        _ => Err(Error::Mismatch {
-            message: "expected identifier".to_string(),
-            position: start,
-        }),
-    })
-}
-
-pub fn literal<'a>() -> Combinator<impl Parser<'a, TokenTree, Output = Literal>> {
-    comb(|input: &[TokenTree], start| match input.get(start) {
-        Some(TokenTree::Literal(l)) => Ok((l.clone(), start + 1)),
-        _ => Err(Error::Mismatch {
-            message: "expected literal".to_string(),
             position: start,
         }),
     })
@@ -81,45 +49,6 @@ pub fn type_spec<'a>() -> Combinator<impl Parser<'a, TokenTree, Output = TokenSt
         | punct('&').map(TokenTree::Punct)
         | punct('\'').map(TokenTree::Punct);
     valid.repeat(1..).collect().map(to_stream)
-}
-
-pub fn dotted_ident<'a>() -> Combinator<impl Parser<'a, TokenTree, Output = TokenTree>> {
-    (ident()
-        + ((punct('.') + ident()).discard() | (punct(':').repeat(2) + ident()).discard())
-            .repeat(0..))
-    .collect()
-    .map(|tokens| {
-        if tokens.len() == 1 {
-            tokens[0].clone()
-        } else {
-            Group::new(Delimiter::Brace, to_stream(tokens)).into()
-        }
-    })
-}
-
-/// Read a sequence of idents and dashes, and merge them into a single ident
-/// with the dashes replaced by underscores.
-pub fn html_ident<'a>() -> Combinator<impl Parser<'a, TokenTree, Output = Ident>> {
-    let start = ident();
-    let next = punct('-') * ident();
-    (start * next.repeat(0..)).collect().map(|stream| {
-        let (span, name) = stream
-            .iter()
-            .fold((None, String::new()), |(span, name), token| {
-                (
-                    match span {
-                        None => Some(token.span()),
-                        Some(span) => span.join(token.span()),
-                    },
-                    match token {
-                        TokenTree::Ident(ident) => name + &ident.to_string(),
-                        TokenTree::Punct(_) => name + "_",
-                        _ => unreachable!(),
-                    },
-                )
-            });
-        Ident::new(&name, span.unwrap())
-    })
 }
 
 /// Turn a parser error into a proc_macro diagnostic.

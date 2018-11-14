@@ -29,3 +29,18 @@ where
         self.0.values().map(|(k, _)| k)
     }
 }
+
+impl<K, V, OK, OV> From<Vec<(OK, OV)>> for StringyMap<K, V>
+where
+    OK: Into<K>,
+    OV: Into<V>,
+    K: ToString,
+{
+    fn from(vec: Vec<(OK, OV)>) -> Self {
+        let mut out = Self::new();
+        for (key, value) in vec {
+            out.insert(key.into(), value.into());
+        }
+        out
+    }
+}

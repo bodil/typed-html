@@ -37,6 +37,19 @@ impl<'a, A: 'a + Ord + Clone> FromIterator<&'a A> for SpacedSet<A> {
     }
 }
 
+impl<'a, A: Ord + FromStr> FromStr for SpacedSet<A>
+where
+    <A as FromStr>::Err: Debug,
+{
+    type Err = <A as FromStr>::Err;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let result: Result<Vec<A>, Self::Err> =
+            s.split_whitespace().map(|s| FromStr::from_str(s)).collect();
+        result.map(|items| Self::from_iter(items))
+    }
+}
+
 impl<'a, A: Ord + FromStr> From<&'a str> for SpacedSet<A>
 where
     <A as FromStr>::Err: Debug,

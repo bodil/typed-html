@@ -1,20 +1,21 @@
-use pom::combinator::*;
-use pom::Parser;
-use proc_macro::{quote, Delimiter, Group, Ident, Literal, TokenStream, TokenTree};
+use proc_macro::{
+    quote, Delimiter, Diagnostic, Group, Ident, Level, Literal, TokenStream, TokenTree,
+};
 
 use config::required_children;
+use lexer::{Lexer, ParseError, Token};
 use map::StringyMap;
-use parser::*;
+use parser::grammar;
 
 #[derive(Clone)]
-enum Node {
+pub enum Node {
     Element(Element),
     Text(Literal),
     Block(Group),
 }
 
 impl Node {
-    fn into_token_stream(self) -> TokenStream {
+    pub fn into_token_stream(self) -> TokenStream {
         match self {
             Node::Element(el) => el.into_token_stream(),
             Node::Text(text) => {
@@ -52,10 +53,10 @@ impl Node {
 }
 
 #[derive(Clone)]
-struct Element {
-    name: Ident,
-    attributes: StringyMap<Ident, TokenTree>,
-    children: Vec<Node>,
+pub struct Element {
+    pub name: Ident,
+    pub attributes: StringyMap<Ident, TokenTree>,
+    pub children: Vec<Node>,
 }
 
 fn extract_data_attrs(attrs: &mut StringyMap<Ident, TokenTree>) -> StringyMap<String, TokenTree> {
@@ -92,32 +93,30 @@ fn is_string_literal(literal: &Literal) -> bool {
 }
 
 impl Element {
-    fn new(name: Ident) -> Self {
-        Element {
-            name,
-            attributes: StringyMap::new(),
-            children: Vec::new(),
-        }
-    }
-
     fn into_token_stream(mut self) -> TokenStream {
         let name = self.name;
         let name_str = name.to_string();
         let typename: TokenTree = Ident::new(&format!("Element_{}", &name_str), name.span()).into();
         let req_names = required_children(&name_str);
         if req_names.len() > self.children.len() {
-            panic!(
-                "<{}> requires {} children but found only {}",
-                name_str,
-                req_names.len(),
-                self.children.len()
-            );
+            Diagnostic::spanned(
+                name.span(),
+                Level::Error,
+                format!(
+                    "<{}> requires {} children but there are only {}",
+                    name_str,
+                    req_names.len(),
+                    self.children.len()
+                ),
+            )
+            .emit();
+            panic!();
         }
         let data_attrs = extract_data_attrs(&mut self.attributes);
         let attrs = self.attributes.iter().map(|(key, value)| {
             (
                 key.to_string(),
-                TokenTree::Ident(Ident::new(&format!("attr_{}", key), key.span())),
+                TokenTree::Ident(Ident::new_raw(&key.to_string(), key.span())),
                 value,
             )
         });
@@ -145,9 +144,9 @@ impl Element {
                     let pos_str: TokenTree = Literal::string(&pos).into();
                     body.extend(quote!(
                         element.attrs.$key = Some($value.parse().unwrap_or_else(|err| {
-                            eprintln!("ERROR: {}: <{} {}={:?}> attribute value was not accepted: {:?}",
+                            eprintln!("ERROR: {}: <{} {}={:?}> failed to parse attribute value: {}",
                                       $pos_str, $tag_name, $attr_str, $value, err);
-                            panic!();
+                            panic!("failed to parse string literal");
                         }));
                     ));
                 }
@@ -184,57 +183,6 @@ impl Element {
     }
 }
 
-fn element_start<'a>() -> Combinator<impl Parser<'a, TokenTree, Output = Element>> {
-    (punct('<') * html_ident()).map(Element::new)
-}
-
-fn attr_value<'a>() -> Combinator<impl Parser<'a, TokenTree, Output = TokenTree>> {
-    literal().map(TokenTree::Literal) | dotted_ident() | group().map(TokenTree::Group)
-}
-
-fn attr<'a>() -> Combinator<impl Parser<'a, TokenTree, Output = (Ident, TokenTree)>> {
-    html_ident() + (punct('=') * attr_value())
-}
-
-fn element_with_attrs<'a>() -> Combinator<impl Parser<'a, TokenTree, Output = Element>> {
-    (element_start() + attr().repeat(0..)).map(|(mut el, attrs)| {
-        for (name, value) in attrs {
-            el.attributes.insert(name, value);
-        }
-        el
-    })
-}
-
-fn element_single<'a>() -> Combinator<impl Parser<'a, TokenTree, Output = Element>> {
-    element_with_attrs() - punct('/') - punct('>')
-}
-
-fn element_open<'a>() -> Combinator<impl Parser<'a, TokenTree, Output = Element>> {
-    element_with_attrs() - punct('>')
-}
-
-fn element_close<'a>(name: &str) -> Combinator<impl Parser<'a, TokenTree, Output = ()>> {
-    let name = name.to_lowercase();
-    // TODO make this return an error message containing the tag name
-    punct('<') * punct('/') * ident_match(name) * punct('>').discard()
-}
-
-fn element_with_children<'a>() -> Combinator<impl Parser<'a, TokenTree, Output = Element>> {
-    (element_open() + comb(node).repeat(0..)).map(|(mut el, children)| {
-        el.children.extend(children.into_iter());
-        el
-    }) >> |el: Element| element_close(&el.name.to_string()).expect("closing tag") * unit(el)
-}
-
-fn node(input: &[TokenTree], start: usize) -> pom::Result<(Node, usize)> {
-    (element_single().map(Node::Element)
-        | element_with_children().map(Node::Element)
-        | literal().map(Node::Text)
-        | group().map(Node::Block))
-    .0
-    .parse(input, start)
-}
-
-pub fn expand_html(input: &[TokenTree]) -> pom::Result<TokenStream> {
-    comb(node).parse(input).map(|el| el.into_token_stream())
+pub fn expand_html(input: &[Token]) -> Result<Node, ParseError> {
+    grammar::NodeParser::new().parse(Lexer::new(input))
 }

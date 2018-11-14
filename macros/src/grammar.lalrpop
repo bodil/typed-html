@@ -1,0 +1,287 @@
+use lexer::{Token, to_stream, HtmlParseError, Keyword};
+use html::{Node, Element};
+use declare::Declare;
+use map::StringyMap;
+use proc_macro::{Delimiter, Ident, Literal, Group, TokenTree};
+use lalrpop_util::ParseError;
+
+grammar;
+
+/// Match a B separated list of zero or more A, return a list of A.
+Separated<A, B>: Vec<A> = {
+    <v:(<A> B)*> <e:A?> => match e {
+        None => v,
+        Some(e) => {
+            let mut v = v;
+            v.push(e);
+            v
+        }
+    }
+}
+
+/// Match a B separated list of one or more A, return a list of tokens, including the Bs.
+/// Both A and B must resolve to a Token.
+SeparatedInc<A, B>: Vec<Token> = {
+    <v:(A B)*> <e:A> => {
+        let mut out = Vec::new();
+        for (a, b) in v {
+            out.push(a);
+            out.push(b);
+        }
+        out.push(e);
+        out
+    }
+}
+
+Ident: Ident = IdentToken => {
+    match <> {
+        Token::Ident(ident) => ident,
+        _ => unreachable!()
+    }
+};
+
+Literal: Literal = LiteralToken => {
+    match <> {
+        Token::Literal(literal) => literal,
+        _ => unreachable!()
+    }
+};
+
+GroupToken = {
+    BraceGroupToken,
+    BracketGroupToken,
+    ParenGroupToken,
+};
+
+/// A kebab case HTML ident, converted to a snake case ident.
+HtmlIdent: Ident = {
+    <init:(<Ident> "-")*> <last:Ident> => {
+        let mut init = init;
+        init.push(last);
+        let (span, name) = init.into_iter().fold((None, String::new()), |(span, name), token| {
+            (
+                match span {
+                    None => Some(token.span()),
+                    Some(span) => span.join(token.span()),
+                },
+                if name.is_empty() {
+                    name + &token.to_string()
+                } else {
+                    name + "_" + &token.to_string()
+                }
+            )
+        });
+        Ident::new(&name, span.unwrap())
+    }
+};
+
+
+
+// The HTML macro
+
+/// An approximation of a Rust expression.
+BareExpression: Token = "&"? (IdentToken ":" ":")* SeparatedInc<IdentToken, "."> ParenGroupToken? => {
+    let (reference, left, right, args) = (<>);
+    let mut out = Vec::new();
+    if let Some(reference) = reference {
+        out.push(reference);
+    }
+    for (ident, c1, c2) in left {
+        out.push(ident);
+        out.push(c1);
+        out.push(c2);
+    }
+    out.extend(right);
+    if let Some(args) = args {
+        out.push(args);
+    }
+    Group::new(Delimiter::Brace, to_stream(out)).into()
+};
+
+AttrValue: Token = {
+    LiteralToken,
+    GroupToken,
+    BareExpression,
+};
+
+Attr: (Ident, Token) = <name:HtmlIdent> "=" <value:AttrValue> => (name, value);
+
+Attrs: StringyMap<Ident, TokenTree> = Attr* => <>.into();
+
+OpeningTag: (Ident, StringyMap<Ident, TokenTree>) = "<" <HtmlIdent> <Attrs> ">";
+
+ClosingTag: Ident = "<" "/" <HtmlIdent> ">";
+
+SingleTag: Element = "<" <name:HtmlIdent> <attributes:Attrs> "/" ">" => {
+    Element {
+        name,
+        attributes,
+        children: Vec::new(),
+    }
+};
+
+ParentTag: Element = <opening:OpeningTag> <children:Node*> <closing:ClosingTag> =>? {
+    let (name, attributes) = opening;
+    let closing_name = closing.to_string();
+    if closing_name == name.to_string() {
+        Ok(Element {
+            name,
+            attributes,
+            children,
+        })
+    } else {
+        Err(ParseError::User { error: HtmlParseError {
+            token: closing.into(),
+            message: format!("expected closing tag '</{}>', found '</{}>'", name.to_string(), closing_name),
+        }})
+    }
+};
+
+Element = {
+    SingleTag,
+    ParentTag,
+};
+
+TextNode = Literal;
+
+CodeBlock: Group = BraceGroupToken => match <> {
+    Token::Group(_, group) => group,
+    _ => unreachable!()
+};
+
+pub Node: Node = {
+    Element => Node::Element(<>),
+    TextNode => Node::Text(<>),
+    CodeBlock => Node::Block(<>),
+};
+
+
+
+// The declare macro
+
+TypePath: Vec<Token> = {
+    IdentToken => vec![<>],
+    TypePath ":" ":" IdentToken => {
+        let (mut path, c1, c2, last) = (<>);
+        path.push(c1);
+        path.push(c2);
+        path.push(last);
+        path
+    }
+};
+
+Reference: Vec<Token> = "&" ("'" IdentToken)? => {
+    let (amp, lifetime) = (<>);
+    let mut out = vec![amp];
+    if let Some((tick, ident)) = lifetime {
+        out.push(tick);
+        out.push(ident);
+    }
+    out
+};
+
+TypeArgs: Vec<Token> = {
+    TypeSpec,
+    TypeArgs "," TypeSpec => {
+        let (mut args, comma, last) = (<>);
+        args.push(comma);
+        args.extend(last);
+        args
+    }
+};
+
+TypeArgList: Vec<Token> = "<" TypeArgs ">" => {
+    let (left, mut args, right) = (<>);
+    args.insert(0, left);
+    args.push(right);
+    args
+};
+
+TypeSpec: Vec<Token> = Reference? TypePath TypeArgList? => {
+    let (reference, path, args) = (<>);
+    let mut out = Vec::new();
+    if let Some(reference) = reference {
+        out.extend(reference);
+    }
+    out.extend(path);
+    if let Some(args) = args {
+        out.extend(args);
+    }
+    out
+};
+
+TypeDecl: (Ident, Vec<Token>) = <HtmlIdent> ":" <TypeSpec>;
+
+TypeDecls: Vec<(Ident, Vec<Token>)> = {
+    TypeDecl => vec![<>],
+    <decls:TypeDecls> "," <decl:TypeDecl> => {
+        let mut decls = decls;
+        decls.push(decl);
+        decls
+    },
+};
+
+Attributes = "{" <TypeDecls> ","? "}";
+
+TypePathList = "[" <Separated<TypePath, ",">> "]";
+
+IdentList = "[" <Separated<Ident, ",">> "]";
+
+Groups = "in" <TypePathList>;
+
+Children: (Vec<Ident>, Option<Vec<Token>>) = "with" <req:IdentList?> <opt:TypePath?> => {
+    (req.unwrap_or_else(|| Vec::new()), opt)
+};
+
+Declaration: Declare = <name:HtmlIdent> <attrs:Attributes?> <groups:Groups?> <children:Children?> ";" => {
+    let mut decl = Declare::new(name);
+    if let Some(attrs) = attrs {
+        for (key, value) in attrs {
+            decl.attrs.insert(key, to_stream(value));
+        }
+    }
+    if let Some(groups) = groups {
+        for group in groups {
+            decl.traits.push(to_stream(group));
+        }
+    }
+    if let Some((req_children, opt_children)) = children {
+        decl.req_children = req_children;
+        decl.opt_children = opt_children.map(to_stream);
+    }
+    decl
+};
+
+pub Declarations = Declaration*;
+
+
+
+extern {
+    type Location = usize;
+    type Error = HtmlParseError;
+
+    enum Token {
+        "<" => Token::Punct('<', _),
+        ">" => Token::Punct('>', _),
+        "/" => Token::Punct('/', _),
+        "=" => Token::Punct('=', _),
+        "-" => Token::Punct('-', _),
+        ":" => Token::Punct(':', _),
+        "." => Token::Punct('.', _),
+        "," => Token::Punct(',', _),
+        "&" => Token::Punct('&', _),
+        "'" => Token::Punct('\'', _),
+        ";" => Token::Punct(';', _),
+        "{" => Token::GroupOpen(Delimiter::Brace, _),
+        "}" => Token::GroupClose(Delimiter::Brace, _),
+        "[" => Token::GroupOpen(Delimiter::Bracket, _),
+        "]" => Token::GroupClose(Delimiter::Bracket, _),
+        "in" => Token::Keyword(Keyword::In, _),
+        "with" => Token::Keyword(Keyword::With, _),
+        IdentToken => Token::Ident(_),
+        LiteralToken => Token::Literal(_),
+        ParenGroupToken => Token::Group(Delimiter::Parenthesis, _),
+        BraceGroupToken => Token::Group(Delimiter::Brace, _),
+        BracketGroupToken => Token::Group(Delimiter::Bracket, _),
+    }
+}

@@ -2,7 +2,7 @@
 #![allow(dead_code)]
 
 use std::fmt::Display;
-use typed_html_macros::declare_element;
+use typed_html_macros::{declalrpop_element, declare_element};
 
 use super::types::*;
 
@@ -99,102 +99,106 @@ impl Node for TextNode {
 impl FlowContent for TextNode {}
 impl PhrasingContent for TextNode {}
 
-declare_element!(html {
-    xmlns: Uri,
-} [head, body]);
-declare_element!(head {} [title] MetadataContent);
-declare_element!(body {} [] FlowContent);
+declalrpop_element!{
+    html {
+        xmlns: Uri,
+    } with [head, body];
+    head with [title] MetadataContent;
+    body with FlowContent;
 
-// Metadata content
-declare_element!(base {
-    href: Uri,
-    target: Target,
-} [] [MetadataContent]);
-declare_element!(link {
-    as: Mime,
-    crossorigin: CrossOrigin,
-    href: Uri,
-    hreflang: LanguageTag,
-    media: String, // FIXME media query
-    rel: LinkType,
-    sizes: String, // FIXME
-    title: String, // FIXME
-    type: Mime,
-} [] [MetadataContent]);
-declare_element!(meta {
-    charset: String, // FIXME IANA standard names
-    content: String,
-    http_equiv: String, // FIXME string enum
-    name: String, // FIXME string enum
-} [] [MetadataContent]);
-declare_element!(style {
-    type: Mime,
-    media: String, // FIXME media query
-    nonce: Nonce,
-    title: String, // FIXME
-} [] [MetadataContent] TextNode);
-declare_element!(title {} [] [MetadataContent] TextNode);
+    // Metadata
+    base {
+        href: Uri,
+        target: Target,
+    } in [MetadataContent];
+    link {
+        as: Mime,
+        crossorigin: CrossOrigin,
+        href: Uri,
+        hreflang: LanguageTag,
+        media: String, // FIXME media query
+        rel: LinkType,
+        sizes: String, // FIXME
+        title: String, // FIXME
+        type: Mime,
+    } in [MetadataContent];
+    meta {
+        charset: String, // FIXME IANA standard names
+        content: String,
+        http_equiv: String, // FIXME string enum
+        name: String, // FIXME string enum
+    } in [MetadataContent];
+    style {
+        type: Mime,
+        media: String, // FIXME media query
+        nonce: Nonce,
+        title: String, // FIXME
+    } in [MetadataContent] with TextNode;
+    title in [MetadataContent] with TextNode;
+
+    // Flow
+    a {
+        download: String,
+        href: Uri,
+        hreflang: LanguageTag,
+        ping: SpacedList<Uri>,
+        rel: SpacedList<LinkType>,
+        target: Target,
+        type: Mime,
+    } in [FlowContent, PhrasingContent, InteractiveContent] with FlowContent;
+    abbr in [FlowContent, PhrasingContent] with PhrasingContent;
+    address in [FlowContent] with FlowContent;
+    article in [FlowContent, SectioningContent] with FlowContent;
+    aside in [FlowContent, SectioningContent] with FlowContent;
+    audio {
+        autoplay: bool,
+        controls: bool,
+        crossorigin: CrossOrigin,
+        loop: bool,
+        muted: bool,
+        preload: Preload,
+        src: Uri,
+    } in [FlowContent, PhrasingContent, EmbeddedContent] with MediaContent;
+    b in [FlowContent, PhrasingContent] with PhrasingContent;
+    bdo in [FlowContent, PhrasingContent] with PhrasingContent;
+    bdi in [FlowContent, PhrasingContent] with PhrasingContent;
+    blockquote {
+        cite: Uri,
+    } in [FlowContent] with FlowContent;
+    br in [FlowContent, PhrasingContent];
+    button {
+        autofocus: bool,
+        disabled: bool,
+        form: Id,
+        formaction: Uri,
+        formenctype: FormEncodingType,
+        formmethod: FormMethod,
+        formnovalidate: bool,
+        formtarget: Target,
+        name: Id,
+        type: ButtonType,
+        value: String,
+    } in [FlowContent, PhrasingContent, InteractiveContent, FormContent] with PhrasingContent;
+    canvas {
+        height: usize,
+        width: usize,
+    } in [FlowContent, PhrasingContent, EmbeddedContent] with FlowContent;
+    cite in [FlowContent, PhrasingContent] with PhrasingContent;
+    code in [FlowContent, PhrasingContent] with PhrasingContent;
+    data {
+        value: String,
+    } in [FlowContent, PhrasingContent] with PhrasingContent;
+    datalist in [FlowContent, PhrasingContent] with Element_option;
+    del {
+        cite: Uri,
+        datetime: Datetime,
+    } in [FlowContent, PhrasingContent] with FlowContent;
+    details {
+        open: bool,
+    } in [FlowContent, SectioningContent, InteractiveContent] with [summary] FlowContent;
+}
 
 // Flow content
-declare_element!(a {
-    download: String,
-    href: Uri,
-    hreflang: LanguageTag,
-    ping: SpacedList<Uri>,
-    rel: SpacedList<LinkType>,
-    target: Target,
-    type: Mime,
-} [] [FlowContent, PhrasingContent, InteractiveContent] FlowContent);
-declare_element!(abbr {} [] [FlowContent, PhrasingContent] PhrasingContent);
-declare_element!(address {} [] [FlowContent] FlowContent); // FIXME it has additional constraints on FlowContent
-declare_element!(article {} [] [FlowContent, SectioningContent] FlowContent);
-declare_element!(aside {} [] [FlowContent, SectioningContent] FlowContent);
-declare_element!(audio {
-    autoplay: bool,
-    controls: bool,
-    crossorigin: CrossOrigin,
-    loop: bool,
-    muted: bool,
-    preload: Preload,
-    src: Uri,
-} [] [FlowContent, PhrasingContent, EmbeddedContent] MediaContent);
-declare_element!(b {} [] [FlowContent, PhrasingContent] PhrasingContent);
-declare_element!(bdo {} [] [FlowContent, PhrasingContent] PhrasingContent);
-declare_element!(bdi {} [] [FlowContent, PhrasingContent] PhrasingContent);
-declare_element!(blockquote {
-    cite: Uri,
-} [] [FlowContent] FlowContent);
-declare_element!(br {} [] [FlowContent, PhrasingContent]);
-declare_element!(button {
-    autofocus: bool,
-    disabled: bool,
-    form: Id,
-    formaction: Uri,
-    formenctype: FormEncodingType,
-    formmethod: FormMethod,
-    formnovalidate: bool,
-    formtarget: Target,
-    name: Id,
-    type: ButtonType,
-    value: String,
-} [] [FlowContent, PhrasingContent, InteractiveContent, FormContent] PhrasingContent);
-declare_element!(canvas {
-    height: usize,
-    width: usize,
-} [] [FlowContent, PhrasingContent, EmbeddedContent] FlowContent); // FIXME has additional child constraints
-declare_element!(cite {} [] [FlowContent, PhrasingContent] PhrasingContent);
-declare_element!(code {} [] [FlowContent, PhrasingContent] PhrasingContent);
-declare_element!(data {
-    value: String,
-} [] [FlowContent, PhrasingContent] PhrasingContent);
-declare_element!(datalist {} [] [FlowContent, PhrasingContent] Element_option);
-declare_element!(del {
-    cite: Uri,
-    datetime: Datetime,
-} [] [FlowContent, PhrasingContent] FlowContent);
-declare_element!(details {
-    open: bool,
-} [summary] [FlowContent, SectioningContent, InteractiveContent] FlowContent);
 declare_element!(dfn {} [] [FlowContent, PhrasingContent] PhrasingContent);
 declare_element!(div {} [] [FlowContent] FlowContent);
 declare_element!(dl {} [] [FlowContent] DescriptionListContent);
