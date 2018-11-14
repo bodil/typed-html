@@ -1,4 +1,5 @@
-use lexer::{Token, to_stream, HtmlParseError, Keyword};
+use lexer::{self, Token, to_stream};
+use error::HtmlParseError;
 use html::{Node, Element};
 use declare::Declare;
 use map::StringyMap;
@@ -130,9 +131,9 @@ ParentTag: Element = <opening:OpeningTag> <children:Node*> <closing:ClosingTag> 
             children,
         })
     } else {
-        Err(ParseError::User { error: HtmlParseError {
-            token: closing.into(),
-            message: format!("expected closing tag '</{}>', found '</{}>'", name.to_string(), closing_name),
+        Err(ParseError::User { error: HtmlParseError::TagMismatch {
+            open: name.into(),
+            close: closing.into(),
         }})
     }
 };
@@ -260,7 +261,7 @@ extern {
     type Location = usize;
     type Error = HtmlParseError;
 
-    enum Token {
+    enum lexer::Token {
         "<" => Token::Punct('<', _),
         ">" => Token::Punct('>', _),
         "/" => Token::Punct('/', _),
@@ -276,8 +277,8 @@ extern {
         "}" => Token::GroupClose(Delimiter::Brace, _),
         "[" => Token::GroupOpen(Delimiter::Bracket, _),
         "]" => Token::GroupClose(Delimiter::Bracket, _),
-        "in" => Token::Keyword(Keyword::In, _),
-        "with" => Token::Keyword(Keyword::With, _),
+        "in" => Token::Keyword(lexer::Keyword::In, _),
+        "with" => Token::Keyword(lexer::Keyword::With, _),
         IdentToken => Token::Ident(_),
         LiteralToken => Token::Literal(_),
         ParenGroupToken => Token::Group(Delimiter::Parenthesis, _),

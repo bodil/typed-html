@@ -3,7 +3,8 @@ use proc_macro::{
 };
 
 use config::required_children;
-use lexer::{Lexer, ParseError, Token};
+use error::ParseError;
+use lexer::{Lexer, Token};
 use map::StringyMap;
 use parser::grammar;
 

@@ -8,8 +8,8 @@ build = "build.rs"
 proc-macro = true
 
 [dependencies]
-pom = "2.0.1"
 lalrpop-util = "0.16.1"
+ansi_term = "0.11.0"
 
 [build-dependencies]
 lalrpop = "0.16.1"

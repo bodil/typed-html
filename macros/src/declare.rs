@@ -1,11 +1,10 @@
-use pom::combinator::*;
-use pom::Parser;
-use proc_macro::{quote, Group, Ident, Literal, TokenStream, TokenTree};
+use proc_macro::{quote, Ident, Literal, TokenStream, TokenTree};
 
 use config::global_attrs;
-use lexer::{Lexer, ParseError, Token};
+use error::ParseError;
+use lexer::{Lexer, Token};
 use map::StringyMap;
-use parser::{self, *};
+use parser;
 
 // State
 
@@ -327,60 +326,6 @@ impl Declare {
     }
 }
 
-// Parser
-
-fn declare_attrs<'a>() -> Combinator<impl Parser<'a, TokenTree, Output = Vec<(Ident, TokenStream)>>>
-{
-    group().map(|group: Group| -> Vec<(Ident, TokenStream)> {
-        let attr = ident() - punct(':') + type_spec() - punct(',').opt();
-        let parser = attr.repeat(0..);
-        let input: Vec<TokenTree> = group.stream().into_iter().collect();
-        // FIXME the borrow checker won't let me use plain &input, it seems like a bug.
-        // It works in Rust 2018, so please get rid of this unsafe block when it stabilises.
-        parser
-            .parse(unsafe { &*(input.as_slice() as *const _) })
-            .unwrap()
-    })
-}
-
-fn declare_children<'a>() -> Combinator<impl Parser<'a, TokenTree, Output = Vec<Ident>>> {
-    group().map(|group: Group| {
-        let input: Vec<TokenTree> = group.stream().into_iter().collect();
-        let children = (ident() - punct(',').opt()).repeat(0..);
-        let result = children.parse(&input);
-        result.unwrap()
-    })
-}
-
-fn declare_traits<'a>() -> Combinator<impl Parser<'a, TokenTree, Output = Vec<TokenStream>>> {
-    group().map(|group: Group| {
-        let input: Vec<TokenTree> = group.stream().into_iter().collect();
-        let traits = (type_spec() - punct(',').opt()).repeat(0..);
-        let result = traits.parse(&input);
-        result.unwrap()
-    })
-}
-
-fn declare<'a>() -> Combinator<impl Parser<'a, TokenTree, Output = Declare>> {
-    (ident() + declare_attrs() + declare_children() + declare_traits().opt() + type_spec().opt())
-        .map(|((((name, attrs), children), traits), child_type)| {
-            let mut declare = Declare::new(name);
-            for (key, value) in attrs {
-                declare.attrs.insert(key, value);
-            }
-            for child in children {
-                declare.req_children.push(child);
-            }
-            declare.opt_children = child_type;
-            declare.traits = traits.unwrap_or_default();
-            declare
-        })
-}
-
-pub fn expand_declare(input: &[TokenTree]) -> pom::Result<TokenStream> {
-    declare().parse(input).map(|decl| decl.into_token_stream())
-}
-
-pub fn expand_declare_lalrpop(input: &[Token]) -> Result<Vec<Declare>, ParseError> {
+pub fn expand_declare(input: &[Token]) -> Result<Vec<Declare>, ParseError> {
     parser::grammar::DeclarationsParser::new().parse(Lexer::new(input))
 }

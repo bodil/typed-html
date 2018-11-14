@@ -1,10 +1,7 @@
-use lalrpop_util::ParseError::*;
-use proc_macro::{
-    Delimiter, Diagnostic, Group, Ident, Level, Literal, Punct, Span, TokenStream, TokenTree,
-};
+use error::HtmlParseError;
+use proc_macro::{Delimiter, Group, Ident, Literal, Punct, Span, TokenStream, TokenTree};
 
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
-pub type ParseError = lalrpop_util::ParseError<usize, Token, HtmlParseError>;
 
 #[derive(Clone, Debug)]
 pub enum Token {
@@ -105,75 +102,6 @@ pub fn keywordise(tokens: Vec<Token>) -> Vec<Token> {
             t => t,
         })
         .collect()
-}
-
-#[derive(Debug)]
-pub struct HtmlParseError {
-    pub token: Token,
-    pub message: String,
-}
-
-fn pprint_token(token: &str) -> &str {
-    match token {
-        "BraceGroupToken" => "code block",
-        "LiteralToken" => "literal",
-        "IdentToken" => "identifier",
-        a => a,
-    }
-}
-
-fn pprint_tokens(tokens: &[String]) -> String {
-    let tokens: Vec<&str> = tokens.iter().map(|s| pprint_token(&s)).collect();
-    if tokens.len() > 1 {
-        let start = tokens[..tokens.len() - 1].join(", ");
-        let end = &tokens[tokens.len() - 1];
-        format!("{} or {}", start, end)
-    } else {
-        tokens[0].to_string()
-    }
-}
-
-fn is_in_node_position(tokens: &[String]) -> bool {
-    use std::collections::HashSet;
-    let input: HashSet<&str> = tokens.iter().map(String::as_str).collect();
-    let output: HashSet<&str> = ["\"<\"", "BraceGroupToken", "LiteralToken"]
-        .iter()
-        .cloned()
-        .collect();
-    input == output
-}
-
-pub fn parse_error(input: &[Token], error: &ParseError) -> Diagnostic {
-    match error {
-        InvalidToken { location } => {
-            let loc = &input[*location];
-            Diagnostic::spanned(loc.span(), Level::Error, "invalid token")
-        }
-        UnrecognizedToken {
-            token: None,
-            expected,
-        } => panic!(
-            "unexpected end of macro: expecting {}",
-            pprint_tokens(&expected)
-        ),
-        UnrecognizedToken {
-            token: Some((_, token, _)),
-            expected,
-        } => {
-            let mut msg = format!("expected {}", pprint_tokens(&expected));
-            if is_in_node_position(expected) && token.is_ident() {
-                // special case: you probably meant to quote that text
-                msg += "; looks like you forgot to put \"quotes\" around your text nodes";
-            }
-            Diagnostic::spanned(token.span(), Level::Error, msg)
-        }
-        ExtraToken {
-            token: (_, token, _),
-        } => Diagnostic::spanned(token.span(), Level::Error, "superfluous token"),
-        User { error } => {
-            Diagnostic::spanned(error.token.span(), Level::Error, error.message.to_owned())
-        }
-    }
 }
 
 pub fn to_stream<I: IntoIterator<Item = Token>>(tokens: I) -> TokenStream {
