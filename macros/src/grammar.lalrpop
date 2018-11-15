@@ -198,7 +198,28 @@ TypeArgList: Vec<Token> = "<" TypeArgs ">" => {
     args
 };
 
-TypeSpec: Vec<Token> = Reference? TypePath TypeArgList? => {
+FnReturnType: Vec<Token> = "-" ">" TypeSpec => {
+    let (dash, right, spec) = (<>);
+    let mut out = vec![dash, right];
+    out.extend(spec);
+    out
+};
+
+FnArgList: Vec<Token> = ParenGroupToken FnReturnType? => {
+    let (args, rt) = (<>);
+    let mut out = vec![args];
+    if let Some(rt) = rt {
+        out.extend(rt);
+    }
+    out
+};
+
+TypeArgSpec = {
+    TypeArgList,
+    FnArgList,
+};
+
+TypeSpec: Vec<Token> = Reference? TypePath TypeArgSpec? => {
     let (reference, path, args) = (<>);
     let mut out = Vec::new();
     if let Some(reference) = reference {

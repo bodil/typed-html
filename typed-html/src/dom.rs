@@ -1,11 +1,9 @@
 //! DOM and virtual DOM types.
 
-#![allow(non_camel_case_types)]
-#![allow(dead_code)]
-
 use std::fmt::Display;
 
 use elements::{FlowContent, PhrasingContent};
+use events::Events;
 use htmlescape::encode_minimal;
 
 /// An untyped representation of an HTML node.
@@ -23,18 +21,17 @@ use htmlescape::encode_minimal;
 /// ```
 ///
 /// [Node]: trait.Node.html
-#[derive(Clone, Debug)]
-pub enum VNode {
-    Text(String),
-    Element(VElement),
+pub enum VNode<'a> {
+    Text(&'a str),
+    Element(VElement<'a>),
 }
 
 /// An untyped representation of an HTML element.
-#[derive(Clone, Debug)]
-pub struct VElement {
+pub struct VElement<'a> {
     pub name: &'static str,
-    pub attributes: Vec<(String, String)>,
-    pub children: Vec<VNode>,
+    pub attributes: Vec<(&'static str, String)>,
+    pub events: &'a mut Events,
+    pub children: Vec<VNode<'a>>,
 }
 
 /// Trait for rendering a typed HTML node.
@@ -53,7 +50,7 @@ pub trait Node: Display {
     /// Render the node into a [`VNode`][VNode] tree.
     ///
     /// [VNode]: enum.VNode.html
-    fn vnode(&self) -> VNode;
+    fn vnode<'a>(&'a mut self) -> VNode<'a>;
 }
 
 /// Trait for querying a typed HTML element.
@@ -79,7 +76,7 @@ pub trait Element: Node {
     ///
     /// This will convert attribute values into strings and return a vector of
     /// key/value pairs.
-    fn attributes(&self) -> Vec<(String, String)>;
+    fn attributes(&self) -> Vec<(&'static str, String)>;
 }
 
 /// An HTML text node.
@@ -134,10 +131,11 @@ impl Display for TextNode {
 }
 
 impl Node for TextNode {
-    fn vnode(&self) -> VNode {
-        VNode::Text(self.0.clone())
+    fn vnode<'a>(&'a mut self) -> VNode<'a> {
+        VNode::Text(&self.0)
     }
 }
+
 impl IntoIterator for TextNode {
     type Item = TextNode;
     type IntoIter = std::vec::IntoIter<TextNode>;

@@ -1,6 +1,6 @@
-use proc_macro::{quote, Ident, Literal, TokenStream, TokenTree};
+use proc_macro::{quote, Ident, Literal, Span, TokenStream, TokenTree};
 
-use config::global_attrs;
+use config::{global_attrs, ATTR_EVENTS};
 use error::ParseError;
 use lexer::{Lexer, Token};
 use map::StringyMap;
@@ -52,8 +52,7 @@ impl Declare {
         self.req_children.iter().map(|child| {
             let child_name: TokenTree =
                 Ident::new(&format!("child_{}", child.to_string()), child.span()).into();
-            let child_type: TokenTree =
-                Ident::new(&format!("{}", child.to_string()), child.span()).into();
+            let child_type: TokenTree = Ident::new(&child.to_string(), child.span()).into();
             let child_str = Literal::string(&child.to_string()).into();
             (child_name, child_type, child_str)
         })
@@ -103,7 +102,8 @@ impl Declare {
         quote!(
             pub struct $elem_name {
                 pub attrs: $attr_type_name,
-                pub data_attributes: Vec<(String, String)>,
+                pub data_attributes: Vec<(&'static str, String)>,
+                pub events: ::events::Events,
                 $body
             }
         )
@@ -128,6 +128,7 @@ impl Declare {
             attrs: $attr_type_name { $attrs },
         ));
         body.extend(quote!(data_attributes: Vec::new(),));
+
         for (child_name, _, _) in self.req_children() {
             body.extend(quote!( $child_name, ));
         }
@@ -139,6 +140,7 @@ impl Declare {
             impl $elem_name {
                 pub fn new($args) -> Self {
                     $elem_name {
+                        events: ::events::Events::default(),
                         $body
                     }
                 }
@@ -156,7 +158,7 @@ impl Declare {
         }
         let mut opt_children = TokenStream::new();
         if self.opt_children.is_some() {
-            opt_children.extend(quote!(for child in &self.children {
+            opt_children.extend(quote!(for child in &mut self.children {
                 children.push(child.vnode());
             }));
         }
@@ -165,7 +167,7 @@ impl Declare {
         for (attr_name, _, attr_str) in self.attrs() {
             push_attrs.extend(quote!(
                 if let Some(ref value) = self.attrs.$attr_name {
-                    attributes.push(($attr_str.to_string(), value.to_string()));
+                    attributes.push(($attr_str, value.to_string()));
                 }
             ));
         }
@@ -173,9 +175,7 @@ impl Declare {
         quote!(
             let mut attributes = Vec::new();
             $push_attrs
-            for (key, value) in &self.data_attributes {
-                attributes.push((format!("data-{}", key), value.to_string()));
-            }
+            attributes.extend(self.data_attributes.clone());
 
             let mut children = Vec::new();
             $req_children
@@ -184,6 +184,7 @@ impl Declare {
             ::dom::VNode::Element(::dom::VElement {
                 name: $elem_name,
                 attributes,
+                events: &mut self.events,
                 children
             })
         )
@@ -194,7 +195,7 @@ impl Declare {
         let vnode = self.impl_vnode();
         quote!(
             impl ::dom::Node for $elem_name {
-                fn vnode(&self) -> ::dom::VNode {
+                fn vnode<'a>(&'a mut self) -> ::dom::VNode<'a> {
                     $vnode
                 }
             }
@@ -215,7 +216,7 @@ impl Declare {
         for (attr_name, _, attr_str) in self.attrs() {
             push_attrs.extend(quote!(
                 if let Some(ref value) = self.attrs.$attr_name {
-                    out.push(($attr_str.to_string(), value.to_string()));
+                    out.push(($attr_str, value.to_string()));
                 }
             ));
         }
@@ -234,11 +235,11 @@ impl Declare {
                     &[ $reqs ]
                 }
 
-                fn attributes(&self) -> Vec<(String, String)> {
+                fn attributes(&self) -> Vec<(&'static str, String)> {
                     let mut out = Vec::new();
                     $push_attrs
                     for (key, value) in &self.data_attributes {
-                        out.push((format!("data-{}", key), value.to_string()));
+                        out.push((key, value.to_string()));
                     }
                     out
                 }
@@ -308,6 +309,18 @@ impl Declare {
             ));
         }
 
+        let mut print_events = TokenStream::new();
+        for event in ATTR_EVENTS {
+            let event_name = TokenTree::Ident(Ident::new(event, Span::call_site()));
+            let event_str = TokenTree::Literal(Literal::string(event));
+            print_events.extend(quote!(
+                if let Some(ref value) = self.events.$event_name {
+                    write!(f, " on{}=\"{}\"", $event_str,
+                           ::htmlescape::encode_attribute(&value.render().unwrap()))?;
+                }
+            ));
+        }
+
         quote!(
             impl std::fmt::Display for $elem_name {
                 fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
@@ -317,6 +330,7 @@ impl Declare {
                         write!(f, " data-{}=\"{}\"", key,
                                ::htmlescape::encode_attribute(&value))?;
                     }
+                    $print_events
                     $print_children
                 }
             }

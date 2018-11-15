@@ -31,6 +31,7 @@ fn index() -> Content<String> {
                     })
                 }
                 <p>"<img src=\"javascript:alert('pwned lol')\">"</p>
+                <button onclick="alert('She is not a cat.')">"Click me!"</button>
             </body>
         </html>
     ).to_string())

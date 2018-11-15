@@ -117,7 +117,7 @@ pub fn unroll_stream(stream: TokenStream, deep: bool) -> Vec<Token> {
             TokenTree::Ident(ident) => vec.push(ident.into()),
             TokenTree::Literal(literal) => vec.push(literal.into()),
             TokenTree::Punct(punct) => vec.push(punct.into()),
-            TokenTree::Group(ref group) if deep => {
+            TokenTree::Group(ref group) if deep && group.delimiter() != Delimiter::Parenthesis => {
                 vec.push(Token::GroupOpen(group.delimiter(), group.span()));
                 let sub = unroll_stream(group.stream(), deep);
                 vec.extend(sub);

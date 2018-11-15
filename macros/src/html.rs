@@ -2,7 +2,7 @@ use proc_macro::{
     quote, Delimiter, Diagnostic, Group, Ident, Level, Literal, TokenStream, TokenTree,
 };
 
-use config::required_children;
+use config::{required_children, ATTR_EVENTS};
 use error::ParseError;
 use lexer::{Lexer, Token};
 use map::StringyMap;
@@ -68,10 +68,29 @@ fn extract_data_attrs(attrs: &mut StringyMap<Ident, TokenTree>) -> StringyMap<St
         let prefix = "data_";
         if key_name.starts_with(prefix) {
             let value = attrs.remove(&key).unwrap();
-            data.insert(key_name[prefix.len()..].to_string(), value);
+            data.insert(format!("data-{}", &key_name[prefix.len()..]), value);
         }
     }
     data
+}
+
+fn extract_event_handlers(
+    attrs: &mut StringyMap<Ident, TokenTree>,
+) -> StringyMap<Ident, TokenTree> {
+    let mut events = StringyMap::new();
+    let keys: Vec<Ident> = attrs.keys().cloned().collect();
+    for key in keys {
+        let key_name = key.to_string();
+        let prefix = "on";
+        if key_name.starts_with(prefix) {
+            let event_name = &key_name[prefix.len()..];
+            if ATTR_EVENTS.binary_search(&event_name).is_ok() {
+                let value = attrs.remove(&key).unwrap();
+                events.insert(Ident::new_raw(event_name, key.span()), value);
+            }
+        }
+    }
+    events
 }
 
 fn process_value(value: &TokenTree) -> TokenStream {
@@ -113,6 +132,7 @@ impl Element {
             .emit();
             panic!();
         }
+        let events = extract_event_handlers(&mut self.attributes);
         let data_attrs = extract_data_attrs(&mut self.attributes);
         let attrs = self.attributes.iter().map(|(key, value)| {
             (
@@ -164,10 +184,18 @@ impl Element {
             .map(|(k, v)| (TokenTree::from(Literal::string(&k)), v.clone()))
         {
             body.extend(quote!(
-                element.data_attributes.push(($key.into(), $value.into()));
+                element.data_attributes.push(($key, $value.into()));
             ));
         }
         body.extend(opt_children);
+
+        for (key, value) in events.iter() {
+            let key = TokenTree::Ident(key.clone());
+            let value = process_value(value);
+            body.extend(quote!(
+                element.events.$key = Some(Box::new($value));
+            ));
+        }
 
         let mut args = TokenStream::new();
         for arg in req_children {

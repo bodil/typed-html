@@ -35,9 +35,9 @@ fn main() {
                     })
                 }
                 <p>"<img src=\"javascript:alert('pwned lol')\">"</p>
+                <button onclick="alert('lol')">"lol"</button>
             </body>
         </html>
     );
     println!("{}", doc.to_string());
-    println!("{:?}", doc.vnode());
 }
