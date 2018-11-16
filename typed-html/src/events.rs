@@ -112,6 +112,10 @@ pub trait EventHandler<EventType> {
     fn render(&self) -> Option<String>;
 }
 
+pub trait IntoEventHandler<E> {
+    fn into_event_handler(self) -> Box<dyn EventHandler<E>>;
+}
+
 pub struct EFn<F, E>(Option<F>, PhantomData<E>);
 
 impl<F, E> EFn<F, E>
@@ -121,6 +125,26 @@ where
 {
     pub fn new(f: F) -> Self {
         EFn(Some(f), PhantomData)
+    }
+}
+
+impl<F, E> IntoEventHandler<E> for EFn<F, E>
+where
+    F: FnMut(E) + 'static,
+    E: ConcreteEvent + 'static,
+{
+    fn into_event_handler(self) -> Box<dyn EventHandler<E>> {
+        Box::new(self)
+    }
+}
+
+impl<F, E> IntoEventHandler<E> for F
+where
+    F: FnMut(E) + 'static,
+    E: ConcreteEvent + 'static,
+{
+    fn into_event_handler(self) -> Box<dyn EventHandler<E>> {
+        Box::new(EFn::new(self))
     }
 }
 
@@ -139,12 +163,18 @@ where
     }
 }
 
-impl<'a, EventType> EventHandler<EventType> for &'a str {
+impl<E> EventHandler<E> for &'static str {
     fn attach(&mut self, _target: &Element) -> EventListenerHandle {
         panic!("Silly wabbit, strings as event handlers are only for printing.");
     }
 
     fn render(&self) -> Option<String> {
         Some(self.to_string())
+    }
+}
+
+impl<E> IntoEventHandler<E> for &'static str {
+    fn into_event_handler(self) -> Box<dyn EventHandler<E>> {
+        Box::new(self)
     }
 }

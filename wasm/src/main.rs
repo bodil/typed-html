@@ -6,9 +6,9 @@ extern crate typed_html;
 extern crate typed_html_macros;
 
 use stdweb::web::{self, Element, IElement, INode};
-use typed_html::for_events;
 use typed_html::dom::{Node, VNode};
-use typed_html::events::{EFn, Events};
+use typed_html::events::Events;
+use typed_html::for_events;
 use typed_html_macros::html;
 
 fn install_handlers(target: &Element, handlers: &mut Events) {
@@ -47,7 +47,7 @@ fn main() {
                 ". She is a "<em>"human girl"</em>"."
             </p>
             <p>
-                <button onclick=EFn::new(|_event| web::alert("Hello Joe!"))>
+                <button onclick=(|_event| web::alert("Hello Joe!"))>
                     "Call Joe"
                 </button>
             </p>
