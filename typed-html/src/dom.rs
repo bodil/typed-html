@@ -1,7 +1,9 @@
 //! DOM and virtual DOM types.
 
 use std::fmt::Display;
+use std::marker::PhantomData;
 
+use super::OutputType;
 use elements::{FlowContent, PhrasingContent};
 use events::Events;
 use htmlescape::encode_minimal;
@@ -21,17 +23,17 @@ use htmlescape::encode_minimal;
 /// ```
 ///
 /// [Node]: trait.Node.html
-pub enum VNode<'a> {
+pub enum VNode<'a, T: OutputType> {
     Text(&'a str),
-    Element(VElement<'a>),
+    Element(VElement<'a, T>),
 }
 
 /// An untyped representation of an HTML element.
-pub struct VElement<'a> {
+pub struct VElement<'a, T: OutputType> {
     pub name: &'static str,
     pub attributes: Vec<(&'static str, String)>,
-    pub events: &'a mut Events,
-    pub children: Vec<VNode<'a>>,
+    pub events: &'a mut Events<T>,
+    pub children: Vec<VNode<'a, T>>,
 }
 
 /// Trait for rendering a typed HTML node.
@@ -46,11 +48,11 @@ pub struct VElement<'a> {
 /// [TextNode]: struct.TextNode.html
 /// [elements]: ../elements/index.html
 /// [vnode]: #tymethod.vnode
-pub trait Node: Display {
+pub trait Node<T: OutputType>: Display {
     /// Render the node into a [`VNode`][VNode] tree.
     ///
     /// [VNode]: enum.VNode.html
-    fn vnode<'a>(&'a mut self) -> VNode<'a>;
+    fn vnode<'a>(&'a mut self) -> VNode<'a, T>;
 }
 
 /// Trait for querying a typed HTML element.
@@ -58,7 +60,7 @@ pub trait Node: Display {
 /// All [HTML elements][elements] implement this.
 ///
 /// [elements]: ../elements/index.html
-pub trait Element: Node {
+pub trait Element<T: OutputType>: Node<T> {
     /// Get the name of the element.
     fn name() -> &'static str;
     /// Get a list of the attribute names for this element.
@@ -80,7 +82,7 @@ pub trait Element: Node {
 }
 
 /// An HTML text node.
-pub struct TextNode(String);
+pub struct TextNode<T: OutputType>(String, PhantomData<T>);
 
 /// Macro for creating text nodes.
 ///
@@ -112,7 +114,7 @@ macro_rules! text {
     };
 }
 
-impl TextNode {
+impl<T: OutputType> TextNode<T> {
     /// Construct a text node.
     ///
     /// The preferred way to construct a text node is with the [`text!()`][text]
@@ -120,39 +122,39 @@ impl TextNode {
     ///
     /// [text]: ../macro.text.html
     pub fn new<S: Into<String>>(s: S) -> Self {
-        TextNode(s.into())
+        TextNode(s.into(), PhantomData)
     }
 }
 
-impl Display for TextNode {
+impl<T: OutputType> Display for TextNode<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         f.write_str(&encode_minimal(&self.0))
     }
 }
 
-impl Node for TextNode {
-    fn vnode<'a>(&'a mut self) -> VNode<'a> {
+impl<T: OutputType> Node<T> for TextNode<T> {
+    fn vnode(&'_ mut self) -> VNode<'_, T> {
         VNode::Text(&self.0)
     }
 }
 
-impl IntoIterator for TextNode {
-    type Item = TextNode;
-    type IntoIter = std::vec::IntoIter<TextNode>;
+impl<T: OutputType> IntoIterator for TextNode<T> {
+    type Item = TextNode<T>;
+    type IntoIter = std::vec::IntoIter<TextNode<T>>;
 
     fn into_iter(self) -> Self::IntoIter {
         vec![self].into_iter()
     }
 }
 
-impl IntoIterator for Box<TextNode> {
-    type Item = Box<TextNode>;
-    type IntoIter = std::vec::IntoIter<Box<TextNode>>;
+impl<T: OutputType> IntoIterator for Box<TextNode<T>> {
+    type Item = Box<TextNode<T>>;
+    type IntoIter = std::vec::IntoIter<Box<TextNode<T>>>;
 
     fn into_iter(self) -> Self::IntoIter {
         vec![self].into_iter()
     }
 }
 
-impl FlowContent for TextNode {}
-impl PhrasingContent for TextNode {}
+impl<T: OutputType> FlowContent<T> for TextNode<T> {}
+impl<T: OutputType> PhrasingContent<T> for TextNode<T> {}

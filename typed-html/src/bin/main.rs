@@ -5,7 +5,7 @@
 extern crate typed_html;
 extern crate typed_html_macros;
 
-use typed_html::dom::Node;
+use typed_html::dom::TextNode;
 use typed_html::types::*;
 use typed_html_macros::html;
 
@@ -14,7 +14,7 @@ struct Foo {
 }
 
 fn main() {
-    let the_big_question = text!("How does she eat?");
+    let the_big_question: Box<TextNode<String>> = text!("How does she eat?");
     let splain_class = "well-actually";
     let wibble = Foo { foo: "welp" };
     let doc = html!(

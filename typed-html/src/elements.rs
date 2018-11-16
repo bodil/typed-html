@@ -2,29 +2,30 @@
 
 use typed_html_macros::declare_elements;
 
+use super::OutputType;
 use dom::{Node, TextNode};
 use types::*;
 
 // Marker traits for element content groups
 
-pub trait MetadataContent: Node {}
-pub trait FlowContent: Node {}
-pub trait SectioningContent: Node {}
-pub trait HeadingContent: Node {}
+pub trait MetadataContent<T: OutputType>: Node<T> {}
+pub trait FlowContent<T: OutputType>: Node<T> {}
+pub trait SectioningContent<T: OutputType>: Node<T> {}
+pub trait HeadingContent<T: OutputType>: Node<T> {}
 // Phrasing content seems to be entirely a subclass of FlowContent
-pub trait PhrasingContent: FlowContent {}
-pub trait EmbeddedContent: Node {}
-pub trait InteractiveContent: Node {}
-pub trait FormContent: Node {}
+pub trait PhrasingContent<T: OutputType>: FlowContent<T> {}
+pub trait EmbeddedContent<T: OutputType>: Node<T> {}
+pub trait InteractiveContent<T: OutputType>: Node<T> {}
+pub trait FormContent<T: OutputType>: Node<T> {}
 
 // Traits for elements that are more picky about their children
-pub trait DescriptionListContent: Node {}
-pub trait HGroupContent: Node {}
-pub trait MapContent: Node {}
-pub trait MediaContent: Node {} // <audio> and <video>
-pub trait SelectContent: Node {}
-pub trait TableContent: Node {}
-pub trait TableColumnContent: Node {}
+pub trait DescriptionListContent<T: OutputType>: Node<T> {}
+pub trait HGroupContent<T: OutputType>: Node<T> {}
+pub trait MapContent<T: OutputType>: Node<T> {}
+pub trait MediaContent<T: OutputType>: Node<T> {} // <audio> and <video>
+pub trait SelectContent<T: OutputType>: Node<T> {}
+pub trait TableContent<T: OutputType>: Node<T> {}
+pub trait TableColumnContent<T: OutputType>: Node<T> {}
 
 declare_elements!{
     html {

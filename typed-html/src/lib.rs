@@ -17,3 +17,13 @@ pub mod dom;
 pub mod elements;
 pub mod events;
 pub mod types;
+
+/// Marker trait for outputs
+pub trait OutputType {}
+
+/// String output
+impl OutputType for String {}
+
+/// DOM output
+pub struct DOM;
+impl OutputType for DOM {}

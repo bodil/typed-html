@@ -1,14 +1,28 @@
+//! Event handlers.
+
 use std::marker::PhantomData;
 use stdweb::web::event::*;
 use stdweb::web::{Element, EventListenerHandle, IEventTarget};
 
+use super::{OutputType, DOM};
+
 macro_rules! declare_events {
     ($($name:ident : $type:ty ,)*) => {
-        #[derive(Default)]
-        pub struct Events {
+        /// Container type for DOM events.
+        pub struct Events<T: OutputType> {
             $(
-                pub $name: Option<Box<dyn EventHandler<$type>>>,
+                pub $name: Option<Box<dyn EventHandler<T, $type>>>,
             )*
+        }
+
+        impl<T: OutputType> Default for Events<T> {
+            fn default() -> Self {
+                Events {
+                    $(
+                        $name: None,
+                    )*
+                }
+            }
         }
 
         #[macro_export]
@@ -94,7 +108,7 @@ declare_events! {
 }
 
 /// Trait for event handlers.
-pub trait EventHandler<EventType> {
+pub trait EventHandler<T: OutputType, E> {
     /// Build a callback function from this event handler.
     ///
     /// Returns `None` is this event handler can't be used to build a callback
@@ -112,10 +126,13 @@ pub trait EventHandler<EventType> {
     fn render(&self) -> Option<String>;
 }
 
-pub trait IntoEventHandler<E> {
-    fn into_event_handler(self) -> Box<dyn EventHandler<E>>;
+/// Trait for building event handlers from other types.
+pub trait IntoEventHandler<T: OutputType, E> {
+    /// Construct an event handler from an instance of the source type.
+    fn into_event_handler(self) -> Box<dyn EventHandler<T, E>>;
 }
 
+/// Wrapper type for closures as event handlers.
 pub struct EFn<F, E>(Option<F>, PhantomData<E>);
 
 impl<F, E> EFn<F, E>
@@ -128,27 +145,27 @@ where
     }
 }
 
-impl<F, E> IntoEventHandler<E> for EFn<F, E>
+impl<F, E> IntoEventHandler<DOM, E> for EFn<F, E>
 where
     F: FnMut(E) + 'static,
     E: ConcreteEvent + 'static,
 {
-    fn into_event_handler(self) -> Box<dyn EventHandler<E>> {
+    fn into_event_handler(self) -> Box<dyn EventHandler<DOM, E>> {
         Box::new(self)
     }
 }
 
-impl<F, E> IntoEventHandler<E> for F
+impl<F, E> IntoEventHandler<DOM, E> for F
 where
     F: FnMut(E) + 'static,
     E: ConcreteEvent + 'static,
 {
-    fn into_event_handler(self) -> Box<dyn EventHandler<E>> {
+    fn into_event_handler(self) -> Box<dyn EventHandler<DOM, E>> {
         Box::new(EFn::new(self))
     }
 }
 
-impl<F, E> EventHandler<E> for EFn<F, E>
+impl<F, E> EventHandler<DOM, E> for EFn<F, E>
 where
     F: FnMut(E) + 'static,
     E: ConcreteEvent,
@@ -163,7 +180,7 @@ where
     }
 }
 
-impl<E> EventHandler<E> for &'static str {
+impl<E> EventHandler<String, E> for &'static str {
     fn attach(&mut self, _target: &Element) -> EventListenerHandle {
         panic!("Silly wabbit, strings as event handlers are only for printing.");
     }
@@ -173,8 +190,8 @@ impl<E> EventHandler<E> for &'static str {
     }
 }
 
-impl<E> IntoEventHandler<E> for &'static str {
-    fn into_event_handler(self) -> Box<dyn EventHandler<E>> {
+impl<E> IntoEventHandler<String, E> for &'static str {
+    fn into_event_handler(self) -> Box<dyn EventHandler<String, E>> {
         Box::new(self)
     }
 }

@@ -4,16 +4,29 @@ extern crate rocket;
 extern crate typed_html;
 extern crate typed_html_macros;
 
-use rocket::http::ContentType;
-use rocket::response::Content;
-use rocket::{get, routes};
-use typed_html::text;
+use rocket::http::{ContentType, Status};
+use rocket::response::{Responder, Result};
+use rocket::{get, routes, Request, Response};
+use std::io::Cursor;
 use typed_html::types::LinkType;
+use typed_html::{dom::Node, text};
 use typed_html_macros::html;
 
+struct Html(Box<Node<String>>);
+
+impl<'r> Responder<'r> for Html {
+    fn respond_to(self, _request: &Request) -> Result<'r> {
+        Ok(Response::build()
+            .status(Status::Ok)
+            .header(ContentType::HTML)
+            .sized_body(Cursor::new(self.0.to_string()))
+            .finalize())
+    }
+}
+
 #[get("/")]
-fn index() -> Content<String> {
-    Content(ContentType::HTML, html!(
+fn index() -> Html {
+    Html(html!(
         <html>
             <head>
                 <title>"Hello Kitty!"</title>
@@ -34,7 +47,7 @@ fn index() -> Content<String> {
                 <button onclick="alert('She is not a cat.')">"Click me!"</button>
             </body>
         </html>
-    ).to_string())
+    ))
 }
 
 fn main() {

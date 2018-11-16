@@ -91,19 +91,20 @@ impl Declare {
         let mut body = TokenStream::new();
 
         for (child_name, child_type, _) in self.req_children() {
-            body.extend(quote!( pub $child_name: Box<$child_type>, ));
+            body.extend(quote!( pub $child_name: Box<$child_type<T>>, ));
         }
 
         if let Some(child_constraint) = &self.opt_children {
             let child_constraint = child_constraint.clone();
-            body.extend(quote!(pub children: Vec<Box<$child_constraint>>,));
+            body.extend(quote!(pub children: Vec<Box<$child_constraint<T>>>,));
         }
 
         quote!(
-            pub struct $elem_name {
+            pub struct $elem_name<T> where T: ::OutputType {
+                phantom_output: std::marker::PhantomData<T>,
                 pub attrs: $attr_type_name,
                 pub data_attributes: Vec<(&'static str, String)>,
-                pub events: ::events::Events,
+                pub events: ::events::Events<T>,
                 $body
             }
         )
@@ -115,7 +116,7 @@ impl Declare {
 
         let mut args = TokenStream::new();
         for (child_name, child_type, _) in self.req_children() {
-            args.extend(quote!( $child_name: Box<$child_type>, ));
+            args.extend(quote!( $child_name: Box<$child_type<T>>, ));
         }
 
         let mut attrs = TokenStream::new();
@@ -137,9 +138,10 @@ impl Declare {
         }
 
         quote!(
-            impl $elem_name {
+            impl<T> $elem_name<T> where T: ::OutputType {
                 pub fn new($args) -> Self {
                     $elem_name {
+                        phantom_output: std::marker::PhantomData,
                         events: ::events::Events::default(),
                         $body
                     }
@@ -194,8 +196,8 @@ impl Declare {
         let elem_name = self.elem_name();
         let vnode = self.impl_vnode();
         quote!(
-            impl ::dom::Node for $elem_name {
-                fn vnode<'a>(&'a mut self) -> ::dom::VNode<'a> {
+            impl<T> ::dom::Node<T> for $elem_name<T> where T: ::OutputType {
+                fn vnode(&'_ mut self) -> ::dom::VNode<'_, T> {
                     $vnode
                 }
             }
@@ -222,7 +224,7 @@ impl Declare {
         }
 
         quote!(
-            impl ::dom::Element for $elem_name {
+            impl<T> ::dom::Element<T> for $elem_name<T> where T: ::OutputType {
                 fn name() -> &'static str {
                     $name
                 }
@@ -253,7 +255,7 @@ impl Declare {
         for t in &self.traits {
             let name = t.clone();
             body.extend(quote!(
-                impl $name for $elem_name {}
+                impl<T> $name<T> for $elem_name<T> where T: ::OutputType {}
             ));
         }
         body
@@ -316,13 +318,13 @@ impl Declare {
             print_events.extend(quote!(
                 if let Some(ref value) = self.events.$event_name {
                     write!(f, " on{}=\"{}\"", $event_str,
-                           ::htmlescape::encode_attribute(&value.render().unwrap()))?;
+                           ::htmlescape::encode_attribute(value.render().unwrap().as_str()))?;
                 }
             ));
         }
 
         quote!(
-            impl std::fmt::Display for $elem_name {
+            impl<T> std::fmt::Display for $elem_name<T> where T: ::OutputType {
                 fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
                     write!(f, "<{}", $name)?;
                     $print_attrs

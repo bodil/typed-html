@@ -9,9 +9,10 @@ use stdweb::web::{self, Element, IElement, INode};
 use typed_html::dom::{Node, VNode};
 use typed_html::events::Events;
 use typed_html::for_events;
+use typed_html::DOM;
 use typed_html_macros::html;
 
-fn install_handlers(target: &Element, handlers: &mut Events) {
+fn install_handlers(target: &Element, handlers: &mut Events<DOM>) {
     for_events!(handler in handlers => {
         handler.attach(target);
     });
@@ -19,7 +20,7 @@ fn install_handlers(target: &Element, handlers: &mut Events) {
 
 fn build(
     document: &web::Document,
-    vnode: VNode,
+    vnode: VNode<'_, DOM>,
 ) -> Result<web::Node, web::error::InvalidCharacterError> {
     match vnode {
         VNode::Text(text) => Ok(document.create_text_node(&text).into()),
