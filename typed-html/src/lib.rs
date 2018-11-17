@@ -169,7 +169,7 @@
 //! ## Render to a virtual DOM
 //!
 //! The DOM tree structure also implements a method called `vnode()`, which renders
-//! the tree to a tree of [`Node`][Node]s, which is a mirror of the generated tree
+//! the tree to a tree of [`VNode`][VNode]s, which is a mirror of the generated tree
 //! with every attribute value rendered into `String`s. You can walk this virtual
 //! DOM tree and use it to build an actual DOM tree with `stdweb` or pass it on to
 //! your favourite virtual DOM system.
@@ -193,6 +193,7 @@
 //! [String]: https://doc.rust-lang.org/std/string/struct.String.html
 //! [to_string]: https://doc.rust-lang.org/std/string/trait.ToString.html#tymethod.to_string
 //! [Node]: dom/trait.Node.html
+//! [VNode]: dom/enum.VNode.html
 //! [FromStr]: https://doc.rust-lang.org/std/str/trait.FromStr.html
 //! [SpacedSet]: types/struct.SpacedSet.html
 //! [IntoIterator]: https://doc.rust-lang.org/std/iter/trait.IntoIterator.html
