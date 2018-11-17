@@ -1,4 +1,4 @@
-#![feature(proc_macro_hygiene, decl_macro, try_from)]
+#![feature(proc_macro_hygiene, decl_macro)]
 
 extern crate rocket;
 extern crate typed_html;
@@ -33,7 +33,7 @@ fn index() -> Html {
             </head>
             <body>
                 <h1 data-lol="omg">"Hello Kitty!"</h1>
-                <p class="official-position-of-sanrio-ltd">
+                <p class="official-position-of-sanrio-ltd emphasis">
                     "She is not a "<em><a href="https://en.wikipedia.org/wiki/Cat">"cat"</a></em>". She is a "<em>"human girl"</em>"."
                 </p>
                 <p class=["urgent", "question"]>"But how does she eat?"</p>

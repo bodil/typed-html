@@ -1,4 +1,3 @@
-use std::convert::TryFrom;
 use std::fmt::{Display, Error, Formatter};
 use std::ops::Deref;
 use std::str::FromStr;
@@ -61,20 +60,6 @@ impl FromStr for Class {
     type Err = &'static str;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Class::try_new(s)
-    }
-}
-
-impl TryFrom<String> for Class {
-    type Error = &'static str;
-    fn try_from(s: String) -> Result<Self, Self::Error> {
-        Self::try_new(s)
-    }
-}
-
-impl<'a> TryFrom<&'a str> for Class {
-    type Error = &'static str;
-    fn try_from(s: &'a str) -> Result<Self, Self::Error> {
-        Self::try_new(s)
     }
 }
 

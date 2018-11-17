@@ -1,4 +1,3 @@
-#![feature(try_from)]
 #![feature(proc_macro_hygiene)]
 
 extern crate stdweb;

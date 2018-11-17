@@ -174,7 +174,7 @@ impl Element {
                 value => {
                     let value = process_value(value);
                     body.extend(quote!(
-                        element.attrs.$key = Some(std::convert::TryInto::try_into($value).unwrap());
+                        element.attrs.$key = Some(std::convert::Into::into($value));
                     ));
                 }
             }
@@ -212,6 +212,7 @@ impl Element {
     }
 }
 
+// FIXME report a decent error when the macro contains multiple top level elements
 pub fn expand_html(input: &[Token]) -> Result<Node, ParseError> {
     grammar::NodeParser::new().parse(Lexer::new(input))
 }
