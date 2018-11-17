@@ -2,6 +2,6 @@
 members = [
     "typed-html",
     "macros",
-    "wasm",
-    "rocket"
+    "examples/wasm",
+    "examples/rocket"
 ]
