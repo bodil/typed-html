@@ -1,0 +1,8 @@
+language: rust
+rust:
+  - nightly
+cache:
+  directories:
+    - /home/travis/.cargo
+script:
+  - cargo test

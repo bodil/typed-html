@@ -1,0 +1,3 @@
+no-dev-version = true
+sign-commit = true
+pre-release-replacements = [ { file="CHANGELOG.md", search="\\[Unreleased\\]", replace="[{{version}}] - {{date}}" } ]

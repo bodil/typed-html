@@ -2,6 +2,17 @@
 name = "typed-html"
 version = "0.1.0"
 authors = ["Bodil Stokke <bodil@bodil.org>"]
+license = "MPL-2.0+"
+description = "Type checked JSX for Rust"
+repository = "https://github.com/bodil/typed-html"
+documentation = "http://docs.rs/typed-html/"
+readme = "../README.md"
+categories = ["template-engine", "wasm", "web-programming"]
+keywords = ["jsx", "html", "wasm"]
+
+[badges]
+travis-ci = { repository = "bodil/typed-html" }
+maintenance = { status = "actively-developed" }
 
 [dependencies]
 typed-html-macros = { path = "../macros" }

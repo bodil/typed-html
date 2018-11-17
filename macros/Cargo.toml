@@ -3,6 +3,13 @@ name = "typed-html-macros"
 version = "0.1.0"
 authors = ["Bodil Stokke <bodil@bodil.org>"]
 build = "build.rs"
+license = "MPL-2.0+"
+description = "Type checked JSX for Rust (proc_macro crate)"
+repository = "https://github.com/bodil/typed-html"
+documentation = "http://docs.rs/typed-html/"
+readme = "../README.md"
+categories = ["template-engine", "wasm", "web-programming"]
+keywords = ["jsx", "html", "wasm"]
 
 [lib]
 proc-macro = true
