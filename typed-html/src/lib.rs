@@ -1,8 +1,6 @@
 #![feature(try_from)]
 
 #[macro_use]
-extern crate enumset;
-#[macro_use]
 extern crate strum_macros;
 
 pub extern crate htmlescape;
@@ -12,6 +10,8 @@ extern crate mime;
 extern crate stdweb;
 extern crate strum;
 extern crate typed_html_macros;
+
+pub use typed_html_macros::html;
 
 pub mod dom;
 pub mod elements;

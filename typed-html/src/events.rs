@@ -25,6 +25,26 @@ macro_rules! declare_events {
             }
         }
 
+        /// Iterate over the defined events on a DOM object.
+        ///
+        /// # Examples
+        ///
+        /// ```
+        /// # #![feature(proc_macro_hygiene)]
+        /// # extern crate typed_html;
+        /// # use typed_html::{html, for_events};
+        /// # use typed_html::dom::{DOMTree, VNode};
+        /// # fn main() {
+        /// let mut doc: DOMTree<String> = html!(
+        ///     <button onclick="alert('clicked!')"/>
+        /// );
+        /// if let VNode::Element(element) = doc.vnode() {
+        ///     for_events!(event in element.events => {
+        ///         assert_eq!("alert('clicked!')", event.render().unwrap());
+        ///     });
+        /// }
+        /// # }
+        /// ```
         #[macro_export]
         macro_rules! for_events {
             ($event:ident in $events:expr => $body:block) => {

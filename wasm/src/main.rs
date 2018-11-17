@@ -8,9 +8,7 @@ extern crate typed_html_macros;
 use stdweb::web::{self, Element, IElement, INode};
 use typed_html::dom::{Node, VNode};
 use typed_html::events::Events;
-use typed_html::for_events;
-use typed_html::DOM;
-use typed_html_macros::html;
+use typed_html::{for_events, html, DOM};
 
 fn install_handlers(target: &Element, handlers: &mut Events<DOM>) {
     for_events!(handler in handlers => {

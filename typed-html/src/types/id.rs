@@ -5,13 +5,22 @@ use std::str::FromStr;
 
 use super::Class;
 
+/// A valid HTML ID.
+///
+/// An ID is a non-empty string that starts with an alphanumeric character
+/// and is followed by any number of alphanumeric characters and the
+/// `_`, `-` and `.` characters.
+///
+/// See also [`Class`][Class].
+///
+/// [Class]: struct.Class.html
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub struct Id(String);
 
 impl Id {
-    // Construct a new ID from a string.
-    //
-    // Returns `None` if the provided string is invalid.
+    /// Construct a new ID from a string.
+    ///
+    /// Returns `Err` if the provided string is invalid.
     pub fn try_new<S: Into<String>>(id: S) -> Result<Self, &'static str> {
         let id = id.into();
         {
@@ -32,9 +41,9 @@ impl Id {
         Ok(Id(id))
     }
 
-    // Construct a new ID from a string.
-    //
-    // Panics if the provided string is invalid.
+    /// Construct a new ID from a string.
+    ///
+    /// Panics if the provided string is invalid.
     pub fn new<S: Into<String>>(id: S) -> Self {
         let id = id.into();
         Self::try_new(id.clone()).unwrap_or_else(|err| {

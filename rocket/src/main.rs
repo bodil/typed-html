@@ -9,10 +9,9 @@ use rocket::response::{Responder, Result};
 use rocket::{get, routes, Request, Response};
 use std::io::Cursor;
 use typed_html::types::LinkType;
-use typed_html::{dom::Node, text};
-use typed_html_macros::html;
+use typed_html::{dom::DOMTree, html, text};
 
-struct Html(Box<Node<String>>);
+struct Html(DOMTree<String>);
 
 impl<'r> Responder<'r> for Html {
     fn respond_to(self, _request: &Request) -> Result<'r> {

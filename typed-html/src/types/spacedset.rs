@@ -4,10 +4,33 @@ use std::iter::FromIterator;
 use std::ops::{Deref, DerefMut};
 use std::str::FromStr;
 
+/// A space separated set of unique values.
+///
+/// This type represents a set of unique values represented as a string of
+/// values separated by spaces in HTML attributes.
+///
+/// # Examples
+///
+/// ```
+/// # extern crate typed_html;
+/// # use std::convert::From;
+/// use typed_html::types::{Class, SpacedSet};
+///
+/// # fn main() {
+/// let classList: SpacedSet<Class> = "foo bar baz".into();
+/// let classList: SpacedSet<Class> = ["foo", "bar", "baz"].into();
+/// let classList: SpacedSet<Class> = ("foo", "bar", "baz").into();
+///
+/// let classList1: SpacedSet<Class> = "foo bar foo".into();
+/// let classList2: SpacedSet<Class> = "bar foo bar".into();
+/// assert_eq!(classList1, classList2);
+/// # }
+/// ```
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct SpacedSet<A: Ord>(BTreeSet<A>);
 
 impl<A: Ord> SpacedSet<A> {
+    /// Construct an empty `SpacedSet`.
     pub fn new() -> Self {
         SpacedSet(BTreeSet::new())
     }
@@ -46,7 +69,7 @@ where
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let result: Result<Vec<A>, Self::Err> =
             s.split_whitespace().map(|s| FromStr::from_str(s)).collect();
-        result.map(|items| Self::from_iter(items))
+        result.map(Self::from_iter)
     }
 }
 

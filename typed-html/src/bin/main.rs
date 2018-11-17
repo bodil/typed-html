@@ -3,11 +3,10 @@
 
 #[macro_use]
 extern crate typed_html;
-extern crate typed_html_macros;
 
 use typed_html::dom::TextNode;
+use typed_html::html;
 use typed_html::types::*;
-use typed_html_macros::html;
 
 struct Foo {
     foo: &'static str,

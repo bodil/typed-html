@@ -5,13 +5,22 @@ use std::str::FromStr;
 
 use super::Id;
 
+/// A valid CSS class.
+///
+/// A CSS class is a non-empty string that starts with an alphanumeric character
+/// and is followed by any number of alphanumeric characters and the
+/// `_`, `-` and `.` characters.
+///
+/// See also [`Id`][Id].
+///
+/// [Id]: struct.Id.html
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub struct Class(String);
 
 impl Class {
-    // Construct a new class name from a string.
-    //
-    // Returns `None` if the provided string is invalid.
+    /// Construct a new class name from a string.
+    ///
+    /// Returns `Err` if the provided string is invalid.
     pub fn try_new<S: Into<String>>(id: S) -> Result<Self, &'static str> {
         let id = id.into();
         {
@@ -34,9 +43,9 @@ impl Class {
         Ok(Class(id))
     }
 
-    // Construct a new class name from a string.
-    //
-    // Panics if the provided string is invalid.
+    /// Construct a new class name from a string.
+    ///
+    /// Panics if the provided string is invalid.
     pub fn new<S: Into<String>>(id: S) -> Self {
         let id = id.into();
         Self::try_new(id.clone()).unwrap_or_else(|err| {

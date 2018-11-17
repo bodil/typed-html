@@ -8,6 +8,26 @@ use elements::{FlowContent, PhrasingContent};
 use events::Events;
 use htmlescape::encode_minimal;
 
+/// A boxed DOM tree, as returned from the `html!` macro.
+///
+/// # Examples
+///
+/// ```
+/// # #![feature(proc_macro_hygiene)]
+/// # extern crate typed_html;
+/// # use typed_html::html;
+/// # use typed_html::dom::DOMTree;
+/// # fn main() {
+/// let tree: DOMTree<String> = html!(
+///     <div class="hello">
+///         <p>"Hello Joe!"</p>
+///     </div>
+/// );
+/// let rendered_tree: String = tree.to_string();
+/// # }
+/// ```
+pub type DOMTree<T> = Box<Node<T>>;
+
 /// An untyped representation of an HTML node.
 ///
 /// This structure is designed to be easily walked in order to render a DOM tree
@@ -52,7 +72,7 @@ pub trait Node<T: OutputType>: Display {
     /// Render the node into a [`VNode`][VNode] tree.
     ///
     /// [VNode]: enum.VNode.html
-    fn vnode<'a>(&'a mut self) -> VNode<'a, T>;
+    fn vnode(&mut self) -> VNode<T>;
 }
 
 /// Trait for querying a typed HTML element.

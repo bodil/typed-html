@@ -3,10 +3,18 @@ use std::iter::FromIterator;
 use std::ops::{Deref, DerefMut};
 use std::str::FromStr;
 
+/// A space separated list of values.
+///
+/// This type represents a list of non-unique values represented as a string of
+/// values separated by spaces in HTML attributes. This is rarely used; a
+/// [`SpacedSet`][SpacedSet] of unique values is much more common.
+///
+/// [SpacedSet]: struct.SpacedSet.html
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct SpacedList<A>(Vec<A>);
 
 impl<A> SpacedList<A> {
+    /// Construct an empty `SpacedList`.
     pub fn new() -> Self {
         SpacedList(Vec::new())
     }
