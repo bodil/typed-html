@@ -12,7 +12,6 @@ use std::str::FromStr;
 /// # Examples
 ///
 /// ```
-/// # extern crate typed_html;
 /// # use std::convert::From;
 /// use typed_html::types::{Class, SpacedSet};
 ///

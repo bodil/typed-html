@@ -18,6 +18,7 @@ pub use http::Uri;
 pub use language_tags::LanguageTag;
 pub use mime::Mime;
 
+// FIXME these all need validating types
 pub type CharacterEncoding = String;
 pub type Datetime = String;
 pub type FeaturePolicy = String;

@@ -11,6 +11,7 @@ extern crate stdweb;
 extern crate strum;
 extern crate typed_html_macros;
 
+#[doc(inline)]
 pub use typed_html_macros::html;
 
 pub mod dom;
