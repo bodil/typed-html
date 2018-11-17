@@ -53,8 +53,8 @@ declare_elements!{
     meta {
         charset: String, // FIXME IANA standard names
         content: String,
-        http_equiv: String, // FIXME string enum
-        name: String, // FIXME string enum
+        http_equiv: HTTPEquiv,
+        name: Metadata,
     } in [MetadataContent];
     style {
         type: Mime,

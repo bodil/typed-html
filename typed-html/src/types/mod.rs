@@ -85,6 +85,14 @@ pub enum FormMethod {
 }
 
 #[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
+pub enum HTTPEquiv {
+    #[strum(to_string = "content-security-policy")]
+    ContentSecurityPolicy,
+    #[strum(to_string = "refresh")]
+    Refresh,
+}
+
+#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
 pub enum ImageDecoding {
     #[strum(to_string = "sync")]
     Sync,
@@ -188,6 +196,32 @@ pub enum LinkType {
     StyleSheet,
     #[strum(to_string = "tag")]
     Tag,
+}
+
+#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
+pub enum Metadata {
+    #[strum(to_string = "application-name")]
+    ApplicationName,
+    #[strum(to_string = "author")]
+    Author,
+    #[strum(to_string = "description")]
+    Description,
+    #[strum(to_string = "generator")]
+    Generator,
+    #[strum(to_string = "keywords")]
+    Keywords,
+    #[strum(to_string = "referrer")]
+    Referrer,
+    #[strum(to_string = "creator")]
+    Creator,
+    #[strum(to_string = "googlebot")]
+    Googlebot,
+    #[strum(to_string = "publisher")]
+    Publisher,
+    #[strum(to_string = "robots")]
+    Robots,
+    #[strum(to_string = "viewport")]
+    Viewport,
 }
 
 #[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
