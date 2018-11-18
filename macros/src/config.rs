@@ -1,4 +1,4 @@
-use proc_macro::{Ident, Span, TokenStream};
+use proc_macro2::{Ident, Span, TokenStream};
 
 use map::StringyMap;
 

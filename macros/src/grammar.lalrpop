@@ -3,8 +3,9 @@ use error::HtmlParseError;
 use html::{Node, Element};
 use declare::Declare;
 use map::StringyMap;
-use proc_macro::{Delimiter, Ident, Literal, Group, TokenTree};
+use proc_macro2::{Delimiter, Ident, Literal, Group, TokenTree};
 use lalrpop_util::ParseError;
+use span;
 
 grammar;
 
@@ -62,8 +63,8 @@ HtmlIdent: Ident = {
         let (span, name) = init.into_iter().fold((None, String::new()), |(span, name), token| {
             (
                 match span {
-                    None => Some(token.span()),
-                    Some(span) => span.join(token.span()),
+                    None => Some(token.span().unstable()),
+                    Some(span) => span.join(token.span().unstable()),
                 },
                 if name.is_empty() {
                     name + &token.to_string()
@@ -72,7 +73,7 @@ HtmlIdent: Ident = {
                 }
             )
         });
-        Ident::new(&name, span.unwrap())
+        Ident::new(&name, span::from_unstable(span.unwrap()))
     }
 };
 

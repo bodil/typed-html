@@ -1,7 +1,8 @@
 use ansi_term::Style;
 use lalrpop_util::ParseError::*;
 use lexer::Token;
-use proc_macro::{Diagnostic, Ident, Level};
+use proc_macro::{Diagnostic, Level};
+use proc_macro2::Ident;
 
 pub type ParseError = lalrpop_util::ParseError<usize, Token, HtmlParseError>;
 
@@ -44,7 +45,7 @@ pub fn parse_error(input: &[Token], error: &ParseError) -> Diagnostic {
     match error {
         InvalidToken { location } => {
             let loc = &input[*location];
-            Diagnostic::spanned(loc.span(), Level::Error, "invalid token")
+            Diagnostic::spanned(loc.span().unstable(), Level::Error, "invalid token")
         }
         UnrecognizedToken {
             token: None,
@@ -52,7 +53,7 @@ pub fn parse_error(input: &[Token], error: &ParseError) -> Diagnostic {
         } => {
             let msg = format!("missing {}", pprint_tokens(&expected));
             Diagnostic::spanned(
-                input[0].span().join(input[input.len() - 1].span()).unwrap(),
+                input[0].span().unstable().join(input[input.len() - 1].span().unstable()).unwrap(),
                 Level::Error,
                 "unexpected end of macro",
             )
@@ -63,7 +64,7 @@ pub fn parse_error(input: &[Token], error: &ParseError) -> Diagnostic {
             expected,
         } => {
             let msg = format!("expected {}", pprint_tokens(&expected));
-            let mut diag = Diagnostic::spanned(token.span(), Level::Error, msg);
+            let mut diag = Diagnostic::spanned(token.span().unstable(), Level::Error, msg);
             if is_in_node_position(expected) && token.is_ident() {
                 // special case: you probably meant to quote that text
                 diag = diag.help(format!(
@@ -75,14 +76,14 @@ pub fn parse_error(input: &[Token], error: &ParseError) -> Diagnostic {
         }
         ExtraToken {
             token: (_, token, _),
-        } => Diagnostic::spanned(token.span(), Level::Error, "superfluous token"),
+        } => Diagnostic::spanned(token.span().unstable(), Level::Error, "superfluous token"),
         User {
             error: HtmlParseError::TagMismatch { open, close },
         } => Diagnostic::spanned(
-            close.span(),
+            close.span().unstable(),
             Level::Error,
             format!("expected closing tag '</{}>', found '</{}>'", open, close),
         )
-        .span_help(open.span(), "opening tag is here:"),
+        .span_help(open.span().unstable(), "opening tag is here:"),
     }
 }

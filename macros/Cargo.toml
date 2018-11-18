@@ -17,6 +17,8 @@ proc-macro = true
 [dependencies]
 lalrpop-util = "0.16.1"
 ansi_term = "0.11.0"
+proc-macro2 = { version = "0.4.24", features = ["nightly"] }
+quote = "0.6.10"
 
 [build-dependencies]
 lalrpop = "0.16.1"
