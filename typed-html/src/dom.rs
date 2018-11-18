@@ -41,13 +41,13 @@ pub type DOMTree<T> = Box<Node<T>>;
 /// ```
 ///
 /// [Node]: trait.Node.html
-pub enum VNode<'a, T: OutputType> {
+pub enum VNode<'a, T: OutputType + 'a> {
     Text(&'a str),
     Element(VElement<'a, T>),
 }
 
 /// An untyped representation of an HTML element.
-pub struct VElement<'a, T: OutputType> {
+pub struct VElement<'a, T: OutputType + 'a> {
     pub name: &'static str,
     pub attributes: Vec<(&'static str, String)>,
     pub events: &'a mut Events<T>,
