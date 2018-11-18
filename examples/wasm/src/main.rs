@@ -1,3 +1,5 @@
+#![recursion_limit = "256"]
+
 extern crate stdweb;
 extern crate typed_html;
 extern crate typed_html_macros;

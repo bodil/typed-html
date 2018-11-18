@@ -4,6 +4,7 @@
 //! # Quick Preview
 //!
 //! ```
+//! # #![recursion_limit = "128"]
 //! # use typed_html::{html, for_events};
 //! # use typed_html::dom::{DOMTree, VNode};
 //! # use typed_html::types::Metadata;
@@ -198,13 +199,14 @@ extern crate http;
 extern crate language_tags;
 extern crate mime;
 extern crate proc_macro_hack;
+extern crate proc_macro_nested;
 extern crate stdweb;
 extern crate strum;
 extern crate typed_html_macros;
 
 use proc_macro_hack::proc_macro_hack;
 
-#[proc_macro_hack]
+#[proc_macro_hack(support_nested)]
 pub use typed_html_macros::html;
 
 pub mod dom;
