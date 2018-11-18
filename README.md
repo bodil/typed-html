@@ -5,13 +5,6 @@
 This crate provides the `html!` macro for building HTML documents inside your
 Rust code using roughly [JSX] compatible syntax.
 
-## Nightly Warning!
-
-This crate currently needs nightly rustc, and in order to use it you'll need to
-add `#![feature(proc_macro_hygiene)]` to the top of your crate.  The compiler
-will tell you to do this if you forget. When this feature stabilises, the crate
-should work on stable rustc without issues.
-
 ## Quick Preview
 
 ```rust

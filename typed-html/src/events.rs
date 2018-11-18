@@ -30,7 +30,6 @@ macro_rules! declare_events {
         /// # Examples
         ///
         /// ```
-        /// # #![feature(proc_macro_hygiene)]
         /// # use typed_html::{html, for_events};
         /// # use typed_html::dom::{DOMTree, VNode};
         /// # fn main() {

@@ -13,7 +13,6 @@ use htmlescape::encode_minimal;
 /// # Examples
 ///
 /// ```
-/// # #![feature(proc_macro_hygiene)]
 /// # use typed_html::html;
 /// # use typed_html::dom::DOMTree;
 /// # fn main() {
