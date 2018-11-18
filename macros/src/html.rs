@@ -156,22 +156,34 @@ impl Element {
         let mut body = TokenStream::new();
         for (attr_str, key, value) in attrs {
             match value {
-                TokenTree::Literal(l) if is_string_literal(l) => {
-                    let value = value.clone();
-                    let tag_name: TokenTree = Literal::string(&name_str).into();
-                    let attr_str: TokenTree = Literal::string(&attr_str).into();
-                    let span = value.span();
-                    let pos = format!(
-                        "{}:{}:{}",
-                        span.unstable().source_file().path().to_str().unwrap_or("unknown"),
-                        span.unstable().start().line,
-                        span.unstable().start().column
+                TokenTree::Literal(lit) if is_string_literal(lit) => {
+                    let mut eprintln_msg = "ERROR: ".to_owned();
+                    #[cfg(can_show_location_of_runtime_parse_error)]
+                    {
+                        let span = lit.span();
+                        eprintln_msg += &format!(
+                            "{}:{}:{}: ",
+                            span.unstable()
+                                .source_file()
+                                .path()
+                                .to_str()
+                                .unwrap_or("unknown"),
+                            span.unstable().start().line,
+                            span.unstable().start().column
+                        );
+                    }
+                    eprintln_msg += &format!(
+                        "<{} {}={}> failed to parse attribute value: {{}}",
+                        name_str, attr_str, lit,
                     );
-                    let pos_str: TokenTree = Literal::string(&pos).into();
+                    #[cfg(not(can_show_location_of_runtime_parse_error))]
+                    {
+                        eprintln_msg += "\nERROR: rebuild with nightly to print source location";
+                    }
+
                     body.extend(quote!(
-                        element.attrs.#key = Some(#value.parse().unwrap_or_else(|err| {
-                            eprintln!("ERROR: {}: <{} {}={:?}> failed to parse attribute value: {}",
-                                      #pos_str, #tag_name, #attr_str, #value, err);
+                        element.attrs.#key = Some(#lit.parse().unwrap_or_else(|err| {
+                            eprintln!(#eprintln_msg, err);
                             panic!("failed to parse string literal");
                         }));
                     ));

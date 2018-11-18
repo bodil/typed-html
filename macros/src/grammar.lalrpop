@@ -64,7 +64,16 @@ HtmlIdent: Ident = {
             (
                 match span {
                     None => Some(token.span().unstable()),
-                    Some(span) => span.join(token.span().unstable()),
+                    Some(span) => {
+                        #[cfg(can_join_spans)]
+                        {
+                            span.join(token.span().unstable())
+                        }
+                        #[cfg(not(can_join_spans))]
+                        {
+                            Some(span)
+                        }
+                    }
                 },
                 if name.is_empty() {
                     name + &token.to_string()

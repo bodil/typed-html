@@ -1,6 +1,6 @@
 #![recursion_limit = "128"]
 #![feature(proc_macro_hygiene)]
-#![feature(proc_macro_span)]
+#![cfg_attr(can_show_location_of_runtime_parse_error, feature(proc_macro_span))]
 
 extern crate ansi_term;
 extern crate lalrpop_util;
