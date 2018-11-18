@@ -1,6 +1,5 @@
-use proc_macro::{Diagnostic, Level};
 use proc_macro2::{Delimiter, Group, Ident, Literal, TokenStream, TokenTree};
-use quote::quote;
+use quote::{quote, quote_spanned};
 
 use config::{required_children, ATTR_EVENTS};
 use error::ParseError;
@@ -19,38 +18,38 @@ pub enum Node {
 }
 
 impl Node {
-    pub fn into_token_stream(self) -> TokenStream {
+    pub fn into_token_stream(self) -> Result<TokenStream, TokenStream> {
         match self {
             Node::Element(el) => el.into_token_stream(),
             Node::Text(text) => {
                 let text = TokenTree::Literal(text);
-                quote!(Box::new(typed_html::dom::TextNode::new(#text.to_string())))
+                Ok(quote!(Box::new(typed_html::dom::TextNode::new(#text.to_string()))))
             }
             Node::Block(_) => panic!("cannot have a block in this position"),
         }
     }
 
-    fn into_child_stream(self) -> TokenStream {
+    fn into_child_stream(self) -> Result<TokenStream, TokenStream> {
         match self {
             Node::Element(el) => {
-                let el = el.into_token_stream();
-                quote!(
+                let el = el.into_token_stream()?;
+                Ok(quote!(
                     element.children.push(#el);
-                )
+                ))
             }
             tx @ Node::Text(_) => {
-                let tx = tx.into_token_stream();
-                quote!(
+                let tx = tx.into_token_stream()?;
+                Ok(quote!(
                     element.children.push(#tx);
-                )
+                ))
             }
             Node::Block(group) => {
                 let group: TokenTree = group.into();
-                quote!(
+                Ok(quote!(
                     for child in #group.into_iter() {
                         element.children.push(child);
                     }
-                )
+                ))
             }
         }
     }
@@ -116,24 +115,22 @@ fn is_string_literal(literal: &Literal) -> bool {
 }
 
 impl Element {
-    fn into_token_stream(mut self) -> TokenStream {
+    fn into_token_stream(mut self) -> Result<TokenStream, TokenStream> {
         let name = self.name;
         let name_str = name.to_string();
         let typename: TokenTree = Ident::new(&name_str, name.span()).into();
         let req_names = required_children(&name_str);
         if req_names.len() > self.children.len() {
-            Diagnostic::spanned(
-                name.span().unstable(),
-                Level::Error,
-                format!(
-                    "<{}> requires {} children but there are only {}",
-                    name_str,
-                    req_names.len(),
-                    self.children.len()
-                ),
-            )
-            .emit();
-            panic!();
+            let span = name.span();
+            let error = format!(
+                "<{}> requires {} children but there are only {}",
+                name_str,
+                req_names.len(),
+                self.children.len()
+            );
+            return Err(quote_spanned! {span=>
+                compile_error! { #error }
+            });
         }
         let events = extract_event_handlers(&mut self.attributes);
         let data_attrs = extract_data_attrs(&mut self.attributes);
@@ -148,8 +145,13 @@ impl Element {
             .children
             .split_off(req_names.len())
             .into_iter()
-            .map(Node::into_child_stream);
-        let req_children = self.children.into_iter().map(Node::into_token_stream);
+            .map(Node::into_child_stream)
+            .collect::<Result<Vec<TokenStream>, TokenStream>>()?;
+        let req_children = self
+            .children
+            .into_iter()
+            .map(Node::into_token_stream)
+            .collect::<Result<Vec<TokenStream>, TokenStream>>()?;
 
         let mut body = TokenStream::new();
         for (attr_str, key, value) in attrs {
@@ -205,13 +207,13 @@ impl Element {
             args.extend(quote!( #arg, ));
         }
 
-        quote!(
+        Ok(quote!(
             {
                 let mut element = typed_html::elements::#typename::new(#args);
                 #body
                 Box::new(element)
             }
-        )
+        ))
     }
 }
 

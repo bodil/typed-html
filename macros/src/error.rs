@@ -1,8 +1,8 @@
 use ansi_term::Style;
 use lalrpop_util::ParseError::*;
 use lexer::Token;
-use proc_macro::{Diagnostic, Level};
-use proc_macro2::Ident;
+use proc_macro2::{Ident, TokenStream};
+use quote::{quote, quote_spanned};
 
 pub type ParseError = lalrpop_util::ParseError<usize, Token, HtmlParseError>;
 
@@ -41,49 +41,76 @@ fn is_in_node_position(tokens: &[String]) -> bool {
     input == output
 }
 
-pub fn parse_error(input: &[Token], error: &ParseError) -> Diagnostic {
+pub fn parse_error(input: &[Token], error: &ParseError) -> TokenStream {
     match error {
         InvalidToken { location } => {
-            let loc = &input[*location];
-            Diagnostic::spanned(loc.span().unstable(), Level::Error, "invalid token")
+            let span = input[*location].span();
+            quote_spanned! {span=>
+                compile_error! { "invalid token" }
+            }
         }
         UnrecognizedToken {
             token: None,
             expected,
         } => {
-            let msg = format!("missing {}", pprint_tokens(&expected));
-            Diagnostic::spanned(
-                input[0].span().unstable().join(input[input.len() - 1].span().unstable()).unwrap(),
-                Level::Error,
-                "unexpected end of macro",
-            )
-            .help(msg)
+            let msg = format!(
+                "unexpected end of macro; missing {}",
+                pprint_tokens(&expected)
+            );
+            quote! {
+                compile_error! { #msg }
+            }
         }
         UnrecognizedToken {
             token: Some((_, token, _)),
             expected,
         } => {
-            let msg = format!("expected {}", pprint_tokens(&expected));
-            let mut diag = Diagnostic::spanned(token.span().unstable(), Level::Error, msg);
-            if is_in_node_position(expected) && token.is_ident() {
+            let span = token.span();
+            let error_msg = format!("expected {}", pprint_tokens(&expected));
+            let error = quote_spanned! {span=>
+                compile_error! { #error_msg }
+            };
+            let help = if is_in_node_position(expected) && token.is_ident() {
                 // special case: you probably meant to quote that text
-                diag = diag.help(format!(
+                let help_msg = format!(
                     "text nodes need to be quoted, eg. {}",
                     Style::new().bold().paint("<p>\"Hello Joe!\"</p>")
-                ))
-            }
-            diag
+                );
+                Some(quote_spanned! {span=>
+                    compile_error! { #help_msg }
+                })
+            } else {
+                None
+            };
+            quote! {{
+                #error
+                #help
+            }}
         }
         ExtraToken {
             token: (_, token, _),
-        } => Diagnostic::spanned(token.span().unstable(), Level::Error, "superfluous token"),
+        } => {
+            let span = token.span();
+            quote_spanned! {span=>
+                compile_error! { "superfluous token" }
+            }
+        }
         User {
             error: HtmlParseError::TagMismatch { open, close },
-        } => Diagnostic::spanned(
-            close.span().unstable(),
-            Level::Error,
-            format!("expected closing tag '</{}>', found '</{}>'", open, close),
-        )
-        .span_help(open.span().unstable(), "opening tag is here:"),
+        } => {
+            let close_span = close.span();
+            let close_msg = format!("expected closing tag '</{}>', found '</{}>'", open, close);
+            let close_error = quote_spanned! {close_span=>
+                compile_error! { #close_msg }
+            };
+            let open_span = open.span();
+            let open_error = quote_spanned! {open_span=>
+                compile_error! { "unclosed tag" }
+            };
+            quote! {{
+                #close_error
+                #open_error
+            }}
+        }
     }
 }

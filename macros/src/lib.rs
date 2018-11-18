@@ -1,7 +1,6 @@
 #![recursion_limit = "128"]
 #![feature(proc_macro_hygiene)]
 #![feature(proc_macro_span)]
-#![feature(proc_macro_diagnostic)]
 
 extern crate ansi_term;
 extern crate lalrpop_util;
@@ -10,7 +9,6 @@ extern crate proc_macro2;
 extern crate quote;
 
 use proc_macro::TokenStream;
-use quote::quote;
 
 mod config;
 mod declare;
@@ -32,11 +30,11 @@ pub fn html(input: TokenStream) -> TokenStream {
     let stream = lexer::unroll_stream(input.into(), false);
     let result = html::expand_html(&stream);
     TokenStream::from(match result {
-        Err(err) => {
-            error::parse_error(&stream, &err).emit();
-            quote!(panic!())
-        }
-        Ok(node) => node.into_token_stream(),
+        Err(err) => error::parse_error(&stream, &err),
+        Ok(node) => match node.into_token_stream() {
+            Err(err) => err,
+            Ok(success) => success,
+        },
     })
 }
 
@@ -47,10 +45,7 @@ pub fn declare_elements(input: TokenStream) -> TokenStream {
     let stream = lexer::keywordise(lexer::unroll_stream(input.into(), true));
     let result = declare::expand_declare(&stream);
     TokenStream::from(match result {
-        Err(err) => {
-            error::parse_error(&stream, &err).emit();
-            quote!(panic!())
-        }
+        Err(err) => error::parse_error(&stream, &err),
         Ok(decls) => {
             let mut out = proc_macro2::TokenStream::new();
             for decl in decls {
