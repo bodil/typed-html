@@ -1,0 +1,21 @@
+error: <html> requires 2 children but there are only 1
+  --> $DIR/not-enough-children.rs:10:10
+   |
+10 |         <html>
+   |          ^^^^
+
+error: proc macro panicked
+  --> $DIR/not-enough-children.rs:9:30
+   |
+9  |       let _: DOMTree<String> = html!{
+   |  ______________________________^
+10 | |         <html>
+11 | |             <head></head>
+12 | |         </html>
+13 | |     };
+   | |_____^
+   |
+   = help: message: explicit panic
+
+error: aborting due to 2 previous errors
+

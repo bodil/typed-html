@@ -3,5 +3,6 @@ members = [
     "typed-html",
     "macros",
     "examples/wasm",
-    "examples/rocket"
+    "examples/rocket",
+    "ui",
 ]

@@ -1,0 +1,10 @@
+error: expected "<", code block or literal
+  --> $DIR/text-nodes-need-to-be-quoted.rs:10:16
+   |
+10 |         <title>unquoted</title>
+   |                ^^^^^^^^
+   |
+   = help: text nodes need to be quoted, eg. [1m<p>"Hello Joe!"</p>[0m
+
+error: aborting due to previous error
+

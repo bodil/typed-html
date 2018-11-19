@@ -1,0 +1,10 @@
+error: unexpected end of macro
+  --> $DIR/unexpected-end-of-macro.rs:10:9
+   |
+10 |         <title>
+   |         ^^^^^^^
+   |
+   = help: missing "<", code block or literal
+
+error: aborting due to previous error
+
