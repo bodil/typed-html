@@ -1,4 +1,4 @@
-#![feature(proc_macro_hygiene)]
+#![recursion_limit = "256"]
 
 extern crate stdweb;
 extern crate typed_html;

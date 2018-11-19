@@ -1,8 +1,14 @@
 language: rust
-rust:
-  - nightly
+
 cache:
   directories:
     - /home/travis/.cargo
-script:
-  - cargo test
+
+matrix:
+  include:
+    - rust: nightly
+      script: cargo test
+    - rust: beta
+      script: cargo check --manifest-path examples/wasm/Cargo.toml
+    - rust: stable
+      script: cargo check --manifest-path examples/wasm/Cargo.toml

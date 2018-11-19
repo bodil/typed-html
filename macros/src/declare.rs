@@ -1,7 +1,9 @@
-use proc_macro::{quote, Ident, Literal, Span, TokenStream, TokenTree};
+use proc_macro2::{Ident, Literal, Span, TokenStream, TokenTree};
+use quote::quote;
 
 use config::{global_attrs, ATTR_EVENTS};
 use error::ParseError;
+use ident;
 use lexer::{Lexer, Token};
 use map::StringyMap;
 use parser;
@@ -41,7 +43,7 @@ impl Declare {
 
     fn attrs(&self) -> impl Iterator<Item = (TokenTree, TokenStream, TokenTree)> + '_ {
         self.attrs.iter().map(|(key, value)| {
-            let attr_name: TokenTree = Ident::new_raw(&key.to_string(), key.span()).into();
+            let attr_name: TokenTree = ident::new_raw(&key.to_string(), key.span()).into();
             let attr_type = value.clone();
             let attr_str = Literal::string(&key.to_string()).into();
             (attr_name, attr_type, attr_str)
@@ -73,13 +75,13 @@ impl Declare {
     fn attr_struct(&self) -> TokenStream {
         let mut body = TokenStream::new();
         for (attr_name, attr_type, _) in self.attrs() {
-            body.extend(quote!( pub $attr_name: Option<$attr_type>, ));
+            body.extend(quote!( pub #attr_name: Option<#attr_type>, ));
         }
 
         let attr_type_name = self.attr_type_name();
         quote!(
-            pub struct $attr_type_name {
-                $body
+            pub struct #attr_type_name {
+                #body
             }
         )
     }
@@ -91,21 +93,21 @@ impl Declare {
         let mut body = TokenStream::new();
 
         for (child_name, child_type, _) in self.req_children() {
-            body.extend(quote!( pub $child_name: Box<$child_type<T>>, ));
+            body.extend(quote!( pub #child_name: Box<#child_type<T>>, ));
         }
 
         if let Some(child_constraint) = &self.opt_children {
             let child_constraint = child_constraint.clone();
-            body.extend(quote!(pub children: Vec<Box<$child_constraint<T>>>,));
+            body.extend(quote!(pub children: Vec<Box<#child_constraint<T>>>,));
         }
 
         quote!(
-            pub struct $elem_name<T> where T: ::OutputType {
+            pub struct #elem_name<T> where T: ::OutputType {
                 phantom_output: std::marker::PhantomData<T>,
-                pub attrs: $attr_type_name,
+                pub attrs: #attr_type_name,
                 pub data_attributes: Vec<(&'static str, String)>,
                 pub events: ::events::Events<T>,
-                $body
+                #body
             }
         )
     }
@@ -116,34 +118,34 @@ impl Declare {
 
         let mut args = TokenStream::new();
         for (child_name, child_type, _) in self.req_children() {
-            args.extend(quote!( $child_name: Box<$child_type<T>>, ));
+            args.extend(quote!( #child_name: Box<#child_type<T>>, ));
         }
 
         let mut attrs = TokenStream::new();
         for (attr_name, _, _) in self.attrs() {
-            attrs.extend(quote!( $attr_name: None, ));
+            attrs.extend(quote!( #attr_name: None, ));
         }
 
         let mut body = TokenStream::new();
         body.extend(quote!(
-            attrs: $attr_type_name { $attrs },
+            attrs: #attr_type_name { #attrs },
         ));
         body.extend(quote!(data_attributes: Vec::new(),));
 
         for (child_name, _, _) in self.req_children() {
-            body.extend(quote!( $child_name, ));
+            body.extend(quote!( #child_name, ));
         }
         if self.opt_children.is_some() {
             body.extend(quote!(children: Vec::new()));
         }
 
         quote!(
-            impl<T> $elem_name<T> where T: ::OutputType {
-                pub fn new($args) -> Self {
-                    $elem_name {
+            impl<T> #elem_name<T> where T: ::OutputType {
+                pub fn new(#args) -> Self {
+                    #elem_name {
                         phantom_output: std::marker::PhantomData,
                         events: ::events::Events::default(),
-                        $body
+                        #body
                     }
                 }
             }
@@ -155,7 +157,7 @@ impl Declare {
         let mut req_children = TokenStream::new();
         for (child_name, _, _) in self.req_children() {
             req_children.extend(quote!(
-                children.push(self.$child_name.vnode());
+                children.push(self.#child_name.vnode());
             ));
         }
         let mut opt_children = TokenStream::new();
@@ -168,23 +170,23 @@ impl Declare {
         let mut push_attrs = TokenStream::new();
         for (attr_name, _, attr_str) in self.attrs() {
             push_attrs.extend(quote!(
-                if let Some(ref value) = self.attrs.$attr_name {
-                    attributes.push(($attr_str, value.to_string()));
+                if let Some(ref value) = self.attrs.#attr_name {
+                    attributes.push((#attr_str, value.to_string()));
                 }
             ));
         }
 
         quote!(
             let mut attributes = Vec::new();
-            $push_attrs
+            #push_attrs
             attributes.extend(self.data_attributes.clone());
 
             let mut children = Vec::new();
-            $req_children
-            $opt_children
+            #req_children
+            #opt_children
 
             ::dom::VNode::Element(::dom::VElement {
-                name: $elem_name,
+                name: #elem_name,
                 attributes,
                 events: &mut self.events,
                 children
@@ -196,9 +198,9 @@ impl Declare {
         let elem_name = self.elem_name();
         let vnode = self.impl_vnode();
         quote!(
-            impl<T> ::dom::Node<T> for $elem_name<T> where T: ::OutputType {
+            impl<T> ::dom::Node<T> for #elem_name<T> where T: ::OutputType {
                 fn vnode(&'_ mut self) -> ::dom::VNode<'_, T> {
-                    $vnode
+                    #vnode
                 }
             }
         )
@@ -208,38 +210,38 @@ impl Declare {
         let name: TokenTree = Literal::string(&self.name.to_string()).into();
         let elem_name = self.elem_name();
 
-        let attrs: TokenStream = self.attrs().map(|(_, _, name)| quote!( $name, )).collect();
+        let attrs: TokenStream = self.attrs().map(|(_, _, name)| quote!( #name, )).collect();
         let reqs: TokenStream = self
             .req_children()
-            .map(|(_, _, name)| quote!( $name, ))
+            .map(|(_, _, name)| quote!( #name, ))
             .collect();
 
         let mut push_attrs = TokenStream::new();
         for (attr_name, _, attr_str) in self.attrs() {
             push_attrs.extend(quote!(
-                if let Some(ref value) = self.attrs.$attr_name {
-                    out.push(($attr_str, value.to_string()));
+                if let Some(ref value) = self.attrs.#attr_name {
+                    out.push((#attr_str, value.to_string()));
                 }
             ));
         }
 
         quote!(
-            impl<T> ::dom::Element<T> for $elem_name<T> where T: ::OutputType {
+            impl<T> ::dom::Element<T> for #elem_name<T> where T: ::OutputType {
                 fn name() -> &'static str {
-                    $name
+                    #name
                 }
 
                 fn attribute_names() -> &'static [&'static str] {
-                    &[ $attrs ]
+                    &[ #attrs ]
                 }
 
                 fn required_children() -> &'static [&'static str] {
-                    &[ $reqs ]
+                    &[ #reqs ]
                 }
 
                 fn attributes(&self) -> Vec<(&'static str, String)> {
                     let mut out = Vec::new();
-                    $push_attrs
+                    #push_attrs
                     for (key, value) in &self.data_attributes {
                         out.push((key, value.to_string()));
                     }
@@ -255,7 +257,7 @@ impl Declare {
         for t in &self.traits {
             let name = t.clone();
             body.extend(quote!(
-                impl<T> $name<T> for $elem_name<T> where T: ::OutputType {}
+                impl<T> #name<T> for #elem_name<T> where T: ::OutputType {}
             ));
         }
         body
@@ -276,7 +278,7 @@ impl Declare {
         let mut print_req_children = TokenStream::new();
         for (child_name, _, _) in self.req_children() {
             print_req_children.extend(quote!(
-                self.$child_name.fmt(f)?;
+                self.#child_name.fmt(f)?;
             ));
         }
 
@@ -286,8 +288,8 @@ impl Declare {
                     write!(f, "/>")
                 } else {
                     write!(f, ">")?;
-                    $print_opt_children
-                    write!(f, "</{}>", $name)
+                    #print_opt_children
+                    write!(f, "</{}>", #name)
                 })
             } else {
                 quote!(write!(f, "/>"))
@@ -295,17 +297,17 @@ impl Declare {
         } else {
             quote!(
                 write!(f, ">")?;
-                $print_req_children
-                $print_opt_children
-                write!(f, "</{}>", $name)
+                #print_req_children
+                #print_opt_children
+                write!(f, "</{}>", #name)
             )
         };
 
         let mut print_attrs = TokenStream::new();
         for (attr_name, _, attr_str) in self.attrs() {
             print_attrs.extend(quote!(
-                if let Some(ref value) = self.attrs.$attr_name {
-                    write!(f, " {}=\"{}\"", $attr_str,
+                if let Some(ref value) = self.attrs.#attr_name {
+                    write!(f, " {}=\"{}\"", #attr_str,
                            ::htmlescape::encode_attribute(&value.to_string()))?;
                 }
             ));
@@ -316,24 +318,24 @@ impl Declare {
             let event_name = TokenTree::Ident(Ident::new(event, Span::call_site()));
             let event_str = TokenTree::Literal(Literal::string(event));
             print_events.extend(quote!(
-                if let Some(ref value) = self.events.$event_name {
-                    write!(f, " on{}=\"{}\"", $event_str,
+                if let Some(ref value) = self.events.#event_name {
+                    write!(f, " on{}=\"{}\"", #event_str,
                            ::htmlescape::encode_attribute(value.render().unwrap().as_str()))?;
                 }
             ));
         }
 
         quote!(
-            impl<T> std::fmt::Display for $elem_name<T> where T: ::OutputType {
+            impl<T> std::fmt::Display for #elem_name<T> where T: ::OutputType {
                 fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
-                    write!(f, "<{}", $name)?;
-                    $print_attrs
+                    write!(f, "<{}", #name)?;
+                    #print_attrs
                     for (key, value) in &self.data_attributes {
                         write!(f, " data-{}=\"{}\"", key,
                                ::htmlescape::encode_attribute(&value))?;
                     }
-                    $print_events
-                    $print_children
+                    #print_events
+                    #print_children
                 }
             }
         )

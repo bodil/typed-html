@@ -1,17 +1,10 @@
 //! This crate provides the `html!` macro for building HTML documents inside your
 //! Rust code using roughly [JSX] compatible syntax.
 //!
-//! # Nightly Warning!
-//!
-//! This crate currently needs nightly rustc, and in order to use it you'll need to
-//! add `#![feature(proc_macro_hygiene)]` to the top of your crate.  The compiler
-//! will tell you to do this if you forget. When this feature stabilises, the crate
-//! should work on stable rustc without issues.
-//!
 //! # Quick Preview
 //!
 //! ```
-//! # #![feature(proc_macro_hygiene)]
+//! # #![recursion_limit = "128"]
 //! # use typed_html::{html, for_events};
 //! # use typed_html::dom::{DOMTree, VNode};
 //! # use typed_html::types::Metadata;
@@ -95,7 +88,6 @@
 //! ## Example
 //!
 //! ```
-//! # #![feature(proc_macro_hygiene)]
 //! # use typed_html::html;
 //! # use typed_html::dom::DOMTree;
 //! # use typed_html::types::{Class, SpacedSet};
@@ -126,7 +118,6 @@
 //! ## Example
 //!
 //! ```
-//! # #![feature(proc_macro_hygiene)]
 //! # use typed_html::{html, text};
 //! # use typed_html::dom::DOMTree;
 //! # fn main() {
@@ -154,7 +145,6 @@
 //! ensure you're not using any event handlers that can't be printed.
 //!
 //! ```
-//! # #![feature(proc_macro_hygiene)]
 //! # use typed_html::html;
 //! # use typed_html::dom::DOMTree;
 //! # fn main() {
@@ -208,11 +198,15 @@ pub extern crate htmlescape;
 extern crate http;
 extern crate language_tags;
 extern crate mime;
+extern crate proc_macro_hack;
+extern crate proc_macro_nested;
 extern crate stdweb;
 extern crate strum;
 extern crate typed_html_macros;
 
-#[doc(inline)]
+use proc_macro_hack::proc_macro_hack;
+
+#[proc_macro_hack(support_nested)]
 pub use typed_html_macros::html;
 
 pub mod dom;

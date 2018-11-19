@@ -113,7 +113,7 @@ impl<A: Ord + Debug> Debug for SpacedSet<A> {
     }
 }
 
-impl<A: Ord + FromStr> From<(&str, &str)> for SpacedSet<A>
+impl<'a, 'b, A: Ord + FromStr> From<(&'a str, &'b str)> for SpacedSet<A>
 where
     <A as FromStr>::Err: Debug,
 {
@@ -125,7 +125,7 @@ where
     }
 }
 
-impl<A: Ord + FromStr> From<(&str, &str, &str)> for SpacedSet<A>
+impl<'a, 'b, 'c, A: Ord + FromStr> From<(&'a str, &'b str, &'c str)> for SpacedSet<A>
 where
     <A as FromStr>::Err: Debug,
 {
@@ -138,7 +138,7 @@ where
     }
 }
 
-impl<A: Ord + FromStr> From<(&str, &str, &str, &str)> for SpacedSet<A>
+impl<'a, 'b, 'c, 'd, A: Ord + FromStr> From<(&'a str, &'b str, &'c str, &'d str)> for SpacedSet<A>
 where
     <A as FromStr>::Err: Debug,
 {
@@ -152,7 +152,8 @@ where
     }
 }
 
-impl<A: Ord + FromStr> From<(&str, &str, &str, &str, &str)> for SpacedSet<A>
+impl<'a, 'b, 'c, 'd, 'e, A: Ord + FromStr> From<(&'a str, &'b str, &'c str, &'d str, &'e str)>
+    for SpacedSet<A>
 where
     <A as FromStr>::Err: Debug,
 {
@@ -167,7 +168,8 @@ where
     }
 }
 
-impl<A: Ord + FromStr> From<(&str, &str, &str, &str, &str, &str)> for SpacedSet<A>
+impl<'a, 'b, 'c, 'd, 'e, 'f, A: Ord + FromStr>
+    From<(&'a str, &'b str, &'c str, &'d str, &'e str, &'f str)> for SpacedSet<A>
 where
     <A as FromStr>::Err: Debug,
 {
@@ -183,7 +185,16 @@ where
     }
 }
 
-impl<A: Ord + FromStr> From<(&str, &str, &str, &str, &str, &str, &str)> for SpacedSet<A>
+impl<'a, 'b, 'c, 'd, 'e, 'f, 'g, A: Ord + FromStr>
+    From<(
+        &'a str,
+        &'b str,
+        &'c str,
+        &'d str,
+        &'e str,
+        &'f str,
+        &'g str,
+    )> for SpacedSet<A>
 where
     <A as FromStr>::Err: Debug,
 {
@@ -200,7 +211,17 @@ where
     }
 }
 
-impl<A: Ord + FromStr> From<(&str, &str, &str, &str, &str, &str, &str, &str)> for SpacedSet<A>
+impl<'a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, A: Ord + FromStr>
+    From<(
+        &'a str,
+        &'b str,
+        &'c str,
+        &'d str,
+        &'e str,
+        &'f str,
+        &'g str,
+        &'h str,
+    )> for SpacedSet<A>
 where
     <A as FromStr>::Err: Debug,
 {
@@ -220,7 +241,7 @@ where
 
 macro_rules! spacedlist_from_array {
     ($num:tt) => {
-        impl<A: Ord + FromStr> From<[&str; $num]> for SpacedSet<A>
+        impl<'a, A: Ord + FromStr> From<[&'a str; $num]> for SpacedSet<A>
         where
             <A as FromStr>::Err: Debug,
         {

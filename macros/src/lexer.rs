@@ -1,5 +1,7 @@
 use error::HtmlParseError;
-use proc_macro::{Delimiter, Group, Ident, Literal, Punct, Span, TokenStream, TokenTree};
+use proc_macro2::{Delimiter, Group, Ident, Literal, Punct, Span, TokenStream, TokenTree};
+
+use std::iter::FromIterator;
 
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
 
@@ -51,7 +53,7 @@ impl From<Token> for TokenTree {
 
 impl From<Token> for TokenStream {
     fn from(token: Token) -> Self {
-        TokenTree::from(token).into()
+        TokenStream::from_iter(vec![TokenTree::from(token)])
     }
 }
 
