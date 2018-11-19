@@ -37,7 +37,7 @@ let doc_str = doc.to_string();
 
 This macro largely follows [JSX] syntax, but with some differences:
 
-* Text nodes must be quoted, because there's only so much Rust's tokeniser can
+* Text nodes must be quoted, because there's only so much Rust's tokenizer can
   handle outside string literals. So, instead of `<p>Hello</p>`, you need to
   write `<p>"Hello"</p>`. (The parser will throw an error asking you to do this
   if you forget.)
