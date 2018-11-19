@@ -1,0 +1,14 @@
+[package]
+name = "typed-html-tests"
+version = "0.0.0"
+authors = ["Bodil Stokke <bodil@bodil.org>"]
+publish = false
+
+[[bin]]
+name = "typed-html-tests"
+path = "main.rs"
+
+[dev-dependencies]
+compiletest_rs = { version = "0.3", features = ["stable"] }
+typed-html = { path = "../typed-html" }
+typed-html-macros = { path = "../macros" }

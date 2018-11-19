@@ -1,0 +1,8 @@
+error: expected identifier
+  --> $DIR/expected-token.rs:10:10
+   |
+10 |         <@>
+   |          ^
+
+error: aborting due to previous error
+

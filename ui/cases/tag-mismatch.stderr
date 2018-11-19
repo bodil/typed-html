@@ -1,0 +1,14 @@
+error: expected closing tag '</html>', found '</head>'
+  --> $DIR/tag-mismatch.rs:10:17
+   |
+10 |         <html></head>
+   |                 ^^^^
+   |
+help: opening tag is here:
+  --> $DIR/tag-mismatch.rs:10:10
+   |
+10 |         <html></head>
+   |          ^^^^
+
+error: aborting due to previous error
+
