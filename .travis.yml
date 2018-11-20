@@ -5,6 +5,8 @@ cache:
     - /home/travis/.cargo
 
 matrix:
+  allow_failures:
+    - rust: nightly
   include:
     - rust: nightly
       script: cargo test
