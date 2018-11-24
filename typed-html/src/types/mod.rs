@@ -68,11 +68,11 @@ pub enum Bool {
 
 impl From<bool> for Bool {
     fn from(v: bool) -> Self {
-      if (v) {
-        Bool::True
-      } else {
-        Bool::False
-      }
+        if v {
+            Bool::True
+        } else {
+            Bool::False
+        }
     }
 }
 
