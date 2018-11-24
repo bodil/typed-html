@@ -26,6 +26,7 @@ impl<'r> Responder<'r> for Html {
 
 #[get("/")]
 fn index() -> Html {
+    let a = false;
     Html(html!(
         <html>
             <head>
@@ -44,7 +45,7 @@ fn index() -> Html {
                     })
                 }
                 <p>"<img src=\"javascript:alert('pwned lol')\">"</p>
-                <button onclick="alert('She is not a cat.')">"Click me!"</button>
+                <button disabled=a onclick="alert('She is not a cat.')">"Click me!"</button>
             </body>
         </html>
     ))
