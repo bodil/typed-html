@@ -33,6 +33,7 @@ fn index() -> Html {
                 <link rel=LinkType::StyleSheet href="lol.css"/>
             </head>
             <body>
+                <div></div>
                 <h1 data-lol="omg">"Hello Kitty!"</h1>
                 <p class="official-position-of-sanrio-ltd emphasis">
                     "She is not a "<em><a href="https://en.wikipedia.org/wiki/Cat">"cat"</a></em>". She is a "<em>"human girl"</em>"."
