@@ -238,7 +238,7 @@ declare_elements!{
         optimum: isize,
         form: Id,
     } in [FlowContent, PhrasingContent] with PhrasingContent;
-    nav in [FlowContent, SectioningContent] with PhrasingContent;
+    nav in [FlowContent, SectioningContent] with FlowContent;
     noscript in [MetadataContent, FlowContent, PhrasingContent] with Node;
     object {
         data: Uri,
