@@ -59,6 +59,24 @@ pub enum ButtonType {
 }
 
 #[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
+pub enum Bool {
+    #[strum(to_string = "true")]
+    True,
+    #[strum(to_string = "")]
+    False,
+}
+
+impl From<bool> for Bool {
+    fn from(v: bool) -> Self {
+        if v {
+            Bool::True
+        } else {
+            Bool::False
+        }
+    }
+}
+
+#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
 pub enum CrossOrigin {
     #[strum(to_string = "anonymous")]
     Anonymous,

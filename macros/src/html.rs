@@ -154,6 +154,7 @@ impl Element {
             .collect::<Result<Vec<TokenStream>, TokenStream>>()?;
 
         let mut body = TokenStream::new();
+
         for (attr_str, key, value) in attrs {
             match value {
                 TokenTree::Literal(lit) if is_string_literal(lit) => {
