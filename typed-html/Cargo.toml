@@ -1,6 +1,6 @@
 [package]
 name = "typed-html"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Bodil Stokke <bodil@bodil.org>"]
 license = "MPL-2.0+"
 description = "Type checked JSX for Rust"
@@ -15,7 +15,7 @@ travis-ci = { repository = "bodil/typed-html" }
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-typed-html-macros = { path = "../macros" }
+typed-html-macros = "0.1.1"
 strum = "0.11.0"
 strum_macros = "0.11.0"
 mime = "0.3.12"
