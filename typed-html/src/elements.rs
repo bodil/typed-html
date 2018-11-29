@@ -8,24 +8,43 @@ use types::*;
 
 // Marker traits for element content groups
 
-pub trait MetadataContent<T: OutputType>: Node<T> {}
-pub trait FlowContent<T: OutputType>: Node<T> {}
-pub trait SectioningContent<T: OutputType>: Node<T> {}
-pub trait HeadingContent<T: OutputType>: Node<T> {}
+macro_rules! marker_trait {
+    ($trait:ident) => {
+        marker_trait!($trait, Node);
+    };
+
+    ($trait:ident, $parent:ident) => {
+        pub trait $trait<T: OutputType>: $parent<T> {}
+
+        impl<T> IntoIterator for Box<dyn $trait<T>> where T: OutputType {
+            type Item = Box<dyn $trait<T>>;
+            type IntoIter = std::vec::IntoIter<Box<dyn $trait<T>>>;
+
+            fn into_iter(self) -> Self::IntoIter {
+                vec![self].into_iter()
+            }
+        }
+    };
+}
+
+marker_trait!(MetadataContent);
+marker_trait!(FlowContent);
+marker_trait!(SectioningContent);
+marker_trait!(HeadingContent);
 // Phrasing content seems to be entirely a subclass of FlowContent
-pub trait PhrasingContent<T: OutputType>: FlowContent<T> {}
-pub trait EmbeddedContent<T: OutputType>: Node<T> {}
-pub trait InteractiveContent<T: OutputType>: Node<T> {}
-pub trait FormContent<T: OutputType>: Node<T> {}
+marker_trait!(PhrasingContent, FlowContent);
+marker_trait!(EmbeddedContent);
+marker_trait!(InteractiveContent);
+marker_trait!(FormContent);
 
 // Traits for elements that are more picky about their children
-pub trait DescriptionListContent<T: OutputType>: Node<T> {}
-pub trait HGroupContent<T: OutputType>: Node<T> {}
-pub trait MapContent<T: OutputType>: Node<T> {}
-pub trait MediaContent<T: OutputType>: Node<T> {} // <audio> and <video>
-pub trait SelectContent<T: OutputType>: Node<T> {}
-pub trait TableContent<T: OutputType>: Node<T> {}
-pub trait TableColumnContent<T: OutputType>: Node<T> {}
+marker_trait!(DescriptionListContent);
+marker_trait!(HGroupContent);
+marker_trait!(MapContent);
+marker_trait!(MediaContent); // <audio> and <video>
+marker_trait!(SelectContent);
+marker_trait!(TableContent);
+marker_trait!(TableColumnContent);
 
 declare_elements!{
     html {
@@ -79,11 +98,11 @@ declare_elements!{
     article in [FlowContent, SectioningContent] with FlowContent;
     aside in [FlowContent, SectioningContent] with FlowContent;
     audio {
-        autoplay: Bool,
-        controls: Bool,
+        autoplay: bool,
+        controls: bool,
         crossorigin: CrossOrigin,
-        loop: Bool,
-        muted: Bool,
+        loop: bool,
+        muted: bool,
         preload: Preload,
         src: Uri,
     } in [FlowContent, PhrasingContent, EmbeddedContent] with MediaContent;
@@ -95,13 +114,13 @@ declare_elements!{
     } in [FlowContent] with FlowContent;
     br in [FlowContent, PhrasingContent];
     button {
-        autofocus: Bool,
-        disabled: Bool,
+        autofocus: bool,
+        disabled: bool,
         form: Id,
         formaction: Uri,
         formenctype: FormEncodingType,
         formmethod: FormMethod,
-        formnovalidate: Bool,
+        formnovalidate: bool,
         formtarget: Target,
         name: Id,
         type: ButtonType,
@@ -122,7 +141,7 @@ declare_elements!{
         datetime: Datetime,
     } in [FlowContent, PhrasingContent] with FlowContent;
     details {
-        open: Bool,
+        open: bool,
     } in [FlowContent, SectioningContent, InteractiveContent] with [summary] FlowContent;
     dfn in [FlowContent, PhrasingContent] with PhrasingContent;
     div in [FlowContent] with FlowContent;
@@ -146,7 +165,7 @@ declare_elements!{
         enctype: FormEncodingType,
         method: FormMethod,
         name: Id,
-        novalidate: Bool,
+        novalidate: bool,
         target: Target,
     } in [FlowContent] with FlowContent;
     h1 in [FlowContent, HeadingContent, HGroupContent] with PhrasingContent;
@@ -161,8 +180,8 @@ declare_elements!{
     i in [FlowContent, PhrasingContent] with PhrasingContent;
     iframe {
         allow: FeaturePolicy,
-        allowfullscreen: Bool,
-        allowpaymentrequest: Bool,
+        allowfullscreen: bool,
+        allowpaymentrequest: bool,
         height: usize,
         name: Id,
         referrerpolicy: ReferrerPolicy,
@@ -176,7 +195,7 @@ declare_elements!{
         crossorigin: CrossOrigin,
         decoding: ImageDecoding,
         height: usize,
-        ismap: Bool,
+        ismap: bool,
         sizes: SpacedList<String>, // FIXME it's not really just a string
         src: Uri,
         srcset: String, // FIXME this is much more complicated
@@ -185,12 +204,12 @@ declare_elements!{
     } in [FlowContent, PhrasingContent, EmbeddedContent];
     input {
         autocomplete: String,
-        autofocus: Bool,
-        disabled: Bool,
+        autofocus: bool,
+        disabled: bool,
         form: Id,
         list: Id,
         name: Id,
-        required: Bool,
+        required: bool,
         tabindex: usize,
         type: InputType,
         value: String,
@@ -227,12 +246,12 @@ declare_elements!{
         height: usize,
         name: Id,
         type: Mime,
-        typemustmatch: Bool,
+        typemustmatch: bool,
         usemap: String, // TODO should be a fragment starting with '#'
         width: usize,
     } in [FlowContent, PhrasingContent, EmbeddedContent, InteractiveContent, FormContent] with param;
     ol {
-        reversed: Bool,
+        reversed: bool,
         start: isize,
         type: OrderedListType,
     } in [FlowContent] with li;
@@ -254,11 +273,11 @@ declare_elements!{
     s in [FlowContent, PhrasingContent] with PhrasingContent;
     samp in [FlowContent, PhrasingContent] with PhrasingContent;
     script {
-        async: Bool,
+        async: bool,
         crossorigin: CrossOrigin,
-        defer: Bool,
+        defer: bool,
         integrity: Integrity,
-        nomodule: Bool,
+        nomodule: bool,
         nonce: Nonce,
         src: Uri,
         text: String,
@@ -267,12 +286,12 @@ declare_elements!{
     section in [FlowContent, SectioningContent] with FlowContent;
     select {
         autocomplete: String,
-        autofocus: Bool,
-        disabled: Bool,
+        autofocus: bool,
+        disabled: bool,
         form: Id,
-        multiple: Bool,
+        multiple: bool,
         name: Id,
-        required: Bool,
+        required: bool,
         size: usize,
     } in [FlowContent, PhrasingContent, InteractiveContent, FormContent] with SelectContent;
     small in [FlowContent, PhrasingContent] with PhrasingContent;
@@ -284,16 +303,16 @@ declare_elements!{
     template in [MetadataContent, FlowContent, PhrasingContent, TableColumnContent] with Node;
     textarea {
         autocomplete: OnOff,
-        autofocus: Bool,
+        autofocus: bool,
         cols: usize,
-        disabled: Bool,
+        disabled: bool,
         form: Id,
         maxlength: usize,
         minlength: usize,
         name: Id,
         placeholder: String,
-        readonly: Bool,
-        required: Bool,
+        readonly: bool,
+        required: bool,
         rows: usize,
         spellcheck: BoolOrDefault,
         wrap: Wrap,
@@ -310,7 +329,7 @@ declare_elements!{
     area {
         alt: String,
         coords: String, // TODO could perhaps be validated
-        download: Bool,
+        download: bool,
         href: Uri,
         hreflang: LanguageTag,
         ping: SpacedList<Uri>,
@@ -333,13 +352,13 @@ declare_elements!{
         value: isize,
     } with FlowContent;
     option {
-        disabled: Bool,
+        disabled: bool,
         label: String,
-        selected: Bool,
+        selected: bool,
         value: String,
     } in [SelectContent] with TextNode;
     optgroup {
-        disabled: Bool,
+        disabled: bool,
         label: String,
     } in [SelectContent] with option;
     param {
@@ -368,7 +387,7 @@ declare_elements!{
     thead in [TableContent] with tr;
     tr in [TableContent] with TableColumnContent;
     track {
-        default: Bool,
+        default: bool,
         kind: VideoKind,
         label: String,
         src: Uri,
@@ -386,7 +405,7 @@ declare_elements!{
         loop: isize,
         scrollamount: usize,
         scrolldelay: usize,
-        truespeed: Bool,
+        truespeed: bool,
         vspace: String, // FIXME size
         width: String, // FIXME size
     } in [FlowContent, PhrasingContent] with PhrasingContent;

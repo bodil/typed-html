@@ -73,6 +73,15 @@ pub trait Node<T: OutputType>: Display {
     fn vnode(&mut self) -> VNode<T>;
 }
 
+impl<T> IntoIterator for Box<dyn Node<T>> where T: OutputType {
+    type Item = Box<dyn Node<T>>;
+    type IntoIter = std::vec::IntoIter<Box<dyn Node<T>>>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        vec![self].into_iter()
+    }
+}
+
 /// Trait for querying a typed HTML element.
 ///
 /// All [HTML elements][elements] implement this.
