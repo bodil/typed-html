@@ -25,7 +25,13 @@ impl Node {
                 let text = TokenTree::Literal(text);
                 Ok(quote!(Box::new(typed_html::dom::TextNode::new(#text.to_string()))))
             }
-            Node::Block(_) => panic!("cannot have a block in this position"),
+            Node::Block(group) => {
+                let span = group.span();
+                let error = "you cannot use a block as a top level element or a required child element";
+                Err(quote_spanned!{ span=>
+                    compile_error! { #error }
+                })
+            }
         }
     }
 
