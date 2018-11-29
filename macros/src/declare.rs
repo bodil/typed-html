@@ -1,7 +1,7 @@
 use proc_macro2::{Ident, Literal, Span, TokenStream, TokenTree};
 use quote::quote;
 
-use config::{global_attrs, ATTR_EVENTS};
+use config::{global_attrs, ATTR_EVENTS, SELF_CLOSING};
 use error::ParseError;
 use ident;
 use lexer::{Lexer, Token};
@@ -306,15 +306,29 @@ impl Declare {
 
         let print_children = if self.req_children.is_empty() {
             if self.opt_children.is_some() {
-                quote!(if self.children.is_empty() {
-                    write!(f, "/>")
+                if !SELF_CLOSING.contains(&elem_name.to_string().as_str()) {
+                    quote!(if self.children.is_empty() {
+                        write!(f, "></{}>", #name)
+                    } else {
+                        write!(f, ">")?;
+                        #print_opt_children
+                        write!(f, "</{}>", #name)
+                    })
                 } else {
-                    write!(f, ">")?;
-                    #print_opt_children
-                    write!(f, "</{}>", #name)
-                })
+                    quote!(if self.children.is_empty() {
+                        write!(f, " />")
+                    } else {
+                        write!(f, ">")?;
+                        #print_opt_children
+                        write!(f, "</{}>", #name)
+                    })
+                }
             } else {
-                quote!(write!(f, "/>"))
+                if !SELF_CLOSING.contains(&elem_name.to_string().as_str()) {
+                    quote!(write!(f, "></{}>", #name))
+                } else {
+                    quote!(write!(f, "/>"))
+                }
             }
         } else {
             quote!(
