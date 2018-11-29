@@ -69,6 +69,7 @@ impl Declare {
         stream.extend(self.impl_element());
         stream.extend(self.impl_marker_traits());
         stream.extend(self.impl_display());
+        stream.extend(self.impl_into_iter());
         stream
     }
 
@@ -261,6 +262,27 @@ impl Declare {
             ));
         }
         body
+    }
+
+    fn impl_into_iter(&self) -> TokenStream {
+        let elem_name = self.elem_name();
+        quote!(
+            impl<T> IntoIterator for #elem_name<T> where T: ::OutputType {
+                type Item = #elem_name<T>;
+                type IntoIter = std::vec::IntoIter<#elem_name<T>>;
+                fn into_iter(self) -> Self::IntoIter {
+                    vec![self].into_iter()
+                }
+            }
+
+            impl<T> IntoIterator for Box<#elem_name<T>> where T: ::OutputType {
+                type Item = Box<#elem_name<T>>;
+                type IntoIter = std::vec::IntoIter<Box<#elem_name<T>>>;
+                fn into_iter(self) -> Self::IntoIter {
+                    vec![self].into_iter()
+                }
+            }
+        )
     }
 
     fn impl_display(&self) -> TokenStream {
