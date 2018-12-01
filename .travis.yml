@@ -9,6 +9,6 @@ matrix:
     - rust: nightly
       script: cargo test
     - rust: beta
-      script: cargo check --manifest-path examples/wasm/Cargo.toml
+      script: cargo check --manifest-path examples/stdweb/Cargo.toml
     - rust: stable
-      script: cargo check --manifest-path examples/wasm/Cargo.toml
+      script: cargo check --manifest-path examples/stdweb/Cargo.toml
