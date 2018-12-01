@@ -1,10 +1,10 @@
 use proc_macro2::{Delimiter, Group, Ident, Literal, TokenStream, TokenTree};
 use quote::{quote, quote_spanned};
 
-use config::{required_children, ATTR_EVENTS};
+use config::required_children;
 use error::ParseError;
 use ident;
-use lexer::{Lexer, Token};
+use lexer::{to_stream, Lexer, Token};
 use map::StringyMap;
 use parser::grammar;
 
@@ -18,33 +18,34 @@ pub enum Node {
 }
 
 impl Node {
-    pub fn into_token_stream(self) -> Result<TokenStream, TokenStream> {
+    pub fn into_token_stream(self, ty: &Option<Vec<Token>>) -> Result<TokenStream, TokenStream> {
         match self {
-            Node::Element(el) => el.into_token_stream(),
+            Node::Element(el) => el.into_token_stream(ty),
             Node::Text(text) => {
                 let text = TokenTree::Literal(text);
                 Ok(quote!(Box::new(typed_html::dom::TextNode::new(#text.to_string()))))
             }
             Node::Block(group) => {
                 let span = group.span();
-                let error = "you cannot use a block as a top level element or a required child element";
-                Err(quote_spanned!{ span=>
+                let error =
+                    "you cannot use a block as a top level element or a required child element";
+                Err(quote_spanned! { span=>
                     compile_error! { #error }
                 })
             }
         }
     }
 
-    fn into_child_stream(self) -> Result<TokenStream, TokenStream> {
+    fn into_child_stream(self, ty: &Option<Vec<Token>>) -> Result<TokenStream, TokenStream> {
         match self {
             Node::Element(el) => {
-                let el = el.into_token_stream()?;
+                let el = el.into_token_stream(ty)?;
                 Ok(quote!(
                     element.children.push(#el);
                 ))
             }
             tx @ Node::Text(_) => {
-                let tx = tx.into_token_stream()?;
+                let tx = tx.into_token_stream(ty)?;
                 Ok(quote!(
                     element.children.push(#tx);
                 ))
@@ -92,10 +93,8 @@ fn extract_event_handlers(
         let prefix = "on";
         if key_name.starts_with(prefix) {
             let event_name = &key_name[prefix.len()..];
-            if ATTR_EVENTS.binary_search(&event_name).is_ok() {
-                let value = attrs.remove(&key).unwrap();
-                events.insert(ident::new_raw(event_name, key.span()), value);
-            }
+            let value = attrs.remove(&key).unwrap();
+            events.insert(ident::new_raw(event_name, key.span()), value);
         }
     }
     events
@@ -121,7 +120,7 @@ fn is_string_literal(literal: &Literal) -> bool {
 }
 
 impl Element {
-    fn into_token_stream(mut self) -> Result<TokenStream, TokenStream> {
+    fn into_token_stream(mut self, ty: &Option<Vec<Token>>) -> Result<TokenStream, TokenStream> {
         let name = self.name;
         let name_str = name.to_string();
         let typename: TokenTree = Ident::new(&name_str, name.span()).into();
@@ -151,12 +150,12 @@ impl Element {
             .children
             .split_off(req_names.len())
             .into_iter()
-            .map(Node::into_child_stream)
+            .map(|node| node.into_child_stream(ty))
             .collect::<Result<Vec<TokenStream>, TokenStream>>()?;
         let req_children = self
             .children
             .into_iter()
-            .map(Node::into_token_stream)
+            .map(|node| node.into_token_stream(ty))
             .collect::<Result<Vec<TokenStream>, TokenStream>>()?;
 
         let mut body = TokenStream::new();
@@ -226,9 +225,15 @@ impl Element {
             args.extend(quote!( #arg, ));
         }
 
+        let mut type_annotation = TokenStream::new();
+        if let Some(ty) = ty {
+            let type_var = to_stream(ty.clone());
+            type_annotation.extend(quote!(: typed_html::elements::#typename<#type_var>));
+        }
+
         Ok(quote!(
             {
-                let mut element = typed_html::elements::#typename::new(#args);
+                let mut element #type_annotation = typed_html::elements::#typename::new(#args);
                 #body
                 Box::new(element)
             }
@@ -237,6 +242,6 @@ impl Element {
 }
 
 // FIXME report a decent error when the macro contains multiple top level elements
-pub fn expand_html(input: &[Token]) -> Result<Node, ParseError> {
-    grammar::NodeParser::new().parse(Lexer::new(input))
+pub fn expand_html(input: &[Token]) -> Result<(Node, Option<Vec<Token>>), ParseError> {
+    grammar::NodeWithTypeParser::new().parse(Lexer::new(input))
 }

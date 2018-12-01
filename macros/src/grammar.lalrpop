@@ -160,12 +160,19 @@ CodeBlock: Group = BraceGroupToken => match <> {
     _ => unreachable!()
 };
 
-pub Node: Node = {
+Node: Node = {
     Element => Node::Element(<>),
     TextNode => Node::Text(<>),
     CodeBlock => Node::Block(<>),
 };
 
+pub NodeWithType: (Node, Option<Vec<Token>>) = {
+    Node => (<>, None),
+    <Node> ":" <TypeSpec> => {
+        let (node, spec) = (<>);
+        (node, Some(spec))
+    },
+};
 
 
 // The declare macro

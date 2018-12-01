@@ -9,8 +9,8 @@ use rocket::http::{ContentType, Status};
 use rocket::response::{Responder, Result};
 use rocket::{get, routes, Request, Response};
 use std::io::Cursor;
-use typed_html::types::LinkType;
 use typed_html::elements::FlowContent;
+use typed_html::types::LinkType;
 use typed_html::{dom::DOMTree, html, text, OutputType};
 
 struct Html(DOMTree<String>);
@@ -64,7 +64,7 @@ fn index() -> Html {
             <p>"<img src=\"javascript:alert('pwned lol')\">"</p>
             <button disabled=a onclick="alert('She is not a cat.')">"Click me!"</button>
         </div>
-    )))
+    : String)))
 }
 
 fn main() {
