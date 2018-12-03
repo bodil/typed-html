@@ -5,7 +5,6 @@ use std::marker::PhantomData;
 
 use super::OutputType;
 use elements::{FlowContent, PhrasingContent};
-use events::Events;
 use htmlescape::encode_minimal;
 
 /// A boxed DOM tree, as returned from the `html!` macro.
@@ -50,7 +49,7 @@ pub enum VNode<'a, T: OutputType + 'a> {
 pub struct VElement<'a, T: OutputType + 'a> {
     pub name: &'static str,
     pub attributes: Vec<(&'static str, String)>,
-    pub events: &'a mut Events<T>,
+    pub events: &'a mut T::Events,
     pub children: Vec<VNode<'a, T>>,
 }
 
@@ -73,7 +72,10 @@ pub trait Node<T: OutputType>: Display {
     fn vnode(&mut self) -> VNode<T>;
 }
 
-impl<T> IntoIterator for Box<dyn Node<T>> where T: OutputType {
+impl<T> IntoIterator for Box<dyn Node<T>>
+where
+    T: OutputType,
+{
     type Item = Box<dyn Node<T>>;
     type IntoIter = std::vec::IntoIter<Box<dyn Node<T>>>;
 

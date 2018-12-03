@@ -1,9 +1,0 @@
-[package]
-name = "typed-html-wasm-test"
-version = "0.1.0"
-authors = ["Bodil Stokke <bodil@bodil.org>"]
-
-[dependencies]
-typed-html-macros = { path = "../../macros" }
-typed-html = { path = "../../typed-html" }
-stdweb = "0.4.10"

@@ -15,13 +15,13 @@ travis-ci = { repository = "bodil/typed-html" }
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-typed-html-macros = "0.1.1"
+typed-html-macros = { path = "../macros" }
 strum = "0.11.0"
 strum_macros = "0.11.0"
 mime = "0.3.12"
 language-tags = "0.2.2"
 http = "0.1.13"
 htmlescape = "0.3.1"
-stdweb = "0.4.10"
 proc-macro-hack = "0.5.2"
 proc-macro-nested = "0.1.0"
+stdweb = { version = "0.4.10", optional = true }

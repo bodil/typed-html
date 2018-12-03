@@ -5,7 +5,7 @@
 //!
 //! ```
 //! # #![recursion_limit = "128"]
-//! # use typed_html::{html, for_events};
+//! # use typed_html::html;
 //! # use typed_html::dom::{DOMTree, VNode};
 //! # use typed_html::types::Metadata;
 //! # fn main() {
@@ -200,11 +200,14 @@ extern crate language_tags;
 extern crate mime;
 extern crate proc_macro_hack;
 extern crate proc_macro_nested;
-extern crate stdweb;
 extern crate strum;
 extern crate typed_html_macros;
 
+#[cfg(feature = "stdweb")]
+extern crate stdweb;
+
 use proc_macro_hack::proc_macro_hack;
+use std::fmt::Display;
 
 #[proc_macro_hack(support_nested)]
 pub use typed_html_macros::html;
@@ -212,14 +215,22 @@ pub use typed_html_macros::html;
 pub mod dom;
 pub mod elements;
 pub mod events;
+pub mod output;
 pub mod types;
 
 /// Marker trait for outputs
-pub trait OutputType {}
+pub trait OutputType {
+    /// The type that contains events for this output.
+    type Events: Default + Display;
+    /// The type of event targets for this output.
+    type EventTarget;
+    /// The type that's returned from attaching an event listener to a target.
+    type EventListenerHandle;
+}
 
 /// String output
-impl OutputType for String {}
-
-/// DOM output
-pub struct DOM;
-impl OutputType for DOM {}
+impl OutputType for String {
+    type Events = events::StringEvents;
+    type EventTarget = ();
+    type EventListenerHandle = ();
+}

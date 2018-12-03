@@ -1,7 +1,7 @@
-use proc_macro2::{Ident, Literal, Span, TokenStream, TokenTree};
+use proc_macro2::{Ident, Literal, TokenStream, TokenTree};
 use quote::quote;
 
-use config::{global_attrs, ATTR_EVENTS, SELF_CLOSING};
+use config::{global_attrs, SELF_CLOSING};
 use error::ParseError;
 use ident;
 use lexer::{Lexer, Token};
@@ -104,10 +104,9 @@ impl Declare {
 
         quote!(
             pub struct #elem_name<T> where T: ::OutputType {
-                phantom_output: std::marker::PhantomData<T>,
                 pub attrs: #attr_type_name,
                 pub data_attributes: Vec<(&'static str, String)>,
-                pub events: ::events::Events<T>,
+                pub events: T::Events,
                 #body
             }
         )
@@ -144,8 +143,7 @@ impl Declare {
             impl<T> #elem_name<T> where T: ::OutputType {
                 pub fn new(#args) -> Self {
                     #elem_name {
-                        phantom_output: std::marker::PhantomData,
-                        events: ::events::Events::default(),
+                        events: T::Events::default(),
                         #body
                     }
                 }
@@ -307,13 +305,11 @@ impl Declare {
         let print_children = if self.req_children.is_empty() {
             if self.opt_children.is_some() {
                 if !SELF_CLOSING.contains(&elem_name.to_string().as_str()) {
-                    quote!(if self.children.is_empty() {
-                        write!(f, "></{}>", #name)
-                    } else {
+                    quote!(
                         write!(f, ">")?;
                         #print_opt_children
                         write!(f, "</{}>", #name)
-                    })
+                    )
                 } else {
                     quote!(if self.children.is_empty() {
                         write!(f, " />")
@@ -323,12 +319,10 @@ impl Declare {
                         write!(f, "</{}>", #name)
                     })
                 }
+            } else if !SELF_CLOSING.contains(&elem_name.to_string().as_str()) {
+                quote!(write!(f, "></{}>", #name))
             } else {
-                if !SELF_CLOSING.contains(&elem_name.to_string().as_str()) {
-                    quote!(write!(f, "></{}>", #name))
-                } else {
-                    quote!(write!(f, "/>"))
-                }
+                quote!(write!(f, "/>"))
             }
         } else {
             quote!(
@@ -349,20 +343,11 @@ impl Declare {
             ));
         }
 
-        let mut print_events = TokenStream::new();
-        for event in ATTR_EVENTS {
-            let event_name = TokenTree::Ident(Ident::new(event, Span::call_site()));
-            let event_str = TokenTree::Literal(Literal::string(event));
-            print_events.extend(quote!(
-                if let Some(ref value) = self.events.#event_name {
-                    write!(f, " on{}=\"{}\"", #event_str,
-                           ::htmlescape::encode_attribute(value.render().unwrap().as_str()))?;
-                }
-            ));
-        }
-
         quote!(
-            impl<T> std::fmt::Display for #elem_name<T> where T: ::OutputType {
+            impl<T> std::fmt::Display for #elem_name<T>
+            where
+                T: ::OutputType,
+            {
                 fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
                     write!(f, "<{}", #name)?;
                     #print_attrs
@@ -370,7 +355,7 @@ impl Declare {
                         write!(f, " data-{}=\"{}\"", key,
                                ::htmlescape::encode_attribute(&value))?;
                     }
-                    #print_events
+                    write!(f, "{}", self.events)?;
                     #print_children
                 }
             }

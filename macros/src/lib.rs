@@ -32,7 +32,7 @@ pub fn html(input: TokenStream) -> TokenStream {
     let result = html::expand_html(&stream);
     TokenStream::from(match result {
         Err(err) => error::parse_error(&stream, &err),
-        Ok(node) => match node.into_token_stream() {
+        Ok((node, ty)) => match node.into_token_stream(&ty) {
             Err(err) => err,
             Ok(success) => success,
         },
