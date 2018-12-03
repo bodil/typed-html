@@ -1,4 +1,4 @@
-use proc_macro2::{Delimiter, Group, Ident, Literal, TokenStream, TokenTree};
+use proc_macro2::{Delimiter, Group, Ident, Literal, Span, TokenStream, TokenTree};
 use quote::{quote, quote_spanned};
 
 use config::required_children;
@@ -213,6 +213,16 @@ impl Element {
         body.extend(opt_children);
 
         for (key, value) in events.iter() {
+            if ty.is_none() {
+                let mut err = quote_spanned! { key.span() =>
+                    compile_error! { "when using event handlers, you must declare the output type inside the html! macro" }
+                };
+                let hint = quote_spanned! { Span::call_site() =>
+                    compile_error! { "for example: change html!(<div>...</div>) to html!(<div>...</div> : String)" }
+                };
+                err.extend(hint);
+                return Err(err);
+            }
             let key = TokenTree::Ident(key.clone());
             let value = process_value(value);
             body.extend(quote!(
