@@ -410,3 +410,13 @@ declare_elements!{
         width: String, // FIXME size
     } in [FlowContent, PhrasingContent] with PhrasingContent;
 }
+
+#[test]
+fn test_data_attributes() {
+    use crate as typed_html;
+    use crate::dom::DOMTree;
+
+    let frag: DOMTree<String> = html!(<div data-id="1234">"Boo!"</div>);
+
+    assert_eq!("<div data-id=\"1234\">Boo!</div>", frag.to_string());
+}

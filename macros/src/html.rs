@@ -77,7 +77,7 @@ fn extract_data_attrs(attrs: &mut StringyMap<Ident, TokenTree>) -> StringyMap<St
         let prefix = "data_";
         if key_name.starts_with(prefix) {
             let value = attrs.remove(&key).unwrap();
-            data.insert(format!("data-{}", &key_name[prefix.len()..]), value);
+            data.insert(key_name[prefix.len()..].to_string(), value);
         }
     }
     data
