@@ -1,0 +1,18 @@
+[package]
+name = "typed-html-web-sys-test"
+version = "0.1.0"
+authors = ["Bodil Stokke <bodil@bodil.org>"]
+
+[dependencies]
+typed-html = { path = "../../typed-html", features = ["websys"] }
+
+[dependencies.web-sys] 
+version = "0.3"
+features = [
+  'Document',
+  'Element',
+  'HtmlElement',
+  'Node',
+  'Window',
+  'MouseEvent',
+]

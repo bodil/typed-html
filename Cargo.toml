@@ -3,6 +3,7 @@ members = [
     "typed-html",
     "macros",
     "examples/stdweb",
+    "examples/web_sys",
     "examples/rocket",
     "ui",
 ]

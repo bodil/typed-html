@@ -14,6 +14,10 @@ keywords = ["jsx", "html", "wasm"]
 travis-ci = { repository = "bodil/typed-html" }
 maintenance = { status = "actively-developed" }
 
+
+[features]
+"websys" = [ "wasm-bindgen", "web-sys", "js-sys" ]
+
 [dependencies]
 typed-html-macros = { path = "../macros" }
 strum = "0.11.0"
@@ -25,3 +29,26 @@ htmlescape = "0.3.1"
 proc-macro-hack = "0.5.2"
 proc-macro-nested = "0.1.0"
 stdweb = { version = "0.4.10", optional = true }
+
+[dependencies.web-sys] 
+version = "0.3"
+optional = true
+features = [
+  'Document',
+  'Element',
+  'Text',
+  'Node',
+  'Window',
+  'Event',
+  'MouseEvent',
+  'EventListener',
+  'EventTarget',
+]
+
+[dependencies.js-sys]
+version = "0.3"
+optional = true
+
+[dependencies.wasm-bindgen]
+version = "0.2"
+optional = true
