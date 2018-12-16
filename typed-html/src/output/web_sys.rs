@@ -18,6 +18,7 @@ use dom::VNode;
 use events::{EventHandler, IntoEventHandler};
 
 pub struct EventListenerHandle {
+    // TODO: Grok memory management
     // pub target: EventTarget,
     // pub func: Closure<dyn FnMut()>,
     // pub name: &'static str,
@@ -191,11 +192,9 @@ where
         let handler = self.0.take().unwrap();
         let name = Self::EVENT_TYPE;
         let func = Closure::wrap(Box::new(handler) as Box<dyn FnMut(_)>);
+        let r = target.add_event_listener_with_callback(name, func.as_ref().unchecked_ref());
         EventListenerHandle {
-            // target,
-            // name,
-            // func,
-            r: target.add_event_listener_with_callback(name, func.as_ref().unchecked_ref())
+            r,
         }
     }
 
@@ -227,7 +226,7 @@ impl WebSys {
 
                 WebSys::install_handlers(&mut node_et, element.events);
 
-                let mut node = node_et.dyn_into::<web_sys::Element>().unwrap();
+                let mut node = node_et.dyn_into::<web_sys::Element>()?;
 
                 for child in element.children {
                     let child_node = WebSys::build(document, child)?;
