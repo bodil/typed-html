@@ -18,7 +18,7 @@ fn main() {
                 ". She is a "<em>"human girl"</em>"."
             </p>
             <p>
-                <button onclick={ |_event| web_sys::window().unwrap().alert_with_message("Hello Joe!") }>
+                <button onclick={ |_event| web_sys::window().unwrap().alert_with_message("Hello Joe!").unwrap() }>
                     "Call Joe"
                 </button>
             </p>
@@ -29,5 +29,5 @@ fn main() {
     let document = window.document().expect("should have a document on window");
     let body = document.body().expect("document should have a body");
     let tree = WebSys::build(&document, vdom).unwrap();
-    body.append_child(&tree);
+    body.append_child(&tree).unwrap();
 }
