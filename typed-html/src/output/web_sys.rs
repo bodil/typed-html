@@ -47,7 +47,7 @@ macro_rules! declare_events {
         }
         $(
         impl<F, E> EventName<$type> for EFn<F, E> {
-           const EVENT_TYPE: &'static str = stringify!(on$name);
+           const EVENT_TYPE: &'static str = stringify!($name);
         }
         )*
 
@@ -193,6 +193,7 @@ where
         let name = Self::EVENT_TYPE;
         let func = Closure::wrap(Box::new(handler) as Box<dyn FnMut(_)>);
         let r = target.add_event_listener_with_callback(name, func.as_ref().unchecked_ref());
+        func.forget();
         EventListenerHandle {
             r,
         }
