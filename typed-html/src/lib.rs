@@ -195,7 +195,6 @@
 extern crate strum_macros;
 
 pub extern crate htmlescape;
-extern crate http;
 extern crate language_tags;
 extern crate mime;
 extern crate proc_macro_hack;
