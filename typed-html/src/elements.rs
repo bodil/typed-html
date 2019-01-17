@@ -1,5 +1,7 @@
 //! Types for all standard HTML5 elements.
 
+#![allow(non_camel_case_types)]
+
 use typed_html_macros::declare_elements;
 
 use super::OutputType;
