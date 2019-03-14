@@ -5,7 +5,14 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>typed-html WASM example</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="./typed-html-stdweb-test.js"></script>
+  <script src="typed_html_web_sys_test.js"></script>
+  <script>
+    window.addEventListener("load", () => {
+      wasm_bindgen('./typed_html_web_sys_test_bg.wasm').then(() => {
+        wasm_bindgen.main();
+      });
+    })
+  </script>
 </head>
 <body>
 </body>

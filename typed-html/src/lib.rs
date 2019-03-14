@@ -205,6 +205,13 @@ extern crate typed_html_macros;
 #[cfg(feature = "stdweb")]
 extern crate stdweb;
 
+#[cfg(feature = "websys")]
+extern crate web_sys;
+#[cfg(feature = "websys")]
+extern crate js_sys;
+#[cfg(feature = "websys")]
+extern crate wasm_bindgen;
+
 use proc_macro_hack::proc_macro_hack;
 use std::fmt::Display;
 

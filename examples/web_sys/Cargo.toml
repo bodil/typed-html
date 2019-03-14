@@ -1,0 +1,22 @@
+[package]
+name = "typed-html-web-sys-test"
+version = "0.1.0"
+authors = ["Bodil Stokke <bodil@bodil.org>"]
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+typed-html = { path = "../../typed-html", features = ["websys"] }
+wasm-bindgen = "0.2"
+
+[dependencies.web-sys] 
+version = "0.3"
+features = [
+  'Document',
+  'Element',
+  'HtmlElement',
+  'Node',
+  'Window',
+  'MouseEvent',
+]
