@@ -1,12 +1,12 @@
 use proc_macro2::{Delimiter, Group, Ident, Literal, Span, TokenStream, TokenTree};
 use quote::{quote, quote_spanned};
 
-use config::required_children;
-use error::ParseError;
-use ident;
-use lexer::{to_stream, Lexer, Token};
-use map::StringyMap;
-use parser::grammar;
+use crate::config::required_children;
+use crate::error::ParseError;
+use crate::ident;
+use crate::lexer::{to_stream, Lexer, Token};
+use crate::map::StringyMap;
+use crate::parser::grammar;
 
 use std::iter::FromIterator;
 

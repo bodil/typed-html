@@ -1,6 +1,6 @@
 use ansi_term::Style;
 use lalrpop_util::ParseError::*;
-use lexer::Token;
+use crate::lexer::Token;
 use proc_macro2::{Ident, TokenStream};
 use quote::{quote, quote_spanned};
 

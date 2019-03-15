@@ -1,5 +1,7 @@
 //! Types for attribute values.
 
+use strum_macros::*;
+
 mod class;
 pub use self::class::Class;
 

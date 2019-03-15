@@ -1,4 +1,4 @@
-use error::HtmlParseError;
+use crate::error::HtmlParseError;
 use proc_macro2::{Delimiter, Group, Ident, Literal, Punct, Span, TokenStream, TokenTree};
 
 use std::iter::FromIterator;

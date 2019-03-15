@@ -3,8 +3,8 @@
 use std::fmt::Display;
 use std::marker::PhantomData;
 
-use super::OutputType;
-use elements::{FlowContent, PhrasingContent};
+use crate::OutputType;
+use crate::elements::{FlowContent, PhrasingContent};
 use htmlescape::encode_minimal;
 
 /// A boxed DOM tree, as returned from the `html!` macro.

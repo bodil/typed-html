@@ -191,19 +191,7 @@
 //! [Into::into]: https://doc.rust-lang.org/std/convert/trait.Into.html#method.into
 //! [DOMTree]: dom/type.DOMTree.html
 
-#[macro_use]
-extern crate strum_macros;
-
 pub extern crate htmlescape;
-extern crate language_tags;
-extern crate mime;
-extern crate proc_macro_hack;
-extern crate proc_macro_nested;
-extern crate strum;
-extern crate typed_html_macros;
-
-#[cfg(feature = "stdweb")]
-extern crate stdweb;
 
 use proc_macro_hack::proc_macro_hack;
 use std::fmt::Display;

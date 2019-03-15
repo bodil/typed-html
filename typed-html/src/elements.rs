@@ -4,9 +4,9 @@
 
 use typed_html_macros::declare_elements;
 
-use super::OutputType;
-use dom::{Node, TextNode};
-use types::*;
+use crate::OutputType;
+use crate::dom::{Node, TextNode};
+use crate::types::*;
 
 // Marker traits for element content groups
 

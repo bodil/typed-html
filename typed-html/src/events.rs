@@ -1,6 +1,6 @@
 //! Event handlers.
 
-use super::OutputType;
+use crate::OutputType;
 use htmlescape::encode_attribute;
 use std::fmt::{Display, Error, Formatter};
 

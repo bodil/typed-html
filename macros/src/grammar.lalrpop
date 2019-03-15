@@ -1,11 +1,11 @@
-use lexer::{self, Token, to_stream};
-use error::HtmlParseError;
-use html::{Node, Element};
-use declare::Declare;
-use map::StringyMap;
+use crate::lexer::{self, Token, to_stream};
+use crate::error::HtmlParseError;
+use crate::html::{Node, Element};
+use crate::declare::Declare;
+use crate::map::StringyMap;
 use proc_macro2::{Delimiter, Ident, Literal, Group, TokenTree};
 use lalrpop_util::ParseError;
-use span;
+use crate::span;
 
 grammar;
 

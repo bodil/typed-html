@@ -1,6 +1,7 @@
 [package]
 name = "typed-html"
 version = "0.1.1"
+edition = "2018"
 authors = ["Bodil Stokke <bodil@bodil.org>"]
 license = "MPL-2.0+"
 description = "Type checked JSX for Rust"
