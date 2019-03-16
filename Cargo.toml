@@ -4,5 +4,6 @@ members = [
     "macros",
     "examples/stdweb",
     "examples/rocket",
+    "examples/dodrio",
     "ui",
 ]
