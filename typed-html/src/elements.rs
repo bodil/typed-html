@@ -347,7 +347,19 @@ declare_elements!{
     } in [FlowContent, PhrasingContent] with PhrasingContent;
     ul in [FlowContent] with li;
     var in [FlowContent, PhrasingContent] with PhrasingContent;
-    video in [FlowContent, PhrasingContent, EmbeddedContent] with MediaContent;
+    video {
+        autoplay: Bool,
+        controls: Bool,
+        crossorigin: CrossOrigin,
+        height: usize,
+        loop: Bool,
+        muted: Bool,
+        preload: Preload,
+        playsinline: Bool,
+        poster: Uri,
+        src: Uri,
+        width: usize,
+    } in [FlowContent, PhrasingContent, EmbeddedContent] with MediaContent;
     wbr in [FlowContent, PhrasingContent];
 
     // Non-group elements
