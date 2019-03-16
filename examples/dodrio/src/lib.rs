@@ -40,7 +40,7 @@ impl Render for Counter {
         let count = bumpalo::format!(in bump, "{}", self.count);
 
         dodrio!(bump,
-            <div>
+            <div id="counter">
                 <button onclick={|root, vdom, _event| {
                     // Cast the root render component to a `Counter`, since
                     // we know that's what it is.

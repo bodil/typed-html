@@ -61,6 +61,7 @@ impl Node {
         }
     }
 
+    #[cfg(feature = "dodrio")]
     pub fn into_dodrio_token_stream(
         self,
         bump: &Ident,
@@ -279,6 +280,7 @@ impl Element {
         ))
     }
 
+    #[cfg(feature = "dodrio")]
     fn into_dodrio_token_stream(
         mut self,
         bump: &Ident,
@@ -367,39 +369,59 @@ impl Element {
             }
         }
 
-        let mut builder = TokenStream::new();
-        builder.extend(quote!(
+        let mut builder = quote!(
             dodrio::builder::ElementBuilder::new(#bump, #tag_name)
-        ));
+        );
 
+        // Build an array of attributes.
+        let mut attr_array = TokenStream::new();
         for (key, _) in self.attributes.iter() {
             let key_str = TokenTree::from(Literal::string(&stringify_ident(key)));
-            builder.extend(quote!(
-                .attr(#key_str, dodrio::bumpalo::format!(in &#bump, "{}",
-                      element.attrs.#key.unwrap()).into_bump_str())
+            attr_array.extend(quote!(
+                dodrio::builder::attr(
+                    #key_str,
+                    dodrio::bumpalo::format!(
+                        in &#bump, "{}", element.attrs.#key.unwrap()
+                    ).into_bump_str()
+                ),
             ));
         }
-
         for (key, value) in data_attrs
             .iter()
             .map(|(k, v)| (TokenTree::from(Literal::string(&k)), v.clone()))
         {
-            builder.extend(quote!(
-                .attr(#key, #value.into())
+            attr_array.extend(quote!(
+                dodrio::builder::attr(
+                    #key,
+                    dodrio::bumpalo::format!(
+                        in &#bump, "{}", #value
+                    ).into_bump_str()
+                )
             ));
         }
+        builder.extend(quote!(
+            .attributes([#attr_array])
+        ));
 
+        // Build an array of event listeners.
+        let mut event_array = TokenStream::new();
         for (key, value) in events.iter() {
             let key = TokenTree::from(Literal::string(&stringify_ident(key)));
             let value = process_value(value);
-            builder.extend(quote!(
-                .on(#key, #value)
+            event_array.extend(quote!(
+                dodrio::builder::on(&#bump, #key, #value),
             ));
         }
+        builder.extend(quote!(
+            .listeners([#event_array])
+        ));
 
+        // And finally an array of children.
+        let mut child_array = TokenStream::new();
+
+        // Walk through required children and build them inline.
         let mut make_req_children = TokenStream::new();
         let mut arg_list = Vec::new();
-        let mut req_nodes = Vec::new();
         for (index, child) in req_children.into_iter().enumerate() {
             let req_child = TokenTree::from(Ident::new(
                 &format!("req_child_{}", index),
@@ -412,20 +434,20 @@ impl Element {
             make_req_children.extend(quote!(
                 let (#req_child, #child_node) = #child;
             ));
-            builder.extend(quote!(
-                .child(#child_node)
+            child_array.extend(quote!(
+                #child_node,
             ));
             arg_list.push(req_child);
-            req_nodes.push(child_node);
         }
 
         for child in opt_children {
-            builder.extend(quote!(
-                .child(#child)
+            child_array.extend(quote!(
+                #child,
             ));
         }
 
         builder.extend(quote!(
+            .children([#child_array])
             .finish()
         ));
 
@@ -443,7 +465,8 @@ impl Element {
         Ok(quote!(
             {
                 #make_req_children
-                let mut element: typed_html::elements::#typename<typed_html::output::dodrio::Dodrio> = typed_html::elements::#typename::new(#args);
+                let mut element: typed_html::elements::#typename<typed_html::output::dodrio::Dodrio> =
+                      typed_html::elements::#typename::new(#args);
                 #set_attrs
                 #builder
             }
