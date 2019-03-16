@@ -48,6 +48,7 @@ pub fn dodrio(input: TokenStream) -> TokenStream {
         Err(err) => error::parse_error(&stream, &err),
         Ok((bump, node)) => match node.into_dodrio_token_stream(&bump, false) {
             Err(err) => err,
+            // Ok(success) => {println!("{}", success); panic!()},
             Ok(success) => success,
         },
     })

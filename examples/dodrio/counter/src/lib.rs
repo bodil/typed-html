@@ -53,7 +53,7 @@ impl Render for Counter {
                     // counter on the next animation frame.
                     vdom.schedule_render();
                 }}>"+"</button>
-                { text(count.into_bump_str()) }
+                { vec![text(count.into_bump_str())] }
                 <button onclick={|root, vdom, _event| {
                     // Same as above, but decrementing instead of incrementing.
                     root.unwrap_mut::<Counter>().decrement();

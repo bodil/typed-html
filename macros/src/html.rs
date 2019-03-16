@@ -69,15 +69,14 @@ impl Node {
     ) -> Result<TokenStream, TokenStream> {
         match self {
             Node::Element(el) => el.into_dodrio_token_stream(bump, is_req_child),
-            Node::Text(text) => {
-                let text = TokenTree::Literal(text);
-                Ok(quote!(dodrio::builder::text(#text)))
-            }
+            Node::Text(text) => Ok(dodrio_text_node(text)),
             Node::Block(group) => {
-                let group: TokenTree = group.into();
-                Ok(quote!(
-                    #group
-                ))
+                let span = group.span();
+                let error =
+                    "you cannot use a block as a top level element or a required child element";
+                Err(quote_spanned! { span=>
+                    compile_error! { #error }
+                })
             }
         }
     }
@@ -88,6 +87,12 @@ pub struct Element {
     pub name: Ident,
     pub attributes: StringyMap<Ident, TokenTree>,
     pub children: Vec<Node>,
+}
+
+#[cfg(feature = "dodrio")]
+fn dodrio_text_node(text: Literal) -> TokenStream {
+    let text = TokenTree::Literal(text);
+    quote!(dodrio::builder::text(#text))
 }
 
 fn extract_data_attrs(attrs: &mut StringyMap<Ident, TokenTree>) -> StringyMap<String, TokenTree> {
@@ -140,6 +145,7 @@ fn is_string_literal(literal: &Literal) -> bool {
     literal.to_string().starts_with('"')
 }
 
+#[allow(dead_code)]
 fn stringify_ident(ident: &Ident) -> String {
     let s = ident.to_string();
     if s.starts_with("r#") {
@@ -288,7 +294,7 @@ impl Element {
     ) -> Result<TokenStream, TokenStream> {
         let name = self.name;
         let name_str = stringify_ident(&name);
-        let typename: TokenTree = Ident::new(&name_str, name.span()).into();
+        let typename: TokenTree = ident::new_raw(&name_str, name.span()).into();
         let tag_name = TokenTree::from(Literal::string(&name_str));
         let req_names = required_children(&name_str);
         if req_names.len() > self.children.len() {
@@ -312,12 +318,7 @@ impl Element {
                 value,
             )
         });
-        let opt_children = self
-            .children
-            .split_off(req_names.len())
-            .into_iter()
-            .map(|node| node.into_dodrio_token_stream(bump, false))
-            .collect::<Result<Vec<TokenStream>, TokenStream>>()?;
+        let opt_children = self.children.split_off(req_names.len());
         let req_children = self
             .children
             .into_iter()
@@ -369,38 +370,41 @@ impl Element {
             }
         }
 
+        let attr_max_len = self.attributes.len() + data_attrs.len();
         let mut builder = quote!(
-            dodrio::builder::ElementBuilder::new(#bump, #tag_name)
+            let mut attr_list = dodrio::bumpalo::collections::Vec::with_capacity_in(#attr_max_len, #bump);
         );
 
-        // Build an array of attributes.
-        let mut attr_array = TokenStream::new();
+        // Build the attributes.
         for (key, _) in self.attributes.iter() {
-            let key_str = TokenTree::from(Literal::string(&stringify_ident(key)));
-            attr_array.extend(quote!(
-                dodrio::builder::attr(
-                    #key_str,
-                    dodrio::bumpalo::format!(
-                        in &#bump, "{}", element.attrs.#key.unwrap()
-                    ).into_bump_str()
-                ),
+            let key_str = stringify_ident(key);
+            let key = ident::new_raw(&key_str, key.span());
+            let key_str = TokenTree::from(Literal::string(&key_str));
+            builder.extend(quote!(
+                let attr_value = dodrio::bumpalo::format!(
+                    in &#bump, "{}", element.attrs.#key.unwrap());
+                if !attr_value.is_empty() {
+                    attr_list.push(dodrio::builder::attr(#key_str, attr_value.into_bump_str()));
+                }
             ));
         }
         for (key, value) in data_attrs
             .iter()
             .map(|(k, v)| (TokenTree::from(Literal::string(&k)), v.clone()))
         {
-            attr_array.extend(quote!(
-                dodrio::builder::attr(
+            builder.extend(quote!(
+                attr_list.push(dodrio::builder::attr(
                     #key,
                     dodrio::bumpalo::format!(
                         in &#bump, "{}", #value
                     ).into_bump_str()
-                )
+                ));
             ));
         }
+
         builder.extend(quote!(
-            .attributes([#attr_array])
+            let mut node = dodrio::builder::ElementBuilder::new(#bump, #tag_name)
+                             .attributes(attr_list)
         ));
 
         // Build an array of event listeners.
@@ -413,21 +417,24 @@ impl Element {
             ));
         }
         builder.extend(quote!(
-            .listeners([#event_array])
+            .listeners([#event_array]);
         ));
 
-        // And finally an array of children.
+        // And finally an array of children, or a stream of builder commands
+        // if we have a group inside the child list.
         let mut child_array = TokenStream::new();
+        let mut child_builder = TokenStream::new();
+        let mut static_children = true;
 
         // Walk through required children and build them inline.
         let mut make_req_children = TokenStream::new();
         let mut arg_list = Vec::new();
         for (index, child) in req_children.into_iter().enumerate() {
-            let req_child = TokenTree::from(Ident::new(
+            let req_child = TokenTree::from(ident::new_raw(
                 &format!("req_child_{}", index),
                 Span::call_site(),
             ));
-            let child_node = TokenTree::from(Ident::new(
+            let child_node = TokenTree::from(ident::new_raw(
                 &format!("child_node_{}", index),
                 Span::call_site(),
             ));
@@ -437,23 +444,48 @@ impl Element {
             child_array.extend(quote!(
                 #child_node,
             ));
+            child_builder.extend(quote!(
+                node = node.child(#child_node);
+            ));
             arg_list.push(req_child);
         }
 
-        for child in opt_children {
+        // Build optional children, test if we have groups.
+        for child_node in opt_children {
+            let child = match child_node {
+                Node::Text(text) => dodrio_text_node(text),
+                Node::Element(el) => el.into_dodrio_token_stream(bump, false)?,
+                Node::Block(group) => {
+                    static_children = false;
+                    let group: TokenTree = group.into();
+                    child_builder.extend(quote!(
+                        for child in #group.into_iter() {
+                            node = node.child(child);
+                        }
+                    ));
+                    continue;
+                }
+            };
             child_array.extend(quote!(
                 #child,
             ));
+            child_builder.extend(quote!(
+                node = node.child(#child);
+            ));
         }
 
-        builder.extend(quote!(
-            .children([#child_array])
-            .finish()
-        ));
+        if static_children {
+            builder.extend(quote!(
+                let node = node.children([#child_array]);
+            ));
+        } else {
+            builder.extend(child_builder);
+        }
+        builder.extend(quote!(node.finish()));
 
         if is_req_child {
             builder = quote!(
-                (element, #builder)
+                (element, {#builder})
             );
         }
 
@@ -479,6 +511,7 @@ pub fn expand_html(input: &[Token]) -> Result<(Node, Option<Vec<Token>>), ParseE
     grammar::NodeWithTypeParser::new().parse(Lexer::new(input))
 }
 
+#[allow(dead_code)]
 pub fn expand_dodrio(input: &[Token]) -> Result<(Ident, Node), ParseError> {
     grammar::NodeWithBumpParser::new().parse(Lexer::new(input))
 }

@@ -28,6 +28,11 @@ where
     pub fn keys(&self) -> impl Iterator<Item = &K> {
         self.0.values().map(|(k, _)| k)
     }
+
+    #[allow(dead_code)]
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
 }
 
 impl<K, V, OK, OV> From<Vec<(OK, OV)>> for StringyMap<K, V>
