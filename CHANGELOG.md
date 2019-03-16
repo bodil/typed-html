@@ -8,6 +8,14 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+* Support for the [Dodrio](https://github.com/fitzgen/dodrio) virtual DOM renderer: the `dodrio_macro` feature flag enables the `typed_html::dodrio` macro, which generates code to build a `dodrio::Node` directly, without going via `VNode`s. (#38)
+
+### Fixed
+
+* Added the missing attributes to the `<video>` tag, which was previously listed as having none. (#32)
+
 ## [0.1.1] - 2018-11-29
 
 ### Added
