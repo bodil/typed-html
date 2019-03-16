@@ -69,6 +69,12 @@ impl From<Id> for Class {
     }
 }
 
+impl<'a> From<&'a str> for Class {
+    fn from(str: &'a str) -> Self {
+        Class::from_str(str).unwrap()
+    }
+}
+
 impl Display for Class {
     fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
         Display::fmt(&self.0, f)
