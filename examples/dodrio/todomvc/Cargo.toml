@@ -1,0 +1,49 @@
+[package]
+authors = ["Nick Fitzgerald <fitzgen@gmail.com>"]
+edition = "2018"
+name = "dodrio-todomvc"
+version = "0.1.0"
+
+[dependencies]
+cfg-if = "0.1.7"
+dodrio = "0.1.0"
+futures = "0.1.25"
+js-sys = "0.3.15"
+serde = { features = ["derive"], version = "1.0.89" }
+serde_json = "1.0.39"
+wasm-bindgen = "0.2.38"
+wasm-bindgen-futures = "0.3.15"
+typed-html = { path = "../../../typed-html", features = ["dodrio_macro"] }
+
+# Optional dependencies for logging.
+console_error_panic_hook = { optional = true, version = "0.1.6" }
+console_log = { optional = true, version = "0.1.2" }
+log = { optional = true, version = "0.4.6" }
+
+[dependencies.web-sys]
+version = "0.3.15"
+features = [
+    "Document",
+    "Event",
+    "EventTarget",
+    "HtmlElement",
+    "HtmlInputElement",
+    "KeyboardEvent",
+    "Location",
+    "Storage",
+    "Node",
+    "Window",
+]
+
+[dev-dependencies]
+wasm-bindgen-test = "0.2.38"
+
+[features]
+logging = [
+    "console_log",
+    "console_error_panic_hook",
+    "log",
+]
+
+[lib]
+crate-type = ["cdylib"]

@@ -58,6 +58,12 @@ impl FromStr for Id {
     }
 }
 
+impl<'a> From<&'a str> for Id {
+    fn from(str: &'a str) -> Self {
+        Id::from_str(str).unwrap()
+    }
+}
+
 impl From<Class> for Id {
     fn from(c: Class) -> Self {
         Id(c.to_string())

@@ -25,3 +25,6 @@ quote = "0.6.10"
 [build-dependencies]
 lalrpop = "0.16.1"
 version_check = "0.1.5"
+
+[features]
+dodrio = []

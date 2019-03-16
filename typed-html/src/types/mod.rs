@@ -105,6 +105,16 @@ pub enum FormMethod {
 }
 
 #[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
+pub enum FormDialogMethod {
+    #[strum(to_string = "post")]
+    Post,
+    #[strum(to_string = "get")]
+    Get,
+    #[strum(to_string = "dialog")]
+    Dialog,
+}
+
+#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
 pub enum HTTPEquiv {
     #[strum(to_string = "content-security-policy")]
     ContentSecurityPolicy,

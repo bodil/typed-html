@@ -4,5 +4,7 @@ members = [
     "macros",
     "examples/stdweb",
     "examples/rocket",
+    "examples/dodrio/counter",
+    "examples/dodrio/todomvc",
     "ui",
 ]

@@ -33,6 +33,11 @@ impl<A: Ord> SpacedSet<A> {
     pub fn new() -> Self {
         SpacedSet(BTreeSet::new())
     }
+
+    /// Add a value to the `SpacedSet`.
+    pub fn add<T: Into<A>>(&mut self, value: T) -> bool {
+        self.0.insert(value.into())
+    }
 }
 
 impl<A: Ord> Default for SpacedSet<A> {
