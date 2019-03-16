@@ -40,7 +40,7 @@ commands:
             - v6-cargo-cache-{{arch}}-{{checksum "rust-version"}}-{{checksum "Cargo.lock"}}
       - run:
           name: Build all targets
-          command: cargo build --tests
+          command: cargo build --tests --all-features
       - save_cache:
           paths:
             - /usr/local/cargo/registry
@@ -57,7 +57,7 @@ commands:
           name: Check all targets
           command: |
             if rustup component add clippy; then
-              cargo clippy --all --all-targets -- -Dwarnings
+              cargo clippy --all --all-targets --all-features -- -Dwarnings
             else
               echo Skipping clippy
             fi
@@ -72,7 +72,7 @@ commands:
     steps:
       - run:
           name: Run all tests
-          command: cargo test
+          command: cargo test --all-features
 
 jobs:
   check:
