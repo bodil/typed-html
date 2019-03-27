@@ -42,6 +42,7 @@ pub type DOMTree<T> = Box<Node<T>>;
 /// [Node]: trait.Node.html
 pub enum VNode<'a, T: OutputType + 'a> {
     Text(&'a str),
+    UnsafeText(&'a str),
     Element(VElement<'a, T>),
 }
 
@@ -143,6 +144,48 @@ macro_rules! text {
     };
 }
 
+/// An unsafe HTML text node.
+/// This is like TextNode, but no escaping will be performed when this node is displayed.
+pub struct UnsafeTextNode<T: OutputType>(String, PhantomData<T>);
+
+/// Macro for creating unescaped text nodes.
+///
+/// Returns a boxed text node of type `Box<UnsafeTextNode>`.
+///
+/// This macro is useful for creating text macros inside code blocks that contain HTML
+/// that you do not want to be escaped. For example, if some other process renders Markdown
+/// to an HTML string and you want embed that HTML string in a typed-html template,
+/// you may want to avoid escaping the tags in that HTML string.
+///
+/// # Examples
+///
+/// ```no_compile
+/// html!(
+///     <p>{ unsafe_text!("Hello Joe!") }</p>
+/// )
+/// ```
+///
+/// ```no_compile
+/// html!(
+///     <p>{ unsafe_text!("Hello {}!", "Robert") }</p>
+/// )
+/// ```
+///
+/// ```no_compile
+/// html!(
+///     <p>{ unsafe_text!("<div>this text renders unescaped html</div>") }</p>
+/// )
+/// ```
+#[macro_export]
+macro_rules! unsafe_text {
+    ($t:expr) => {
+        Box::new($crate::dom::UnsafeTextNode::new($t))
+    };
+    ($format:tt, $($tail:tt),*) => {
+        Box::new($crate::dom::UnsafeTextNode::new(format!($format, $($tail),*)))
+    };
+}
+
 impl<T: OutputType> TextNode<T> {
     /// Construct a text node.
     ///
@@ -187,3 +230,48 @@ impl<T: OutputType> IntoIterator for Box<TextNode<T>> {
 
 impl<T: OutputType> FlowContent<T> for TextNode<T> {}
 impl<T: OutputType> PhrasingContent<T> for TextNode<T> {}
+
+impl<T: OutputType> UnsafeTextNode<T> {
+    /// Construct a unsafe text node.
+    ///
+    /// The preferred way to construct a unsafe text node is with the [`unsafe_text!()`][unsafe_text]
+    /// macro.
+    ///
+    /// [unsafe_text]: ../macro.unsafe_text.html
+    pub fn new<S: Into<String>>(s: S) -> Self {
+        UnsafeTextNode(s.into(), PhantomData)
+    }
+}
+
+impl<T: OutputType> Display for UnsafeTextNode<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
+        f.write_str(&self.0)
+    }
+}
+
+impl<T: OutputType> Node<T> for UnsafeTextNode<T> {
+    fn vnode(&'_ mut self) -> VNode<'_, T> {
+        VNode::UnsafeText(&self.0)
+    }
+}
+
+impl<T: OutputType> IntoIterator for UnsafeTextNode<T> {
+    type Item = UnsafeTextNode<T>;
+    type IntoIter = std::vec::IntoIter<UnsafeTextNode<T>>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        vec![self].into_iter()
+    }
+}
+
+impl<T: OutputType> IntoIterator for Box<UnsafeTextNode<T>> {
+    type Item = Box<UnsafeTextNode<T>>;
+    type IntoIter = std::vec::IntoIter<Box<UnsafeTextNode<T>>>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        vec![self].into_iter()
+    }
+}
+
+impl<T: OutputType> FlowContent<T> for UnsafeTextNode<T> {}
+impl<T: OutputType> PhrasingContent<T> for UnsafeTextNode<T> {}
