@@ -42,6 +42,16 @@ macro_rules! declare_events_struct {
                     )
                 )*
             }
+
+            pub fn iter_mut(&mut self) -> impl Iterator<Item = (&'static str, &mut T)> {
+                iter::empty()
+                $(
+                    .chain(
+                        self.$name.iter_mut()
+                        .map(|value| (stringify!($name), value))
+                    )
+                )*
+            }
         }
 
         impl<T> Default for Events<T> {
