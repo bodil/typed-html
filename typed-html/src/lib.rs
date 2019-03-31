@@ -221,7 +221,7 @@ pub trait OutputType {
 
 /// String output
 impl OutputType for String {
-    type Events = events::StringEvents;
+    type Events = events::Events<String>;
     type EventTarget = ();
     type EventListenerHandle = ();
 }

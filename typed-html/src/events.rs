@@ -29,52 +29,17 @@ pub trait IntoEventHandler<T: OutputType, E> {
     fn into_event_handler(self) -> Box<dyn EventHandler<T, E>>;
 }
 
-/// An uninhabited event type for string handlers.
-pub enum StringEvent {}
-
-impl EventHandler<String, StringEvent> for &'static str {
-    fn attach(&mut self, _target: &mut <String as OutputType>::EventTarget) {
-        panic!("Silly wabbit, strings as event handlers are only for printing.");
-    }
-
-    fn render(&self) -> Option<String> {
-        Some(self.to_string())
-    }
-}
-
-impl IntoEventHandler<String, StringEvent> for &'static str {
-    fn into_event_handler(self) -> Box<dyn EventHandler<String, StringEvent>> {
-        Box::new(self)
-    }
-}
-
-impl EventHandler<String, StringEvent> for String {
-    fn attach(&mut self, _target: &mut <String as OutputType>::EventTarget) {
-        panic!("Silly wabbit, strings as event handlers are only for printing.");
-    }
-
-    fn render(&self) -> Option<String> {
-        Some(self.clone())
-    }
-}
-
-impl IntoEventHandler<String, StringEvent> for String {
-    fn into_event_handler(self) -> Box<dyn EventHandler<String, StringEvent>> {
-        Box::new(self)
-    }
-}
-
-macro_rules! declare_string_events {
+macro_rules! declare_events_struct {
     ($($name:ident,)*) => {
-        pub struct StringEvents {
+        pub struct Events<T> {
             $(
-                pub $name: Option<Box<dyn EventHandler<String, StringEvent>>>,
+                pub $name: Option<T>,
             )*
         }
 
-        impl Default for StringEvents {
+        impl<T> Default for Events<T> {
             fn default() -> Self {
-                StringEvents {
+                Events {
                     $(
                         $name: None,
                     )*
@@ -82,12 +47,12 @@ macro_rules! declare_string_events {
             }
         }
 
-        impl Display for StringEvents {
+        impl<T: Display> Display for Events<T> {
             fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
                 $(
                     if let Some(ref value) = self.$name {
-                        write!(f, " on{}=\"{}\"", stringify!($name),
-                            encode_attribute(value.render().unwrap().as_str()))?;
+                        let attribute = encode_attribute(&value.to_string());
+                        write!(f, " on{}=\"{}\"", stringify!($name), attribute)?;
                     }
                 )*
                 Ok(())
@@ -96,7 +61,7 @@ macro_rules! declare_string_events {
     }
 }
 
-declare_string_events! {
+declare_events_struct! {
     abort,
     autocomplete,
     autocompleteerror,

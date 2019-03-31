@@ -262,7 +262,7 @@ impl Element {
             let key = TokenTree::Ident(key.clone());
             let value = process_value(value);
             body.extend(quote!(
-                element.events.#key = Some(typed_html::events::IntoEventHandler::into_event_handler(#value));
+                element.events.#key = Some(#value.into());
             ));
         }
 
