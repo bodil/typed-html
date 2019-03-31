@@ -161,3 +161,52 @@ declare_events_struct! {
     volumechange,
     waiting,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_empty_events_iter() {
+        let events: Events<&str> = Events::default();
+
+        let mut iter = events.iter();
+        assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn test_events_iter() {
+        let mut events: Events<&str> = Events::default();
+        events.abort = Some("abort");
+        events.waiting = Some("waiting");
+
+        let mut iter = events.iter();
+        assert_eq!(iter.next(), Some(("abort", &"abort")));
+        assert_eq!(iter.next(), Some(("waiting", &"waiting")));
+        assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn test_events_iter_mut() {
+        let mut events: Events<&str> = Events::default();
+        events.abort = Some("abort");
+        events.waiting = Some("waiting");
+
+        let mut iter = events.iter_mut();
+        assert_eq!(iter.next(), Some(("abort", &mut "abort")));
+        assert_eq!(iter.next(), Some(("waiting", &mut "waiting")));
+        assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn test_events_into_iter() {
+        let mut events: Events<&str> = Events::default();
+        events.abort = Some("abort");
+        events.waiting = Some("waiting");
+
+        let mut iter = events.into_iter();
+        assert_eq!(iter.next(), Some(("abort", "abort")));
+        assert_eq!(iter.next(), Some(("waiting", "waiting")));
+        assert_eq!(iter.next(), None);
+    }
+}
