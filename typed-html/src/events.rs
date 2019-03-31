@@ -54,6 +54,24 @@ macro_rules! declare_events_struct {
             }
         }
 
+        impl<T: 'static> IntoIterator for Events<T> {
+            type Item = (&'static str, T);
+            type IntoIter = Box<dyn Iterator<Item = Self::Item>>;
+
+            fn into_iter(mut self) -> Self::IntoIter {
+                Box::new(
+                    iter::empty()
+                    $(
+                        .chain(
+                            iter::once(self.$name.take())
+                            .filter(|value| value.is_some())
+                            .map(|value| (stringify!($name), value.unwrap()))
+                        )
+                    )*
+                )
+            }
+        }
+
         impl<T> Default for Events<T> {
             fn default() -> Self {
                 Events {
