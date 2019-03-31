@@ -24,12 +24,6 @@ pub trait EventHandler<T: OutputType, E> {
     fn render(&self) -> Option<String>;
 }
 
-/// Trait for building event handlers from other types.
-pub trait IntoEventHandler<T: OutputType, E> {
-    /// Construct an event handler from an instance of the source type.
-    fn into_event_handler(self) -> Box<dyn EventHandler<T, E>>;
-}
-
 macro_rules! declare_events_struct {
     ($($name:ident,)*) => {
         pub struct Events<T> {
