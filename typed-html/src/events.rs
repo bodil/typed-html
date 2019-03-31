@@ -3,6 +3,7 @@
 use crate::OutputType;
 use htmlescape::encode_attribute;
 use std::fmt::{Display, Error, Formatter};
+use std::iter;
 
 /// Trait for event handlers.
 pub trait EventHandler<T: OutputType, E> {
@@ -35,6 +36,18 @@ macro_rules! declare_events_struct {
             $(
                 pub $name: Option<T>,
             )*
+        }
+
+        impl<T> Events<T> {
+            pub fn iter(&self) -> impl Iterator<Item = (&'static str, &T)> {
+                iter::empty()
+                $(
+                    .chain(
+                        self.$name.iter()
+                        .map(|value| (stringify!($name), value))
+                    )
+                )*
+            }
         }
 
         impl<T> Default for Events<T> {
