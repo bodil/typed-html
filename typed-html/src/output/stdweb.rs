@@ -6,7 +6,7 @@ use stdweb::web::{self, Element, EventListenerHandle, IElement, IEventTarget, IN
 
 use crate::OutputType;
 use crate::dom::VNode;
-use crate::events::{EventHandler, IntoEventHandler};
+use crate::events::EventHandler;
 
 /// DOM output using the stdweb crate
 pub struct Stdweb;
@@ -136,23 +136,13 @@ where
     }
 }
 
-impl<F, E> IntoEventHandler<Stdweb, E> for F
+impl<F, E> From<F> for Box<dyn EventHandler<Stdweb, E>>
 where
     F: FnMut(E) + 'static,
     E: ConcreteEvent + 'static,
 {
-    fn into_event_handler(self) -> Box<dyn EventHandler<Stdweb, E>> {
-        Box::new(EFn::new(self))
-    }
-}
-
-impl<F, E> IntoEventHandler<Stdweb, E> for EFn<F, E>
-where
-    F: FnMut(E) + 'static,
-    E: ConcreteEvent + 'static,
-{
-    fn into_event_handler(self) -> Box<dyn EventHandler<Stdweb, E>> {
-        Box::new(self)
+    fn from(f: F) -> Self {
+        Box::new(EFn::new(f))
     }
 }
 

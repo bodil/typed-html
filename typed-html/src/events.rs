@@ -3,6 +3,7 @@
 use crate::OutputType;
 use htmlescape::encode_attribute;
 use std::fmt::{Display, Error, Formatter};
+use std::iter;
 
 /// Trait for event handlers.
 pub trait EventHandler<T: OutputType, E> {
@@ -23,58 +24,57 @@ pub trait EventHandler<T: OutputType, E> {
     fn render(&self) -> Option<String>;
 }
 
-/// Trait for building event handlers from other types.
-pub trait IntoEventHandler<T: OutputType, E> {
-    /// Construct an event handler from an instance of the source type.
-    fn into_event_handler(self) -> Box<dyn EventHandler<T, E>>;
-}
-
-/// An uninhabited event type for string handlers.
-pub enum StringEvent {}
-
-impl EventHandler<String, StringEvent> for &'static str {
-    fn attach(&mut self, _target: &mut <String as OutputType>::EventTarget) {
-        panic!("Silly wabbit, strings as event handlers are only for printing.");
-    }
-
-    fn render(&self) -> Option<String> {
-        Some(self.to_string())
-    }
-}
-
-impl IntoEventHandler<String, StringEvent> for &'static str {
-    fn into_event_handler(self) -> Box<dyn EventHandler<String, StringEvent>> {
-        Box::new(self)
-    }
-}
-
-impl EventHandler<String, StringEvent> for String {
-    fn attach(&mut self, _target: &mut <String as OutputType>::EventTarget) {
-        panic!("Silly wabbit, strings as event handlers are only for printing.");
-    }
-
-    fn render(&self) -> Option<String> {
-        Some(self.clone())
-    }
-}
-
-impl IntoEventHandler<String, StringEvent> for String {
-    fn into_event_handler(self) -> Box<dyn EventHandler<String, StringEvent>> {
-        Box::new(self)
-    }
-}
-
-macro_rules! declare_string_events {
+macro_rules! declare_events_struct {
     ($($name:ident,)*) => {
-        pub struct StringEvents {
+        pub struct Events<T> {
             $(
-                pub $name: Option<Box<dyn EventHandler<String, StringEvent>>>,
+                pub $name: Option<T>,
             )*
         }
 
-        impl Default for StringEvents {
+        impl<T> Events<T> {
+            pub fn iter(&self) -> impl Iterator<Item = (&'static str, &T)> {
+                iter::empty()
+                $(
+                    .chain(
+                        self.$name.iter()
+                        .map(|value| (stringify!($name), value))
+                    )
+                )*
+            }
+
+            pub fn iter_mut(&mut self) -> impl Iterator<Item = (&'static str, &mut T)> {
+                iter::empty()
+                $(
+                    .chain(
+                        self.$name.iter_mut()
+                        .map(|value| (stringify!($name), value))
+                    )
+                )*
+            }
+        }
+
+        impl<T: 'static> IntoIterator for Events<T> {
+            type Item = (&'static str, T);
+            type IntoIter = Box<dyn Iterator<Item = Self::Item>>;
+
+            fn into_iter(mut self) -> Self::IntoIter {
+                Box::new(
+                    iter::empty()
+                    $(
+                        .chain(
+                            iter::once(self.$name.take())
+                            .filter(|value| value.is_some())
+                            .map(|value| (stringify!($name), value.unwrap()))
+                        )
+                    )*
+                )
+            }
+        }
+
+        impl<T> Default for Events<T> {
             fn default() -> Self {
-                StringEvents {
+                Events {
                     $(
                         $name: None,
                     )*
@@ -82,12 +82,12 @@ macro_rules! declare_string_events {
             }
         }
 
-        impl Display for StringEvents {
+        impl<T: Display> Display for Events<T> {
             fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
                 $(
                     if let Some(ref value) = self.$name {
-                        write!(f, " on{}=\"{}\"", stringify!($name),
-                            encode_attribute(value.render().unwrap().as_str()))?;
+                        let attribute = encode_attribute(&value.to_string());
+                        write!(f, " on{}=\"{}\"", stringify!($name), attribute)?;
                     }
                 )*
                 Ok(())
@@ -96,7 +96,7 @@ macro_rules! declare_string_events {
     }
 }
 
-declare_string_events! {
+declare_events_struct! {
     abort,
     autocomplete,
     autocompleteerror,
@@ -160,4 +160,53 @@ declare_string_events! {
     toggle,
     volumechange,
     waiting,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_empty_events_iter() {
+        let events: Events<&str> = Events::default();
+
+        let mut iter = events.iter();
+        assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn test_events_iter() {
+        let mut events: Events<&str> = Events::default();
+        events.abort = Some("abort");
+        events.waiting = Some("waiting");
+
+        let mut iter = events.iter();
+        assert_eq!(iter.next(), Some(("abort", &"abort")));
+        assert_eq!(iter.next(), Some(("waiting", &"waiting")));
+        assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn test_events_iter_mut() {
+        let mut events: Events<&str> = Events::default();
+        events.abort = Some("abort");
+        events.waiting = Some("waiting");
+
+        let mut iter = events.iter_mut();
+        assert_eq!(iter.next(), Some(("abort", &mut "abort")));
+        assert_eq!(iter.next(), Some(("waiting", &mut "waiting")));
+        assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn test_events_into_iter() {
+        let mut events: Events<&str> = Events::default();
+        events.abort = Some("abort");
+        events.waiting = Some("waiting");
+
+        let mut iter = events.into_iter();
+        assert_eq!(iter.next(), Some(("abort", "abort")));
+        assert_eq!(iter.next(), Some(("waiting", "waiting")));
+        assert_eq!(iter.next(), None);
+    }
 }

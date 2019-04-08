@@ -1,3 +1,4 @@
+#![recursion_limit = "128"]
 //! This crate provides the `html!` macro for building HTML documents inside your
 //! Rust code using roughly [JSX] compatible syntax.
 //!
@@ -221,7 +222,7 @@ pub trait OutputType {
 
 /// String output
 impl OutputType for String {
-    type Events = events::StringEvents;
+    type Events = events::Events<String>;
     type EventTarget = ();
     type EventListenerHandle = ();
 }
