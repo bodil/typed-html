@@ -13,3 +13,4 @@ path = "main.rs"
 compiletest_rs = { version = "0.3", features = ["stable"] }
 typed-html = { path = "../typed-html" }
 typed-html-macros = { path = "../macros" }
+version_check = "0.1.5"

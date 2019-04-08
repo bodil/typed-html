@@ -1,5 +1,11 @@
 #[test]
 fn ui() {
+    extern crate version_check;
+
+    if !version_check::is_nightly().unwrap_or(false) {
+        return;
+    }
+
     extern crate compiletest_rs as compiletest;
 
     let mut config = compiletest::Config {
