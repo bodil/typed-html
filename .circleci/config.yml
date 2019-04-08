@@ -107,12 +107,12 @@ jobs:
 workflows:
   Project:
     jobs:
-#      - test:
-#          name: cargo test (stable)
-#          toolchain: stable
-#      - test:
-#          name: cargo test (beta)
-#          toolchain: beta
+      - test:
+          name: cargo test (stable)
+          toolchain: stable
+      - test:
+          name: cargo test (beta)
+          toolchain: beta
       - test:
           name: cargo test (nightly)
           toolchain: nightly
