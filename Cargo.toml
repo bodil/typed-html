@@ -3,7 +3,7 @@ members = [
     "typed-html",
     "macros",
     "examples/stdweb",
-    "examples/rocket",
+    "examples/iron",
     "examples/dodrio/counter",
     "examples/dodrio/todomvc",
     "ui",

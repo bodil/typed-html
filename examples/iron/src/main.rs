@@ -1,27 +1,19 @@
 #![recursion_limit = "256"]
-#![feature(proc_macro_hygiene, decl_macro)]
 
-extern crate rocket;
-extern crate typed_html;
-extern crate typed_html_macros;
-
-use rocket::http::{ContentType, Status};
-use rocket::response::{Responder, Result};
-use rocket::{get, routes, Request, Response};
-use std::io::Cursor;
+use iron::headers::ContentType;
+use iron::modifier::Modifier;
+use iron::prelude::*;
+use iron::status;
 use typed_html::elements::FlowContent;
 use typed_html::types::LinkType;
 use typed_html::{dom::DOMTree, html, text, OutputType};
 
 struct Html(DOMTree<String>);
 
-impl<'r> Responder<'r> for Html {
-    fn respond_to(self, _request: &Request) -> Result<'r> {
-        Ok(Response::build()
-            .status(Status::Ok)
-            .header(ContentType::HTML)
-            .sized_body(Cursor::new(self.0.to_string()))
-            .finalize())
+impl Modifier<Response> for Html {
+    fn modify(self, res: &mut Response) {
+        res.body = Some(Box::new(self.0.to_string()));
+        res.headers.set(ContentType::html());
     }
 }
 
@@ -46,9 +38,8 @@ fn doc<T: OutputType + 'static>(tree: Box<dyn FlowContent<T>>) -> DOMTree<T> {
     )
 }
 
-#[get("/")]
 fn index() -> Html {
-    let a = false;
+    let a = true;
     Html(doc(html!(
         <div>
             <h1 data-lol="omg">"Hello Kitty!"</h1>
@@ -68,5 +59,7 @@ fn index() -> Html {
 }
 
 fn main() {
-    rocket::ignite().mount("/", routes![index]).launch();
+    Iron::new(|_: &mut Request| Ok(Response::with((status::Ok, index()))))
+        .http("localhost:1337")
+        .unwrap();
 }
