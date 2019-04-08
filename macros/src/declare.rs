@@ -337,8 +337,10 @@ impl Declare {
         for (attr_name, _, attr_str) in self.attrs() {
             print_attrs.extend(quote!(
                 if let Some(ref value) = self.attrs.#attr_name {
-                    write!(f, " {}=\"{}\"", #attr_str,
-                           ::htmlescape::encode_attribute(&value.to_string()))?;
+                    let value = ::htmlescape::encode_attribute(&value.to_string());
+                    if !value.is_empty() {
+                        write!(f, " {}=\"{}\"", #attr_str, value)?;
+                    }
                 }
             ));
         }
