@@ -17,7 +17,7 @@ maintenance = { status = "actively-developed" }
 
 [dependencies]
 typed-html-macros = { path = "../macros" }
-strum = "0.14.0"
+strum = "0.15.0"
 strum_macros = "0.15.0"
 mime = "0.3.13"
 language-tags = "0.2.2"
