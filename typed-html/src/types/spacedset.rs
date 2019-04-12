@@ -1,4 +1,5 @@
 use std::collections::BTreeSet;
+use std::convert::{TryFrom, TryInto};
 use std::fmt::{Debug, Display, Error, Formatter};
 use std::iter::FromIterator;
 use std::ops::{Deref, DerefMut};
@@ -12,18 +13,18 @@ use std::str::FromStr;
 /// # Examples
 ///
 /// ```
-/// # use std::convert::From;
+/// # use std::convert::{TryFrom, TryInto};
 /// use typed_html::types::{Class, SpacedSet};
 ///
-/// # fn main() {
-/// let classList: SpacedSet<Class> = "foo bar baz".into();
-/// let classList: SpacedSet<Class> = ["foo", "bar", "baz"].into();
-/// let classList: SpacedSet<Class> = ("foo", "bar", "baz").into();
+/// # fn main() -> Result<(), &'static str> {
+/// let classList: SpacedSet<Class> = "foo bar baz".try_into()?;
+/// let classList: SpacedSet<Class> = ["foo", "bar", "baz"].try_into()?;
+/// let classList: SpacedSet<Class> = ("foo", "bar", "baz").try_into()?;
 ///
-/// let classList1: SpacedSet<Class> = "foo bar foo".into();
-/// let classList2: SpacedSet<Class> = "bar foo bar".into();
+/// let classList1: SpacedSet<Class> = "foo bar foo".try_into()?;
+/// let classList2: SpacedSet<Class> = "bar foo bar".try_into()?;
 /// assert_eq!(classList1, classList2);
-/// # }
+/// # Ok(()) }
 /// ```
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct SpacedSet<A: Ord>(BTreeSet<A>);
@@ -34,9 +35,21 @@ impl<A: Ord> SpacedSet<A> {
         SpacedSet(BTreeSet::new())
     }
 
-    /// Add a value to the `SpacedSet`.
-    pub fn add<T: Into<A>>(&mut self, value: T) -> bool {
-        self.0.insert(value.into())
+    /// Add a value to the `SpacedSet`, converting it as necessary.
+    ///
+    /// Panics if the conversion fails.
+    pub fn add<T: TryInto<A>>(&mut self, value: T) -> bool
+    where
+        <T as TryInto<A>>::Error: Debug,
+    {
+        self.0.insert(value.try_into().unwrap())
+    }
+
+    /// Add a value to the `SpacedSet`, converting it as necessary.
+    ///
+    /// Returns an error if the conversion fails.
+    pub fn try_add<T: TryInto<A>>(&mut self, value: T) -> Result<bool, <T as TryInto<A>>::Error> {
+        Ok(self.0.insert(value.try_into()?))
     }
 }
 
@@ -77,12 +90,13 @@ where
     }
 }
 
-impl<'a, A: Ord + FromStr> From<&'a str> for SpacedSet<A>
+impl<'a, A> TryFrom<&'a str> for SpacedSet<A>
 where
-    <A as FromStr>::Err: Debug,
+    A: Ord + FromStr,
 {
-    fn from(s: &'a str) -> Self {
-        Self::from_iter(s.split_whitespace().map(|s| FromStr::from_str(s).unwrap()))
+    type Error = <A as FromStr>::Err;
+    fn try_from(s: &'a str) -> Result<Self, Self::Error> {
+        s.split_whitespace().map(FromStr::from_str).collect()
     }
 }
 
@@ -118,80 +132,84 @@ impl<A: Ord + Debug> Debug for SpacedSet<A> {
     }
 }
 
-impl<'a, 'b, A: Ord + FromStr> From<(&'a str, &'b str)> for SpacedSet<A>
+impl<'a, 'b, A> TryFrom<(&'a str, &'b str)> for SpacedSet<A>
 where
-    <A as FromStr>::Err: Debug,
+    A: Ord + FromStr,
 {
-    fn from(s: (&str, &str)) -> Self {
+    type Error = <A as FromStr>::Err;
+    fn try_from(s: (&str, &str)) -> Result<Self, Self::Error> {
         let mut list = Self::new();
-        list.insert(FromStr::from_str(s.0).unwrap());
-        list.insert(FromStr::from_str(s.1).unwrap());
-        list
+        list.insert(FromStr::from_str(s.0)?);
+        list.insert(FromStr::from_str(s.1)?);
+        Ok(list)
     }
 }
 
-impl<'a, 'b, 'c, A: Ord + FromStr> From<(&'a str, &'b str, &'c str)> for SpacedSet<A>
+impl<'a, 'b, 'c, A> TryFrom<(&'a str, &'b str, &'c str)> for SpacedSet<A>
 where
-    <A as FromStr>::Err: Debug,
+    A: Ord + FromStr,
 {
-    fn from(s: (&str, &str, &str)) -> Self {
+    type Error = <A as FromStr>::Err;
+    fn try_from(s: (&str, &str, &str)) -> Result<Self, Self::Error> {
         let mut list = Self::new();
-        list.insert(FromStr::from_str(s.0).unwrap());
-        list.insert(FromStr::from_str(s.1).unwrap());
-        list.insert(FromStr::from_str(s.2).unwrap());
-        list
+        list.insert(FromStr::from_str(s.0)?);
+        list.insert(FromStr::from_str(s.1)?);
+        list.insert(FromStr::from_str(s.2)?);
+        Ok(list)
     }
 }
 
-impl<'a, 'b, 'c, 'd, A: Ord + FromStr> From<(&'a str, &'b str, &'c str, &'d str)> for SpacedSet<A>
+impl<'a, 'b, 'c, 'd, A> TryFrom<(&'a str, &'b str, &'c str, &'d str)> for SpacedSet<A>
 where
-    <A as FromStr>::Err: Debug,
+    A: Ord + FromStr,
 {
-    fn from(s: (&str, &str, &str, &str)) -> Self {
+    type Error = <A as FromStr>::Err;
+    fn try_from(s: (&str, &str, &str, &str)) -> Result<Self, Self::Error> {
         let mut list = Self::new();
-        list.insert(FromStr::from_str(s.0).unwrap());
-        list.insert(FromStr::from_str(s.1).unwrap());
-        list.insert(FromStr::from_str(s.2).unwrap());
-        list.insert(FromStr::from_str(s.3).unwrap());
-        list
+        list.insert(FromStr::from_str(s.0)?);
+        list.insert(FromStr::from_str(s.1)?);
+        list.insert(FromStr::from_str(s.2)?);
+        list.insert(FromStr::from_str(s.3)?);
+        Ok(list)
     }
 }
 
-impl<'a, 'b, 'c, 'd, 'e, A: Ord + FromStr> From<(&'a str, &'b str, &'c str, &'d str, &'e str)>
+impl<'a, 'b, 'c, 'd, 'e, A> TryFrom<(&'a str, &'b str, &'c str, &'d str, &'e str)> for SpacedSet<A>
+where
+    A: Ord + FromStr,
+{
+    type Error = <A as FromStr>::Err;
+    fn try_from(s: (&str, &str, &str, &str, &str)) -> Result<Self, Self::Error> {
+        let mut list = Self::new();
+        list.insert(FromStr::from_str(s.0)?);
+        list.insert(FromStr::from_str(s.1)?);
+        list.insert(FromStr::from_str(s.2)?);
+        list.insert(FromStr::from_str(s.3)?);
+        list.insert(FromStr::from_str(s.4)?);
+        Ok(list)
+    }
+}
+
+impl<'a, 'b, 'c, 'd, 'e, 'f, A> TryFrom<(&'a str, &'b str, &'c str, &'d str, &'e str, &'f str)>
     for SpacedSet<A>
 where
-    <A as FromStr>::Err: Debug,
+    A: Ord + FromStr,
 {
-    fn from(s: (&str, &str, &str, &str, &str)) -> Self {
+    type Error = <A as FromStr>::Err;
+    fn try_from(s: (&str, &str, &str, &str, &str, &str)) -> Result<Self, Self::Error> {
         let mut list = Self::new();
-        list.insert(FromStr::from_str(s.0).unwrap());
-        list.insert(FromStr::from_str(s.1).unwrap());
-        list.insert(FromStr::from_str(s.2).unwrap());
-        list.insert(FromStr::from_str(s.3).unwrap());
-        list.insert(FromStr::from_str(s.4).unwrap());
-        list
+        list.insert(FromStr::from_str(s.0)?);
+        list.insert(FromStr::from_str(s.1)?);
+        list.insert(FromStr::from_str(s.2)?);
+        list.insert(FromStr::from_str(s.3)?);
+        list.insert(FromStr::from_str(s.4)?);
+        list.insert(FromStr::from_str(s.5)?);
+        Ok(list)
     }
 }
 
-impl<'a, 'b, 'c, 'd, 'e, 'f, A: Ord + FromStr>
-    From<(&'a str, &'b str, &'c str, &'d str, &'e str, &'f str)> for SpacedSet<A>
-where
-    <A as FromStr>::Err: Debug,
-{
-    fn from(s: (&str, &str, &str, &str, &str, &str)) -> Self {
-        let mut list = Self::new();
-        list.insert(FromStr::from_str(s.0).unwrap());
-        list.insert(FromStr::from_str(s.1).unwrap());
-        list.insert(FromStr::from_str(s.2).unwrap());
-        list.insert(FromStr::from_str(s.3).unwrap());
-        list.insert(FromStr::from_str(s.4).unwrap());
-        list.insert(FromStr::from_str(s.5).unwrap());
-        list
-    }
-}
-
-impl<'a, 'b, 'c, 'd, 'e, 'f, 'g, A: Ord + FromStr>
-    From<(
+impl<'a, 'b, 'c, 'd, 'e, 'f, 'g, A>
+    TryFrom<(
         &'a str,
         &'b str,
         &'c str,
@@ -201,23 +219,24 @@ impl<'a, 'b, 'c, 'd, 'e, 'f, 'g, A: Ord + FromStr>
         &'g str,
     )> for SpacedSet<A>
 where
-    <A as FromStr>::Err: Debug,
+    A: Ord + FromStr,
 {
-    fn from(s: (&str, &str, &str, &str, &str, &str, &str)) -> Self {
+    type Error = <A as FromStr>::Err;
+    fn try_from(s: (&str, &str, &str, &str, &str, &str, &str)) -> Result<Self, Self::Error> {
         let mut list = Self::new();
-        list.insert(FromStr::from_str(s.0).unwrap());
-        list.insert(FromStr::from_str(s.1).unwrap());
-        list.insert(FromStr::from_str(s.2).unwrap());
-        list.insert(FromStr::from_str(s.3).unwrap());
-        list.insert(FromStr::from_str(s.4).unwrap());
-        list.insert(FromStr::from_str(s.5).unwrap());
-        list.insert(FromStr::from_str(s.6).unwrap());
-        list
+        list.insert(FromStr::from_str(s.0)?);
+        list.insert(FromStr::from_str(s.1)?);
+        list.insert(FromStr::from_str(s.2)?);
+        list.insert(FromStr::from_str(s.3)?);
+        list.insert(FromStr::from_str(s.4)?);
+        list.insert(FromStr::from_str(s.5)?);
+        list.insert(FromStr::from_str(s.6)?);
+        Ok(list)
     }
 }
 
-impl<'a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, A: Ord + FromStr>
-    From<(
+impl<'a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, A>
+    TryFrom<(
         &'a str,
         &'b str,
         &'c str,
@@ -228,63 +247,65 @@ impl<'a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, A: Ord + FromStr>
         &'h str,
     )> for SpacedSet<A>
 where
-    <A as FromStr>::Err: Debug,
+    A: Ord + FromStr,
 {
-    fn from(s: (&str, &str, &str, &str, &str, &str, &str, &str)) -> Self {
+    type Error = <A as FromStr>::Err;
+    fn try_from(s: (&str, &str, &str, &str, &str, &str, &str, &str)) -> Result<Self, Self::Error> {
         let mut list = Self::new();
-        list.insert(FromStr::from_str(s.0).unwrap());
-        list.insert(FromStr::from_str(s.1).unwrap());
-        list.insert(FromStr::from_str(s.2).unwrap());
-        list.insert(FromStr::from_str(s.3).unwrap());
-        list.insert(FromStr::from_str(s.4).unwrap());
-        list.insert(FromStr::from_str(s.5).unwrap());
-        list.insert(FromStr::from_str(s.6).unwrap());
-        list.insert(FromStr::from_str(s.7).unwrap());
-        list
+        list.insert(FromStr::from_str(s.0)?);
+        list.insert(FromStr::from_str(s.1)?);
+        list.insert(FromStr::from_str(s.2)?);
+        list.insert(FromStr::from_str(s.3)?);
+        list.insert(FromStr::from_str(s.4)?);
+        list.insert(FromStr::from_str(s.5)?);
+        list.insert(FromStr::from_str(s.6)?);
+        list.insert(FromStr::from_str(s.7)?);
+        Ok(list)
     }
 }
 
-macro_rules! spacedlist_from_array {
+macro_rules! spacedset_from_array {
     ($num:tt) => {
-        impl<'a, A: Ord + FromStr> From<[&'a str; $num]> for SpacedSet<A>
+        impl<'a, A> TryFrom<[&'a str; $num]> for SpacedSet<A>
         where
-            <A as FromStr>::Err: Debug,
+            A: Ord + FromStr,
         {
-            fn from(s: [&str; $num]) -> Self {
-                Self::from_iter(s.into_iter().map(|s| FromStr::from_str(*s).unwrap()))
+            type Error = <A as FromStr>::Err;
+            fn try_from(s: [&str; $num]) -> Result<Self, Self::Error> {
+                s.into_iter().map(|s| FromStr::from_str(*s)).collect()
             }
         }
     };
 }
-spacedlist_from_array!(1);
-spacedlist_from_array!(2);
-spacedlist_from_array!(3);
-spacedlist_from_array!(4);
-spacedlist_from_array!(5);
-spacedlist_from_array!(6);
-spacedlist_from_array!(7);
-spacedlist_from_array!(8);
-spacedlist_from_array!(9);
-spacedlist_from_array!(10);
-spacedlist_from_array!(11);
-spacedlist_from_array!(12);
-spacedlist_from_array!(13);
-spacedlist_from_array!(14);
-spacedlist_from_array!(15);
-spacedlist_from_array!(16);
-spacedlist_from_array!(17);
-spacedlist_from_array!(18);
-spacedlist_from_array!(19);
-spacedlist_from_array!(20);
-spacedlist_from_array!(21);
-spacedlist_from_array!(22);
-spacedlist_from_array!(23);
-spacedlist_from_array!(24);
-spacedlist_from_array!(25);
-spacedlist_from_array!(26);
-spacedlist_from_array!(27);
-spacedlist_from_array!(28);
-spacedlist_from_array!(29);
-spacedlist_from_array!(30);
-spacedlist_from_array!(31);
-spacedlist_from_array!(32);
+spacedset_from_array!(1);
+spacedset_from_array!(2);
+spacedset_from_array!(3);
+spacedset_from_array!(4);
+spacedset_from_array!(5);
+spacedset_from_array!(6);
+spacedset_from_array!(7);
+spacedset_from_array!(8);
+spacedset_from_array!(9);
+spacedset_from_array!(10);
+spacedset_from_array!(11);
+spacedset_from_array!(12);
+spacedset_from_array!(13);
+spacedset_from_array!(14);
+spacedset_from_array!(15);
+spacedset_from_array!(16);
+spacedset_from_array!(17);
+spacedset_from_array!(18);
+spacedset_from_array!(19);
+spacedset_from_array!(20);
+spacedset_from_array!(21);
+spacedset_from_array!(22);
+spacedset_from_array!(23);
+spacedset_from_array!(24);
+spacedset_from_array!(25);
+spacedset_from_array!(26);
+spacedset_from_array!(27);
+spacedset_from_array!(28);
+spacedset_from_array!(29);
+spacedset_from_array!(30);
+spacedset_from_array!(31);
+spacedset_from_array!(32);

@@ -1,3 +1,5 @@
+use std::borrow::Borrow;
+use std::convert::TryFrom;
 use std::fmt::{Display, Error, Formatter};
 use std::ops::Deref;
 use std::str::FromStr;
@@ -19,33 +21,10 @@ pub struct Id(String);
 impl Id {
     /// Construct a new ID from a string.
     ///
-    /// Returns `Err` if the provided string is invalid.
-    pub fn try_new<S: Into<String>>(id: S) -> Result<Self, &'static str> {
-        let id = id.into();
-        {
-            let mut chars = id.chars();
-            match chars.next() {
-                None => return Err("ID cannot be empty"),
-                Some(c) if !c.is_alphabetic() => {
-                    return Err("ID must start with an alphabetic character")
-                }
-                _ => (),
-            }
-            for c in chars {
-                if !c.is_alphanumeric() && c != '_' && c != '-' && c != '.' {
-                    return Err("ID can only contain alphanumerics, dash, dot and underscore");
-                }
-            }
-        }
-        Ok(Id(id))
-    }
-
-    /// Construct a new ID from a string.
-    ///
     /// Panics if the provided string is invalid.
-    pub fn new<S: Into<String>>(id: S) -> Self {
-        let id = id.into();
-        Self::try_new(id.clone()).unwrap_or_else(|err| {
+    pub fn new<S: Borrow<str>>(id: S) -> Self {
+        let id = id.borrow();
+        Self::from_str(id).unwrap_or_else(|err| {
             panic!("typed_html::types::Id: {:?} is not a valid ID: {}", id, err)
         })
     }
@@ -53,14 +32,28 @@ impl Id {
 
 impl FromStr for Id {
     type Err = &'static str;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Id::try_new(s)
+    fn from_str(id: &str) -> Result<Self, Self::Err> {
+        let mut chars = id.chars();
+        match chars.next() {
+            None => return Err("ID cannot be empty"),
+            Some(c) if !c.is_alphabetic() => {
+                return Err("ID must start with an alphabetic character")
+            }
+            _ => (),
+        }
+        for c in chars {
+            if !c.is_alphanumeric() && c != '_' && c != '-' && c != '.' {
+                return Err("ID can only contain alphanumerics, dash, dot and underscore");
+            }
+        }
+        Ok(Id(id.to_string()))
     }
 }
 
-impl<'a> From<&'a str> for Id {
-    fn from(str: &'a str) -> Self {
-        Id::from_str(str).unwrap()
+impl<'a> TryFrom<&'a str> for Id {
+    type Error = &'static str;
+    fn try_from(str: &'a str) -> Result<Self, Self::Error> {
+        Id::from_str(str)
     }
 }
 

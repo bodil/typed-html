@@ -1,3 +1,4 @@
+use std::convert::{TryFrom, TryInto};
 use std::fmt::{Debug, Display, Error, Formatter};
 use std::iter::FromIterator;
 use std::ops::{Deref, DerefMut};
@@ -17,6 +18,24 @@ impl<A> SpacedList<A> {
     /// Construct an empty `SpacedList`.
     pub fn new() -> Self {
         SpacedList(Vec::new())
+    }
+
+    /// Add a value to the `SpacedList`, converting it as necessary.
+    ///
+    /// Panics if the conversion fails.
+    pub fn add<T: TryInto<A>>(&mut self, value: T)
+    where
+        <T as TryInto<A>>::Error: Debug,
+    {
+        self.0.push(value.try_into().unwrap())
+    }
+
+    /// Add a value to the `SpacedList`, converting it as necessary.
+    ///
+    /// Returns an error if the conversion fails.
+    pub fn try_add<T: TryInto<A>>(&mut self, value: T) -> Result<(), <T as TryInto<A>>::Error> {
+        self.0.push(value.try_into()?);
+        Ok(())
     }
 }
 
@@ -44,12 +63,13 @@ impl<'a, A: 'a + Clone> FromIterator<&'a A> for SpacedList<A> {
     }
 }
 
-impl<'a, A: FromStr> From<&'a str> for SpacedList<A>
+impl<'a, A> TryFrom<&'a str> for SpacedList<A>
 where
-    <A as FromStr>::Err: Debug,
+    A: FromStr,
 {
-    fn from(s: &'a str) -> Self {
-        Self::from_iter(s.split_whitespace().map(|s| FromStr::from_str(s).unwrap()))
+    type Error = <A as FromStr>::Err;
+    fn try_from(s: &'a str) -> Result<Self, Self::Error> {
+        s.split_whitespace().map(FromStr::from_str).collect()
     }
 }
 
@@ -85,80 +105,84 @@ impl<A: Debug> Debug for SpacedList<A> {
     }
 }
 
-impl<'a, 'b, A: FromStr> From<(&'a str, &'b str)> for SpacedList<A>
+impl<'a, 'b, A> TryFrom<(&'a str, &'b str)> for SpacedList<A>
 where
-    <A as FromStr>::Err: Debug,
+    A: FromStr,
 {
-    fn from(s: (&str, &str)) -> Self {
+    type Error = <A as FromStr>::Err;
+    fn try_from(s: (&str, &str)) -> Result<Self, Self::Error> {
         let mut list = Self::new();
-        list.push(FromStr::from_str(s.0).unwrap());
-        list.push(FromStr::from_str(s.1).unwrap());
-        list
+        list.push(FromStr::from_str(s.0)?);
+        list.push(FromStr::from_str(s.1)?);
+        Ok(list)
     }
 }
 
-impl<'a, 'b, 'c, A: FromStr> From<(&'a str, &'b str, &'c str)> for SpacedList<A>
+impl<'a, 'b, 'c, A> TryFrom<(&'a str, &'b str, &'c str)> for SpacedList<A>
 where
-    <A as FromStr>::Err: Debug,
+    A: FromStr,
 {
-    fn from(s: (&str, &str, &str)) -> Self {
+    type Error = <A as FromStr>::Err;
+    fn try_from(s: (&str, &str, &str)) -> Result<Self, Self::Error> {
         let mut list = Self::new();
-        list.push(FromStr::from_str(s.0).unwrap());
-        list.push(FromStr::from_str(s.1).unwrap());
-        list.push(FromStr::from_str(s.2).unwrap());
-        list
+        list.push(FromStr::from_str(s.0)?);
+        list.push(FromStr::from_str(s.1)?);
+        list.push(FromStr::from_str(s.2)?);
+        Ok(list)
     }
 }
 
-impl<'a, 'b, 'c, 'd, A: FromStr> From<(&'a str, &'b str, &'c str, &'d str)> for SpacedList<A>
+impl<'a, 'b, 'c, 'd, A> TryFrom<(&'a str, &'b str, &'c str, &'d str)> for SpacedList<A>
 where
-    <A as FromStr>::Err: Debug,
+    A: FromStr,
 {
-    fn from(s: (&str, &str, &str, &str)) -> Self {
+    type Error = <A as FromStr>::Err;
+    fn try_from(s: (&str, &str, &str, &str)) -> Result<Self, Self::Error> {
         let mut list = Self::new();
-        list.push(FromStr::from_str(s.0).unwrap());
-        list.push(FromStr::from_str(s.1).unwrap());
-        list.push(FromStr::from_str(s.2).unwrap());
-        list.push(FromStr::from_str(s.3).unwrap());
-        list
+        list.push(FromStr::from_str(s.0)?);
+        list.push(FromStr::from_str(s.1)?);
+        list.push(FromStr::from_str(s.2)?);
+        list.push(FromStr::from_str(s.3)?);
+        Ok(list)
     }
 }
 
-impl<'a, 'b, 'c, 'd, 'e, A: FromStr> From<(&'a str, &'b str, &'c str, &'d str, &'e str)>
+impl<'a, 'b, 'c, 'd, 'e, A> TryFrom<(&'a str, &'b str, &'c str, &'d str, &'e str)> for SpacedList<A>
+where
+    A: FromStr,
+{
+    type Error = <A as FromStr>::Err;
+    fn try_from(s: (&str, &str, &str, &str, &str)) -> Result<Self, Self::Error> {
+        let mut list = Self::new();
+        list.push(FromStr::from_str(s.0)?);
+        list.push(FromStr::from_str(s.1)?);
+        list.push(FromStr::from_str(s.2)?);
+        list.push(FromStr::from_str(s.3)?);
+        list.push(FromStr::from_str(s.4)?);
+        Ok(list)
+    }
+}
+
+impl<'a, 'b, 'c, 'd, 'e, 'f, A> TryFrom<(&'a str, &'b str, &'c str, &'d str, &'e str, &'f str)>
     for SpacedList<A>
 where
-    <A as FromStr>::Err: Debug,
+    A: FromStr,
 {
-    fn from(s: (&str, &str, &str, &str, &str)) -> Self {
+    type Error = <A as FromStr>::Err;
+    fn try_from(s: (&str, &str, &str, &str, &str, &str)) -> Result<Self, Self::Error> {
         let mut list = Self::new();
-        list.push(FromStr::from_str(s.0).unwrap());
-        list.push(FromStr::from_str(s.1).unwrap());
-        list.push(FromStr::from_str(s.2).unwrap());
-        list.push(FromStr::from_str(s.3).unwrap());
-        list.push(FromStr::from_str(s.4).unwrap());
-        list
+        list.push(FromStr::from_str(s.0)?);
+        list.push(FromStr::from_str(s.1)?);
+        list.push(FromStr::from_str(s.2)?);
+        list.push(FromStr::from_str(s.3)?);
+        list.push(FromStr::from_str(s.4)?);
+        list.push(FromStr::from_str(s.5)?);
+        Ok(list)
     }
 }
 
-impl<'a, 'b, 'c, 'd, 'e, 'f, A: FromStr>
-    From<(&'a str, &'b str, &'c str, &'d str, &'e str, &'f str)> for SpacedList<A>
-where
-    <A as FromStr>::Err: Debug,
-{
-    fn from(s: (&str, &str, &str, &str, &str, &str)) -> Self {
-        let mut list = Self::new();
-        list.push(FromStr::from_str(s.0).unwrap());
-        list.push(FromStr::from_str(s.1).unwrap());
-        list.push(FromStr::from_str(s.2).unwrap());
-        list.push(FromStr::from_str(s.3).unwrap());
-        list.push(FromStr::from_str(s.4).unwrap());
-        list.push(FromStr::from_str(s.5).unwrap());
-        list
-    }
-}
-
-impl<'a, 'b, 'c, 'd, 'e, 'f, 'g, A: FromStr>
-    From<(
+impl<'a, 'b, 'c, 'd, 'e, 'f, 'g, A>
+    TryFrom<(
         &'a str,
         &'b str,
         &'c str,
@@ -168,23 +192,24 @@ impl<'a, 'b, 'c, 'd, 'e, 'f, 'g, A: FromStr>
         &'g str,
     )> for SpacedList<A>
 where
-    <A as FromStr>::Err: Debug,
+    A: FromStr,
 {
-    fn from(s: (&str, &str, &str, &str, &str, &str, &str)) -> Self {
+    type Error = <A as FromStr>::Err;
+    fn try_from(s: (&str, &str, &str, &str, &str, &str, &str)) -> Result<Self, Self::Error> {
         let mut list = Self::new();
-        list.push(FromStr::from_str(s.0).unwrap());
-        list.push(FromStr::from_str(s.1).unwrap());
-        list.push(FromStr::from_str(s.2).unwrap());
-        list.push(FromStr::from_str(s.3).unwrap());
-        list.push(FromStr::from_str(s.4).unwrap());
-        list.push(FromStr::from_str(s.5).unwrap());
-        list.push(FromStr::from_str(s.6).unwrap());
-        list
+        list.push(FromStr::from_str(s.0)?);
+        list.push(FromStr::from_str(s.1)?);
+        list.push(FromStr::from_str(s.2)?);
+        list.push(FromStr::from_str(s.3)?);
+        list.push(FromStr::from_str(s.4)?);
+        list.push(FromStr::from_str(s.5)?);
+        list.push(FromStr::from_str(s.6)?);
+        Ok(list)
     }
 }
 
-impl<'a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, A: FromStr>
-    From<(
+impl<'a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, A>
+    TryFrom<(
         &'a str,
         &'b str,
         &'c str,
@@ -195,30 +220,32 @@ impl<'a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, A: FromStr>
         &'h str,
     )> for SpacedList<A>
 where
-    <A as FromStr>::Err: Debug,
+    A: FromStr,
 {
-    fn from(s: (&str, &str, &str, &str, &str, &str, &str, &str)) -> Self {
+    type Error = <A as FromStr>::Err;
+    fn try_from(s: (&str, &str, &str, &str, &str, &str, &str, &str)) -> Result<Self, Self::Error> {
         let mut list = Self::new();
-        list.push(FromStr::from_str(s.0).unwrap());
-        list.push(FromStr::from_str(s.1).unwrap());
-        list.push(FromStr::from_str(s.2).unwrap());
-        list.push(FromStr::from_str(s.3).unwrap());
-        list.push(FromStr::from_str(s.4).unwrap());
-        list.push(FromStr::from_str(s.5).unwrap());
-        list.push(FromStr::from_str(s.6).unwrap());
-        list.push(FromStr::from_str(s.7).unwrap());
-        list
+        list.push(FromStr::from_str(s.0)?);
+        list.push(FromStr::from_str(s.1)?);
+        list.push(FromStr::from_str(s.2)?);
+        list.push(FromStr::from_str(s.3)?);
+        list.push(FromStr::from_str(s.4)?);
+        list.push(FromStr::from_str(s.5)?);
+        list.push(FromStr::from_str(s.6)?);
+        list.push(FromStr::from_str(s.7)?);
+        Ok(list)
     }
 }
 
 macro_rules! spacedlist_from_array {
     ($num:tt) => {
-        impl<'a, A: FromStr> From<[&'a str; $num]> for SpacedList<A>
+        impl<'a, A> TryFrom<[&'a str; $num]> for SpacedList<A>
         where
-            <A as FromStr>::Err: Debug,
+            A: FromStr,
         {
-            fn from(s: [&str; $num]) -> Self {
-                Self::from_iter(s.into_iter().map(|s| FromStr::from_str(*s).unwrap()))
+            type Error = <A as FromStr>::Err;
+            fn try_from(s: [&str; $num]) -> Result<Self, Self::Error> {
+                s.into_iter().map(|s| FromStr::from_str(*s)).collect()
             }
         }
     };

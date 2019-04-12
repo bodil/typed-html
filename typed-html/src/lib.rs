@@ -89,11 +89,12 @@
 //! ## Example
 //!
 //! ```
+//! # use std::convert::{TryFrom, TryInto};
 //! # use typed_html::html;
 //! # use typed_html::dom::DOMTree;
 //! # use typed_html::types::{Class, SpacedSet};
-//! # fn main() {
-//! let classList: SpacedSet<Class> = ["foo", "bar", "baz"].into();
+//! # fn main() -> Result<(), &'static str> {
+//! let classList: SpacedSet<Class> = ["foo", "bar", "baz"].try_into()?;
 //! # let doc: DOMTree<String> =
 //! html!(
 //!     <div>
@@ -101,11 +102,11 @@
 //!         <div class=["foo", "bar", "baz"] /> // uses From<[&str, &str, &str]>
 //!         <div class=classList />             // uses a variable in scope
 //!         <div class={                        // evaluates a code block
-//!             SpacedSet::from(["foo", "bar", "baz"])
+//!             SpacedSet::try_from(["foo", "bar", "baz"])?
 //!         } />
 //!     </div>
 //! )
-//! # ;}
+//! # ; Ok(()) }
 //! ```
 //!
 //! # Generated Nodes

@@ -233,7 +233,7 @@ impl Element {
                 value => {
                     let value = process_value(value);
                     body.extend(quote!(
-                        element.attrs.#key = Some(std::convert::Into::into(#value));
+                        element.attrs.#key = Some(std::convert::TryInto::try_into(#value).unwrap());
                     ));
                 }
             }
@@ -364,7 +364,7 @@ impl Element {
                 value => {
                     let value = process_value(value);
                     set_attrs.extend(quote!(
-                        element.attrs.#key = Some(std::convert::Into::into(#value));
+                        element.attrs.#key = Some(std::convert::TryInto::try_into(#value).unwrap());
                     ));
                 }
             }

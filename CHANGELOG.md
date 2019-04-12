@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic
 Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Attribute type conversion is now using the newly stabilised `TryFrom` instead
+  of `From`, to avoid relying on panicking `From` implementations to detect
+  conversion errors, though the conversions inside the macro will still panic if
+  they fail. The appropriate `TryFrom` implementations have been added to
+  `Class`, `Id`, `SpacedList` and `SpacedSet`, and the corresponding `From`
+  implementations have been removed.
+
 ## [0.2.0] - 2019-03-16
 
 ### Added

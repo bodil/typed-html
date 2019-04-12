@@ -1,3 +1,5 @@
+use std::borrow::Borrow;
+use std::convert::TryFrom;
 use std::fmt::{Display, Error, Formatter};
 use std::ops::Deref;
 use std::str::FromStr;
@@ -19,38 +21,13 @@ pub struct Class(String);
 impl Class {
     /// Construct a new class name from a string.
     ///
-    /// Returns `Err` if the provided string is invalid.
-    pub fn try_new<S: Into<String>>(id: S) -> Result<Self, &'static str> {
-        let id = id.into();
-        {
-            let mut chars = id.chars();
-            match chars.next() {
-                None => return Err("class name cannot be empty"),
-                Some(c) if !c.is_alphabetic() => {
-                    return Err("class name must start with an alphabetic character")
-                }
-                _ => (),
-            }
-            for c in chars {
-                if !c.is_alphanumeric() && c != '_' && c != '-' && c != '.' {
-                    return Err(
-                        "class name can only contain alphanumerics, dash, dot and underscore",
-                    );
-                }
-            }
-        }
-        Ok(Class(id))
-    }
-
-    /// Construct a new class name from a string.
-    ///
     /// Panics if the provided string is invalid.
-    pub fn new<S: Into<String>>(id: S) -> Self {
-        let id = id.into();
-        Self::try_new(id.clone()).unwrap_or_else(|err| {
+    pub fn new<S: Borrow<str>>(s: S) -> Self {
+        let s = s.borrow();
+        Self::from_str(s).unwrap_or_else(|err| {
             panic!(
                 "typed_html::types::Class: {:?} is not a valid class name: {}",
-                id, err
+                s, err
             )
         })
     }
@@ -59,7 +36,20 @@ impl Class {
 impl FromStr for Class {
     type Err = &'static str;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Class::try_new(s)
+        let mut chars = s.chars();
+        match chars.next() {
+            None => return Err("class name cannot be empty"),
+            Some(c) if !c.is_alphabetic() => {
+                return Err("class name must start with an alphabetic character")
+            }
+            _ => (),
+        }
+        for c in chars {
+            if !c.is_alphanumeric() && c != '_' && c != '-' && c != '.' {
+                return Err("class name can only contain alphanumerics, dash, dot and underscore");
+            }
+        }
+        Ok(Class(s.to_string()))
     }
 }
 
@@ -69,9 +59,10 @@ impl From<Id> for Class {
     }
 }
 
-impl<'a> From<&'a str> for Class {
-    fn from(str: &'a str) -> Self {
-        Class::from_str(str).unwrap()
+impl<'a> TryFrom<&'a str> for Class {
+    type Error = &'static str;
+    fn try_from(str: &'a str) -> Result<Self, Self::Error> {
+        Class::from_str(str)
     }
 }
 

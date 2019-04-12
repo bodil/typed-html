@@ -64,7 +64,7 @@ macro_rules! declare_events_struct {
                     $(
                         .chain(
                             iter::once(self.$name.take())
-                            .filter(|value| value.is_some())
+                            .filter(Option::is_some)
                             .map(|value| (stringify!($name), value.unwrap()))
                         )
                     )*
