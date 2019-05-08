@@ -23,7 +23,7 @@ proc-macro-hack = "0.5.2"
 quote = "0.6.10"
 
 [build-dependencies]
-lalrpop = "0.16.1"
+lalrpop = "0.17.0"
 version_check = "0.1.5"
 
 [features]
