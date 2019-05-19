@@ -301,6 +301,146 @@ pub enum ReferrerPolicy {
 }
 
 #[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
+pub enum Role {
+    #[strum(to_string = "any")]
+    Any,
+    #[strum(to_string = "alert")]
+    Alert,
+    #[strum(to_string = "alertdialog")]
+    AlertDialog,
+    #[strum(to_string = "application")]
+    Application,
+    #[strum(to_string = "article")]
+    Article,
+    #[strum(to_string = "banner")]
+    Banner,
+    #[strum(to_string = "checkbox")]
+    Checkbox,
+    #[strum(to_string = "cell")]
+    Cell,
+    #[strum(to_string = "columnheader")]
+    ColumnHeader,
+    #[strum(to_string = "combobox")]
+    ComboBox,
+    #[strum(to_string = "complementary")]
+    Complementary,
+    #[strum(to_string = "contentinfo")]
+    ContentInfo,
+    #[strum(to_string = "definition")]
+    Definition,
+    #[strum(to_string = "dialog")]
+    Dialog,
+    #[strum(to_string = "directory")]
+    Directory,
+    #[strum(to_string = "document")]
+    Document,
+    #[strum(to_string = "feed")]
+    Feed,
+    #[strum(to_string = "figure")]
+    Figure,
+    #[strum(to_string = "form")]
+    Form,
+    #[strum(to_string = "grid")]
+    Grid,
+    #[strum(to_string = "gridcell")]
+    GridCell,
+    #[strum(to_string = "group")]
+    Group,
+    #[strum(to_string = "heading")]
+    Heading,
+    #[strum(to_string = "img")]
+    Image,
+    #[strum(to_string = "link")]
+    Link,
+    #[strum(to_string = "list")]
+    List,
+    #[strum(to_string = "listbox")]
+    ListBox,
+    #[strum(to_string = "listitem")]
+    ListItem,
+    #[strum(to_string = "log")]
+    Log,
+    #[strum(to_string = "main")]
+    Main,
+    #[strum(to_string = "marquee")]
+    Marquee,
+    #[strum(to_string = "math")]
+    Math,
+    #[strum(to_string = "menu")]
+    Menu,
+    #[strum(to_string = "menubar")]
+    MenuBar,
+    #[strum(to_string = "menuitem")]
+    MenuItem,
+    #[strum(to_string = "menuitemcheckbox")]
+    MenuItemCheckbox,
+    #[strum(to_string = "menuitemradio")]
+    MenuItemRadio,
+    #[strum(to_string = "navigation")]
+    Navigation,
+    #[strum(to_string = "none")]
+    None,
+    #[strum(to_string = "note")]
+    Note,
+    #[strum(to_string = "option")]
+    Option,
+    #[strum(to_string = "presentation")]
+    Presentation,
+    #[strum(to_string = "progressbar")]
+    ProgressBar,
+    #[strum(to_string = "radio")]
+    Radio,
+    #[strum(to_string = "radiogroup")]
+    RadioGroup,
+    #[strum(to_string = "region")]
+    Region,
+    #[strum(to_string = "row")]
+    Row,
+    #[strum(to_string = "rowgroup")]
+    RowGroup,
+    #[strum(to_string = "rowheader")]
+    RowHeader,
+    #[strum(to_string = "scrollbar")]
+    ScrollBar,
+    #[strum(to_string = "search")]
+    Search,
+    #[strum(to_string = "searchbox")]
+    SearchBox,
+    #[strum(to_string = "separator")]
+    Separator,
+    #[strum(to_string = "slider")]
+    Slider,
+    #[strum(to_string = "spinbutton")]
+    SpinButton,
+    #[strum(to_string = "status")]
+    Status,
+    #[strum(to_string = "switch")]
+    Switch,
+    #[strum(to_string = "tab")]
+    Tab,
+    #[strum(to_string = "table")]
+    Table,
+    #[strum(to_string = "tablist")]
+    TabList,
+    #[strum(to_string = "tabpanel")]
+    TabPanel,
+    #[strum(to_string = "term")]
+    Term,
+    #[strum(to_string = "textbox")]
+    TextBox,
+    #[strum(to_string = "timer")]
+    Timer,
+    #[strum(to_string = "toolbar")]
+    ToolBar,
+    #[strum(to_string = "tooltip")]
+    ToolTip,
+    #[strum(to_string = "tree")]
+    Tree,
+    #[strum(to_string = "treegrid")]
+    TreeGrid,
+}
+
+#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
 pub enum Sandbox {
     #[strum(to_string = "allow-forms")]
     AllowForms,
