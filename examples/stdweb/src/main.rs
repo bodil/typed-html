@@ -10,7 +10,7 @@ use typed_html::output::stdweb::Stdweb;
 
 fn main() {
     let mut doc = html!(
-        <div>
+        <div role="main">
             <h1>"Hello Kitty"</h1>
             <p>
                 "She is not a "<em><a href="https://en.wikipedia.org/wiki/Cat">"cat"</a></em>
