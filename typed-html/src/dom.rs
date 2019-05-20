@@ -139,7 +139,7 @@ macro_rules! text {
     ($t:expr) => {
         Box::new($crate::dom::TextNode::new($t))
     };
-    ($format:tt, $($tail:tt),*) => {
+    ($format:tt, $($tail:expr),*) => {
         Box::new($crate::dom::TextNode::new(format!($format, $($tail),*)))
     };
 }
