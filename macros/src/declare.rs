@@ -337,7 +337,7 @@ impl Declare {
         for (attr_name, _, attr_str) in self.attrs() {
             print_attrs.extend(quote!(
                 if let Some(ref value) = self.attrs.#attr_name {
-                    let value = ::htmlescape::encode_attribute(&value.to_string());
+                    let value = crate::escape_html_attribute(value.to_string());
                     if !value.is_empty() {
                         write!(f, " {}=\"{}\"", #attr_str, value)?;
                     }
@@ -355,7 +355,7 @@ impl Declare {
                     #print_attrs
                     for (key, value) in &self.data_attributes {
                         write!(f, " data-{}=\"{}\"", key,
-                               ::htmlescape::encode_attribute(&value))?;
+                               crate::escape_html_attribute(value.to_string()))?;
                     }
                     write!(f, "{}", self.events)?;
                     #print_children
