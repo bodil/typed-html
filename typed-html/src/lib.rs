@@ -227,3 +227,11 @@ impl OutputType for String {
     type EventTarget = ();
     type EventListenerHandle = ();
 }
+
+pub fn escape_html_attribute(html_attr: String) -> String {
+    // Even though the code is quoting the variables with a double quote, escape all known quoting chars
+    html_attr
+        .replace("\"", "&quot;")
+        .replace("'", "&#39;")
+        .replace("`", "&#96;")
+}
