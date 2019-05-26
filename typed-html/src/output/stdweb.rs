@@ -21,7 +21,7 @@ macro_rules! declare_events {
         /// Container type for DOM events.
         pub struct Events {
             $(
-                pub $name: Option<Box<dyn EventHandler<Stdweb, $type>>>,
+                pub $name: Option<Box<dyn EventHandler<Stdweb, $type> + Send>>,
             )*
         }
 
@@ -129,17 +129,17 @@ pub struct EFn<F, E>(Option<F>, PhantomData<E>);
 
 impl<F, E> EFn<F, E>
 where
-    F: FnMut(E) + 'static,
+    F: FnMut(E) + 'static + Send,
 {
     pub fn new(f: F) -> Self {
         EFn(Some(f), PhantomData)
     }
 }
 
-impl<F, E> From<F> for Box<dyn EventHandler<Stdweb, E>>
+impl<F, E> From<F> for Box<dyn EventHandler<Stdweb, E> + Send>
 where
-    F: FnMut(E) + 'static,
-    E: ConcreteEvent + 'static,
+    F: FnMut(E) + 'static + Send,
+    E: ConcreteEvent + 'static + Send,
 {
     fn from(f: F) -> Self {
         Box::new(EFn::new(f))
@@ -148,8 +148,8 @@ where
 
 impl<F, E> EventHandler<Stdweb, E> for EFn<F, E>
 where
-    F: FnMut(E) + 'static,
-    E: ConcreteEvent + 'static,
+    F: FnMut(E) + 'static + Send,
+    E: ConcreteEvent + 'static + Send,
 {
     fn attach(&mut self, target: &mut <Stdweb as OutputType>::EventTarget) -> EventListenerHandle {
         let handler = self.0.take().unwrap();
