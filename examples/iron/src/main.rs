@@ -24,7 +24,7 @@ impl Modifier<Response> for Html {
 // argument of the type that the element that you're inserting it into expects,
 // which in the case of `<body>` is `FlowContent`, not just `Node`, so you can't
 // pass it a `DOMTree<T>` or you'll get a type error.
-fn doc<T: OutputType + 'static>(tree: Box<dyn FlowContent<T>>) -> DOMTree<T> {
+fn doc<T: OutputType + 'static + Send>(tree: Box<dyn FlowContent<T>>) -> DOMTree<T> {
     html!(
         <html>
             <head>
