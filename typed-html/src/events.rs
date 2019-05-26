@@ -6,7 +6,7 @@ use std::fmt::{Display, Error, Formatter};
 use std::iter;
 
 /// Trait for event handlers.
-pub trait EventHandler<T: OutputType, E> {
+pub trait EventHandler<T: OutputType + Send, E: Send> {
     /// Build a callback function from this event handler.
     ///
     /// Returns `None` is this event handler can't be used to build a callback
@@ -26,13 +26,13 @@ pub trait EventHandler<T: OutputType, E> {
 
 macro_rules! declare_events_struct {
     ($($name:ident,)*) => {
-        pub struct Events<T> {
+        pub struct Events<T> where T: Send {
             $(
                 pub $name: Option<T>,
             )*
         }
 
-        impl<T> Events<T> {
+        impl<T: Send> Events<T> {
             pub fn iter(&self) -> impl Iterator<Item = (&'static str, &T)> {
                 iter::empty()
                 $(
@@ -54,7 +54,7 @@ macro_rules! declare_events_struct {
             }
         }
 
-        impl<T: 'static> IntoIterator for Events<T> {
+        impl<T: 'static + Send> IntoIterator for Events<T> {
             type Item = (&'static str, T);
             type IntoIter = Box<dyn Iterator<Item = Self::Item>>;
 
@@ -72,7 +72,7 @@ macro_rules! declare_events_struct {
             }
         }
 
-        impl<T> Default for Events<T> {
+        impl<T: Send> Default for Events<T> {
             fn default() -> Self {
                 Events {
                     $(
@@ -82,7 +82,7 @@ macro_rules! declare_events_struct {
             }
         }
 
-        impl<T: Display> Display for Events<T> {
+        impl<T: Display + Send> Display for Events<T> {
             fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
                 $(
                     if let Some(ref value) = self.$name {

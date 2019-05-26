@@ -214,11 +214,11 @@ pub mod types;
 /// Marker trait for outputs
 pub trait OutputType {
     /// The type that contains events for this output.
-    type Events: Default + Display;
+    type Events: Default + Display + Send;
     /// The type of event targets for this output.
-    type EventTarget;
+    type EventTarget: Send;
     /// The type that's returned from attaching an event listener to a target.
-    type EventListenerHandle;
+    type EventListenerHandle: Send;
 }
 
 /// String output
