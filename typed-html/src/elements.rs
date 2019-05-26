@@ -16,9 +16,9 @@ macro_rules! marker_trait {
     };
 
     ($trait:ident, $parent:ident) => {
-        pub trait $trait<T: OutputType>: $parent<T> {}
+        pub trait $trait<T: OutputType + Send>: $parent<T> {}
 
-        impl<T> IntoIterator for Box<dyn $trait<T>> where T: OutputType {
+        impl<T> IntoIterator for Box<dyn $trait<T>> where T: OutputType + Send {
             type Item = Box<dyn $trait<T>>;
             type IntoIter = std::vec::IntoIter<Box<dyn $trait<T>>>;
 

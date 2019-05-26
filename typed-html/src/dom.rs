@@ -66,7 +66,7 @@ pub struct VElement<'a, T: OutputType + 'a> {
 /// [TextNode]: struct.TextNode.html
 /// [elements]: ../elements/index.html
 /// [vnode]: #tymethod.vnode
-pub trait Node<T: OutputType>: Display {
+pub trait Node<T: OutputType + Send>: Display + Send {
     /// Render the node into a [`VNode`][VNode] tree.
     ///
     /// [VNode]: enum.VNode.html
@@ -75,7 +75,7 @@ pub trait Node<T: OutputType>: Display {
 
 impl<T> IntoIterator for Box<dyn Node<T>>
 where
-    T: OutputType,
+    T: OutputType + Send,
 {
     type Item = Box<dyn Node<T>>;
     type IntoIter = std::vec::IntoIter<Box<dyn Node<T>>>;
@@ -90,7 +90,7 @@ where
 /// All [HTML elements][elements] implement this.
 ///
 /// [elements]: ../elements/index.html
-pub trait Element<T: OutputType>: Node<T> {
+pub trait Element<T: OutputType + Send>: Node<T> {
     /// Get the name of the element.
     fn name() -> &'static str;
     /// Get a list of the attribute names for this element.
@@ -112,7 +112,7 @@ pub trait Element<T: OutputType>: Node<T> {
 }
 
 /// An HTML text node.
-pub struct TextNode<T: OutputType>(String, PhantomData<T>);
+pub struct TextNode<T: OutputType + Send>(String, PhantomData<T>);
 
 /// Macro for creating text nodes.
 ///
@@ -146,7 +146,7 @@ macro_rules! text {
 
 /// An unsafe HTML text node.
 /// This is like TextNode, but no escaping will be performed when this node is displayed.
-pub struct UnsafeTextNode<T: OutputType>(String, PhantomData<T>);
+pub struct UnsafeTextNode<T: OutputType + Send>(String, PhantomData<T>);
 
 /// Macro for creating unescaped text nodes.
 ///
@@ -186,7 +186,7 @@ macro_rules! unsafe_text {
     };
 }
 
-impl<T: OutputType> TextNode<T> {
+impl<T: OutputType + Send> TextNode<T> {
     /// Construct a text node.
     ///
     /// The preferred way to construct a text node is with the [`text!()`][text]
@@ -198,19 +198,19 @@ impl<T: OutputType> TextNode<T> {
     }
 }
 
-impl<T: OutputType> Display for TextNode<T> {
+impl<T: OutputType + Send> Display for TextNode<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         f.write_str(&encode_minimal(&self.0))
     }
 }
 
-impl<T: OutputType> Node<T> for TextNode<T> {
+impl<T: OutputType + Send> Node<T> for TextNode<T> {
     fn vnode(&'_ mut self) -> VNode<'_, T> {
         VNode::Text(&self.0)
     }
 }
 
-impl<T: OutputType> IntoIterator for TextNode<T> {
+impl<T: OutputType + Send> IntoIterator for TextNode<T> {
     type Item = TextNode<T>;
     type IntoIter = std::vec::IntoIter<TextNode<T>>;
 
@@ -219,7 +219,7 @@ impl<T: OutputType> IntoIterator for TextNode<T> {
     }
 }
 
-impl<T: OutputType> IntoIterator for Box<TextNode<T>> {
+impl<T: OutputType + Send> IntoIterator for Box<TextNode<T>> {
     type Item = Box<TextNode<T>>;
     type IntoIter = std::vec::IntoIter<Box<TextNode<T>>>;
 
@@ -228,10 +228,10 @@ impl<T: OutputType> IntoIterator for Box<TextNode<T>> {
     }
 }
 
-impl<T: OutputType> FlowContent<T> for TextNode<T> {}
-impl<T: OutputType> PhrasingContent<T> for TextNode<T> {}
+impl<T: OutputType + Send> FlowContent<T> for TextNode<T> {}
+impl<T: OutputType + Send> PhrasingContent<T> for TextNode<T> {}
 
-impl<T: OutputType> UnsafeTextNode<T> {
+impl<T: OutputType + Send> UnsafeTextNode<T> {
     /// Construct a unsafe text node.
     ///
     /// The preferred way to construct a unsafe text node is with the [`unsafe_text!()`][unsafe_text]
@@ -243,19 +243,19 @@ impl<T: OutputType> UnsafeTextNode<T> {
     }
 }
 
-impl<T: OutputType> Display for UnsafeTextNode<T> {
+impl<T: OutputType + Send> Display for UnsafeTextNode<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         f.write_str(&self.0)
     }
 }
 
-impl<T: OutputType> Node<T> for UnsafeTextNode<T> {
+impl<T: OutputType + Send> Node<T> for UnsafeTextNode<T> {
     fn vnode(&'_ mut self) -> VNode<'_, T> {
         VNode::UnsafeText(&self.0)
     }
 }
 
-impl<T: OutputType> IntoIterator for UnsafeTextNode<T> {
+impl<T: OutputType + Send> IntoIterator for UnsafeTextNode<T> {
     type Item = UnsafeTextNode<T>;
     type IntoIter = std::vec::IntoIter<UnsafeTextNode<T>>;
 
@@ -264,7 +264,7 @@ impl<T: OutputType> IntoIterator for UnsafeTextNode<T> {
     }
 }
 
-impl<T: OutputType> IntoIterator for Box<UnsafeTextNode<T>> {
+impl<T: OutputType + Send> IntoIterator for Box<UnsafeTextNode<T>> {
     type Item = Box<UnsafeTextNode<T>>;
     type IntoIter = std::vec::IntoIter<Box<UnsafeTextNode<T>>>;
 
@@ -273,5 +273,5 @@ impl<T: OutputType> IntoIterator for Box<UnsafeTextNode<T>> {
     }
 }
 
-impl<T: OutputType> FlowContent<T> for UnsafeTextNode<T> {}
-impl<T: OutputType> PhrasingContent<T> for UnsafeTextNode<T> {}
+impl<T: OutputType + Send> FlowContent<T> for UnsafeTextNode<T> {}
+impl<T: OutputType + Send> PhrasingContent<T> for UnsafeTextNode<T> {}
