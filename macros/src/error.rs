@@ -49,8 +49,8 @@ pub fn parse_error(input: &[Token], error: &ParseError) -> TokenStream {
                 compile_error! { "invalid token" }
             }
         }
-        UnrecognizedToken {
-            token: None,
+        UnrecognizedEOF {
+            location: _,
             expected,
         } => {
             let msg = format!(
@@ -62,7 +62,7 @@ pub fn parse_error(input: &[Token], error: &ParseError) -> TokenStream {
             }
         }
         UnrecognizedToken {
-            token: Some((_, token, _)),
+            token: (_, token, _),
             expected,
         } => {
             let span = token.span();
