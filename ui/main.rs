@@ -2,7 +2,7 @@
 fn ui() {
     extern crate version_check;
 
-    if !version_check::is_nightly().unwrap_or(false) {
+    if !version_check::is_feature_flaggable().unwrap_or(false) {
         return;
     }
 
