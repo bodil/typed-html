@@ -3,8 +3,8 @@
 use std::fmt::Display;
 use std::marker::PhantomData;
 
-use crate::OutputType;
 use crate::elements::{FlowContent, PhrasingContent};
+use crate::OutputType;
 use htmlescape::encode_minimal;
 
 /// A boxed DOM tree, as returned from the `html!` macro.
@@ -23,7 +23,7 @@ use htmlescape::encode_minimal;
 /// let rendered_tree: String = tree.to_string();
 /// # }
 /// ```
-pub type DOMTree<T> = Box<Node<T>>;
+pub type DOMTree<T> = Box<dyn Node<T>>;
 
 /// An untyped representation of an HTML node.
 ///

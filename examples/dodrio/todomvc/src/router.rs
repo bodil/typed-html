@@ -57,7 +57,7 @@ pub fn start(vdom: VdomWeak) {
     // Note that if we ever intended to unmount our todos app, we would want to
     // provide a method for removing this router's event listener and cleaning
     // up after ourselves.
-    let on_hash_change = Closure::wrap(Box::new(on_hash_change) as Box<FnMut()>);
+    let on_hash_change = Closure::wrap(Box::new(on_hash_change) as Box<dyn FnMut()>);
     let window = utils::window();
     window
         .add_event_listener_with_callback("hashchange", on_hash_change.as_ref().unchecked_ref())
