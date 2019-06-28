@@ -8,13 +8,24 @@ Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Most types now implement `Send`. (#53)
+- All tags now support the ARIA `role` attribute. (#47)
+- The `text!()` macro now accepts expressions as value arguments. (#48)
+- You can now create "unsafe" text nodes with the `unsafe_text!()` macro, which
+  won't be quoted at all when stringifying, even if they contain HTML tags. This
+  is a meaningless distinction when creating DOM nodes, however, and unsafe text
+  nodes will behave like normal text nodes in this case. (#39)
+
 ### Changed
 
-- Attribute type conversion is now using the newly stabilised `TryFrom` instead
-  of `From`, to avoid relying on panicking `From` implementations to detect
-  conversion errors, though the conversions inside the macro will still panic if
-  they fail. The appropriate `TryFrom` implementations have been added to
-  `Class`, `Id`, `SpacedList` and `SpacedSet`, and the corresponding `From`
+- Text in attributes are quoted less aggressively when stringified. (#26, #49)
+- Attribute type conversion is now using the recently stabilised `TryFrom`
+  instead of `From`, to avoid relying on panicking `From` implementations to
+  detect conversion errors, though the conversions inside the macro will still
+  panic if they fail. The appropriate `TryFrom` implementations have been added
+  to `Class`, `Id`, `SpacedList` and `SpacedSet`, and the corresponding `From`
   implementations have been removed.
 
 ## [0.2.0] - 2019-03-16
