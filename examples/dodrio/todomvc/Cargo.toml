@@ -36,7 +36,7 @@ features = [
 ]
 
 [dev-dependencies]
-wasm-bindgen-test = "0.2.38"
+wasm-bindgen-test = "0.3.2"
 
 [features]
 logging = [
