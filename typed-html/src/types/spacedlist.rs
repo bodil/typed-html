@@ -245,7 +245,7 @@ macro_rules! spacedlist_from_array {
         {
             type Error = <A as FromStr>::Err;
             fn try_from(s: [&str; $num]) -> Result<Self, Self::Error> {
-                s.into_iter().map(|s| FromStr::from_str(*s)).collect()
+                s.iter().map(|s| FromStr::from_str(*s)).collect()
             }
         }
     };
