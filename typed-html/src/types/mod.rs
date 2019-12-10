@@ -102,6 +102,8 @@ pub enum FormMethod {
     Post,
     #[strum(to_string = "get")]
     Get,
+    #[strum(to_string = "put")]
+    Put,
 }
 
 #[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
