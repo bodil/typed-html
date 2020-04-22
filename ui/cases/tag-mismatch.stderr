@@ -3,12 +3,16 @@ error: expected closing tag '</html>', found '</head>'
    |
 10 |         <html></head>
    |                 ^^^^
+   |
+   = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error: unclosed tag
   --> $DIR/tag-mismatch.rs:10:10
    |
 10 |         <html></head>
    |          ^^^^
+   |
+   = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error: aborting due to 2 previous errors
 
