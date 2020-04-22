@@ -3,12 +3,16 @@ error: expected "<", code block or literal
    |
 10 |         <title>unquoted</title>
    |                ^^^^^^^^
+   |
+   = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error: text nodes need to be quoted, eg. [1m<p>"Hello Joe!"</p>[0m
   --> $DIR/text-nodes-need-to-be-quoted.rs:10:16
    |
 10 |         <title>unquoted</title>
    |                ^^^^^^^^
+   |
+   = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error: aborting due to 2 previous errors
 
