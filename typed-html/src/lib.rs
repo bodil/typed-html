@@ -1,4 +1,4 @@
-#![recursion_limit = "128"]
+#![recursion_limit = "256"]
 //! This crate provides the `html!` macro for building HTML documents inside your
 //! Rust code using roughly [JSX] compatible syntax.
 //!
