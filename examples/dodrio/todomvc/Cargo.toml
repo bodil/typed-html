@@ -17,7 +17,7 @@ typed-html = { path = "../../../typed-html", features = ["dodrio_macro"] }
 
 # Optional dependencies for logging.
 console_error_panic_hook = { optional = true, version = "0.1.6" }
-console_log = { optional = true, version = "0.1.2" }
+console_log = { optional = true, version = "0.2.0" }
 log = { optional = true, version = "0.4.6" }
 
 [dependencies.web-sys]
