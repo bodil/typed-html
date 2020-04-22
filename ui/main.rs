@@ -1,3 +1,7 @@
+fn main() {
+    println!("This crate is not meant to be run, it only serves as a compilation test.");
+}
+
 #[test]
 fn ui() {
     extern crate version_check;
