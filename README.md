@@ -2,8 +2,12 @@
 
 # typed-html
 
-This crate provides the `html!` macro for building HTML documents inside your
+This crate provides the `html!` macro for building fully type checked HTML documents inside your
 Rust code using roughly [JSX] compatible syntax.
+
+## Not Currently Maintained
+
+This project is not currently being maintained. If you would like to take over maintainership, please [leave an issue](https://github.com/bodil/typed-html/issues/new).
 
 ## Quick Preview
 
