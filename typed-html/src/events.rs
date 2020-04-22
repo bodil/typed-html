@@ -3,7 +3,6 @@
 use crate::OutputType;
 use htmlescape::encode_attribute;
 use std::fmt::{Display, Error, Formatter};
-use std::iter;
 
 /// Trait for event handlers.
 pub trait EventHandler<T: OutputType + Send, E: Send> {
@@ -34,23 +33,23 @@ macro_rules! declare_events_struct {
 
         impl<T: Send> Events<T> {
             pub fn iter(&self) -> impl Iterator<Item = (&'static str, &T)> {
-                iter::empty()
+                let mut vec = Vec::new();
                 $(
-                    .chain(
-                        self.$name.iter()
-                        .map(|value| (stringify!($name), value))
-                    )
+                    if let Some(ref value) = self.$name {
+                        vec.push((stringify!($name), value));
+                    }
                 )*
+                vec.into_iter()
             }
 
             pub fn iter_mut(&mut self) -> impl Iterator<Item = (&'static str, &mut T)> {
-                iter::empty()
+                let mut vec = Vec::new();
                 $(
-                    .chain(
-                        self.$name.iter_mut()
-                        .map(|value| (stringify!($name), value))
-                    )
+                    if let Some(ref mut value) = self.$name {
+                        vec.push((stringify!($name), value));
+                    }
                 )*
+                vec.into_iter()
             }
         }
 
@@ -58,17 +57,14 @@ macro_rules! declare_events_struct {
             type Item = (&'static str, T);
             type IntoIter = Box<dyn Iterator<Item = Self::Item>>;
 
-            fn into_iter(mut self) -> Self::IntoIter {
-                Box::new(
-                    iter::empty()
-                    $(
-                        .chain(
-                            iter::once(self.$name.take())
-                            .filter(Option::is_some)
-                            .map(|value| (stringify!($name), value.unwrap()))
-                        )
-                    )*
-                )
+            fn into_iter(self) -> Self::IntoIter {
+                let mut vec = Vec::new();
+                $(
+                    if let Some(value) = self.$name {
+                        vec.push((stringify!($name), value));
+                    }
+                )*
+                Box::new(vec.into_iter())
             }
         }
 
