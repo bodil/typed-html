@@ -6,7 +6,7 @@ Simple example of compiling app consuming typed-html to WebAssembly.
 
 Make sure you have `cargo-web` installed: [Instructions](https://github.com/koute/cargo-web/#installation)
 
-Build using `cargo web build`
+Build using `cargo web build --release`
 
 _Note: There may be an issue that can be worked around as described [here](https://github.com/bodil/typed-html/issues/6), due to a bug in stdweb_
 
