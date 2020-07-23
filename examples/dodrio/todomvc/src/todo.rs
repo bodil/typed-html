@@ -1,7 +1,7 @@
 //! Type definition and `dodrio::Render` implementation for a single todo item.
 
 use crate::keys;
-use dodrio::{bumpalo::Bump, Node, Render, RootRender, VdomWeak};
+use dodrio::{Node, Render, RenderContext, RootRender, VdomWeak};
 use serde::{Deserialize, Serialize};
 use std::marker::PhantomData;
 use typed_html::dodrio;
@@ -93,16 +93,15 @@ impl<C> Todo<C> {
     }
 }
 
-impl<C: TodoActions> Render for Todo<C> {
-    fn render<'a, 'bump>(&'a self, bump: &'bump Bump) -> Node<'bump>
-    where
-        'a: 'bump,
-    {
+impl<'a, C: TodoActions> Render<'a> for Todo<C> {
+    fn render(&self, cx: &mut RenderContext<'a>) -> Node<'a> {
         use dodrio::{builder::text, bumpalo};
         use typed_html::types::ClassList;
 
         let id = self.id;
         let title = self.edits.as_ref().unwrap_or(&self.title);
+        let title = bumpalo::collections::String::from_str_in(title, cx.bump).into_bump_str();
+        let bump = cx.bump;
 
         dodrio!(bump,
             <li class={
@@ -130,7 +129,7 @@ impl<C: TodoActions> Render for Todo<C> {
                         C::delete(root, vdom, id)
                     }}/>
                 </div>
-                <input class="edit" value={title.as_str()} name="title" id={
+                <input class="edit" value={title} name="title" id={
                     bumpalo::format!(in bump, "todo-{}", id).into_bump_str()
                 } oninput={move |root, vdom, event| {
                     let input = event

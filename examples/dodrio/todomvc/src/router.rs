@@ -4,7 +4,6 @@ use crate::todos::Todos;
 use crate::utils;
 use crate::visibility::Visibility;
 use dodrio::VdomWeak;
-use futures::prelude::*;
 use std::str::FromStr;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
@@ -30,7 +29,8 @@ pub fn start(vdom: VdomWeak) {
                 v
             });
 
-        wasm_bindgen_futures::spawn_local(
+        let vdom = vdom.clone();
+        wasm_bindgen_futures::spawn_local(async move {
             vdom.with_component({
                 let vdom = vdom.clone();
                 move |root| {
@@ -44,9 +44,8 @@ pub fn start(vdom: VdomWeak) {
                         vdom.schedule_render();
                     }
                 }
-            })
-            .map_err(|_| ()),
-        );
+            }).await.ok();
+        });
     };
 
     // Call it once to handle the initial `#` fragment.

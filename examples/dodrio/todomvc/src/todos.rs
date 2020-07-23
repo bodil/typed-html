@@ -8,7 +8,7 @@ use crate::{keys, utils};
 use dodrio::{
     builder::text,
     bumpalo::{self, Bump},
-    Node, Render, RootRender, VdomWeak,
+    Node, Render, RenderContext, RootRender, VdomWeak,
 };
 use serde::{Deserialize, Serialize};
 use std::marker::PhantomData;
@@ -138,10 +138,8 @@ impl<C> Todos<C> {
 
 /// Rendering helpers.
 impl<C: TodosActions> Todos<C> {
-    fn header<'a, 'bump>(&'a self, bump: &'bump Bump) -> Node<'bump>
-    where
-        'a: 'bump,
-    {
+    fn header<'a>(&self, cx: &mut RenderContext<'a>) -> Node<'a> {
+        let bump = cx.bump;
         dodrio!(bump,
             <header class="header">
                 <h1>"todos"</h1>
@@ -161,13 +159,11 @@ impl<C: TodosActions> Todos<C> {
         )
     }
 
-    fn todos_list<'a, 'bump>(&'a self, bump: &'bump Bump) -> Node<'bump>
-    where
-        'a: 'bump,
-    {
+    fn todos_list<'a>(&self, cx: &mut RenderContext<'a>) -> Node<'a> {
         use dodrio::bumpalo::collections::Vec;
 
-        let mut todos = Vec::with_capacity_in(self.todos.len(), bump);
+        let bump = cx.bump;
+        let mut todos = Vec::with_capacity_in(self.todos.len(), cx.bump);
         todos.extend(
             self.todos
                 .iter()
@@ -176,7 +172,7 @@ impl<C: TodosActions> Todos<C> {
                     Visibility::Active => !t.is_complete(),
                     Visibility::Completed => t.is_complete(),
                 })
-                .map(|t| t.render(bump)),
+                .map(|t| t.render(cx)),
         );
 
         dodrio!(bump,
@@ -200,10 +196,8 @@ impl<C: TodosActions> Todos<C> {
         )
     }
 
-    fn footer<'a, 'bump>(&'a self, bump: &'bump Bump) -> Node<'bump>
-    where
-        'a: 'bump,
-    {
+    fn footer<'a>(&self, cx: &mut RenderContext<'a>) -> Node<'a> {
+        let bump = cx.bump;
         let completed_count = self.todos.iter().filter(|t| t.is_complete()).count();
         let incomplete_count = self.todos.len() - completed_count;
         let items_left = if incomplete_count == 1 {
@@ -241,15 +235,12 @@ impl<C: TodosActions> Todos<C> {
         )
     }
 
-    fn visibility_swap<'a, 'bump>(
-        &'a self,
-        bump: &'bump Bump,
+    fn visibility_swap<'a>(
+        &self,
+        bump: &'a Bump,
         url: &'static str,
         target_vis: Visibility,
-    ) -> Node<'bump>
-    where
-        'a: 'bump,
-    {
+    ) -> Node<'a> {
         dodrio!(bump,
             <li onclick={move |root, vdom, _event| {
                 C::change_visibility(root, vdom, target_vis);
@@ -266,14 +257,12 @@ impl<C: TodosActions> Todos<C> {
     }
 }
 
-impl<C: TodosActions> Render for Todos<C> {
-    fn render<'a, 'bump>(&'a self, bump: &'bump Bump) -> Node<'bump>
-    where
-        'a: 'bump,
-    {
+impl<'a, C: TodosActions> Render<'a> for Todos<C> {
+    fn render(&self, cx: &mut RenderContext<'a>) -> Node<'a> {
+        let bump = cx.bump;
         dodrio!(bump,
             <div>{ bumpalo::vec![in &bump;
-                self.header(bump), self.todos_list(bump), self.footer(bump)
+                self.header(cx), self.todos_list(cx), self.footer(cx)
             ] }</div>
         )
     }
