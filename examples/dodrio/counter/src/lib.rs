@@ -1,7 +1,7 @@
 #![recursion_limit = "128"]
 
 use dodrio::builder::text;
-use dodrio::bumpalo::{self, Bump};
+use dodrio::bumpalo::{self};
 use dodrio::Render;
 use log::*;
 use typed_html::dodrio;
@@ -31,13 +31,11 @@ impl Counter {
 
 // The `Render` implementation for `Counter`s displays the current count and has
 // buttons to increment and decrement the count.
-impl Render for Counter {
-    fn render<'a, 'bump>(&'a self, bump: &'bump Bump) -> dodrio::Node<'bump>
-    where
-        'a: 'bump,
-    {
+impl<'a> Render<'a> for Counter {
+    fn render(&self, cx: &mut dodrio::RenderContext<'a>) -> dodrio::Node<'a> {
         // Stringify the count as a bump-allocated string.
-        let count = bumpalo::format!(in bump, "{}", self.count);
+        let count = bumpalo::format!(in cx.bump, "{}", self.count);
+        let bump = cx.bump;
 
         dodrio!(bump,
             <div id="counter">
