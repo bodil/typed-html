@@ -240,7 +240,7 @@ impl Element {
         }
         for (key, value) in data_attrs
             .iter()
-            .map(|(k, v)| (TokenTree::from(Literal::string(&k)), v.clone()))
+            .map(|(k, v)| (TokenTree::from(Literal::string(k)), v.clone()))
         {
             body.extend(quote!(
                 element.data_attributes.push((#key, #value.into()));
