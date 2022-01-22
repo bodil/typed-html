@@ -1,7 +1,7 @@
 //! Type definition and `dodrio::Render` implementation for a single todo item.
 
 use crate::keys;
-use dodrio::{bumpalo::Bump, Node, Render, RenderContext, RootRender, VdomWeak};
+use dodrio::{Node, Render, RenderContext, RootRender, VdomWeak};
 use serde::{Deserialize, Serialize};
 use std::marker::PhantomData;
 use typed_html::dodrio;

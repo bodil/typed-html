@@ -173,12 +173,12 @@ impl Stdweb {
         vnode: VNode<'_, Stdweb>,
     ) -> Result<web::Node, web::error::InvalidCharacterError> {
         match vnode {
-            VNode::Text(text) => Ok(document.create_text_node(&text).into()),
-            VNode::UnsafeText(text) => Ok(document.create_text_node(&text).into()),
+            VNode::Text(text) => Ok(document.create_text_node(text).into()),
+            VNode::UnsafeText(text) => Ok(document.create_text_node(text).into()),
             VNode::Element(element) => {
                 let mut node = document.create_element(element.name)?;
                 for (key, value) in element.attributes {
-                    node.set_attribute(&key, &value)?;
+                    node.set_attribute(key, &value)?;
                 }
                 Stdweb::install_handlers(&mut node, element.events);
                 for child in element.children {

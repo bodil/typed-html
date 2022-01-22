@@ -13,7 +13,7 @@ use dodrio::{
 };
 use serde::{Deserialize, Serialize};
 use std::marker::PhantomData;
-use std::mem;
+
 use typed_html::dodrio;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
@@ -123,7 +123,7 @@ impl<C> Todos<C> {
 
     /// Take the current draft text and replace it with an empty string.
     pub fn take_draft(&mut self) -> String {
-        mem::replace(&mut self.draft, String::new())
+        std::mem::take(&mut self.draft)
     }
 
     /// Get the current visibility for these todos.
