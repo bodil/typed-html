@@ -129,12 +129,12 @@ impl Deref for AutoCommitTodos<'_> {
     type Target = Todos;
 
     fn deref(&self) -> &Todos {
-        &self.todos
+        self.todos
     }
 }
 
 impl DerefMut for AutoCommitTodos<'_> {
     fn deref_mut(&mut self) -> &mut Todos {
-        &mut self.todos
+        self.todos
     }
 }

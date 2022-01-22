@@ -21,7 +21,7 @@ fn pprint_token(token: &str) -> &str {
 }
 
 fn pprint_tokens(tokens: &[String]) -> String {
-    let tokens: Vec<&str> = tokens.iter().map(|s| pprint_token(&s)).collect();
+    let tokens: Vec<&str> = tokens.iter().map(|s| pprint_token(s)).collect();
     if tokens.len() > 1 {
         let start = tokens[..tokens.len() - 1].join(", ");
         let end = &tokens[tokens.len() - 1];
@@ -52,7 +52,7 @@ pub fn parse_error(input: &[Token], error: &ParseError) -> TokenStream {
         UnrecognizedEOF { expected, .. } => {
             let msg = format!(
                 "unexpected end of macro; missing {}",
-                pprint_tokens(&expected)
+                pprint_tokens(expected)
             );
             quote! {
                 compile_error! { #msg }
@@ -63,7 +63,7 @@ pub fn parse_error(input: &[Token], error: &ParseError) -> TokenStream {
             expected,
         } => {
             let span = token.span();
-            let error_msg = format!("expected {}", pprint_tokens(&expected));
+            let error_msg = format!("expected {}", pprint_tokens(expected));
             let error = quote_spanned! {span=>
                 compile_error! { #error_msg }
             };
