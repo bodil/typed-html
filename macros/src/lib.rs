@@ -4,7 +4,6 @@
 extern crate proc_macro;
 
 use proc_macro::TokenStream;
-use proc_macro_hack::proc_macro_hack;
 
 mod config;
 mod declare;
@@ -21,7 +20,7 @@ mod span;
 /// See the crate documentation for [`typed_html`][typed_html].
 ///
 /// [typed_html]: ../typed_html/index.html
-#[proc_macro_hack]
+#[proc_macro]
 pub fn html(input: TokenStream) -> TokenStream {
     let stream = lexer::unroll_stream(input.into(), false);
     let result = html::expand_html(&stream);
@@ -40,7 +39,7 @@ pub fn html(input: TokenStream) -> TokenStream {
 ///
 /// [typed_html]: ../typed_html/index.html
 #[cfg(feature = "dodrio")]
-#[proc_macro_hack]
+#[proc_macro]
 pub fn dodrio(input: TokenStream) -> TokenStream {
     let stream = lexer::unroll_stream(input.into(), false);
     let result = html::expand_dodrio(&stream);

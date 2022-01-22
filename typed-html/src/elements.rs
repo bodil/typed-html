@@ -2,11 +2,10 @@
 
 #![allow(non_camel_case_types)]
 
-use typed_html_macros::declare_elements;
-
-use crate::OutputType;
 use crate::dom::{Node, TextNode};
 use crate::types::*;
+use crate::OutputType;
+use typed_html_macros::declare_elements;
 
 // Marker traits for element content groups
 
@@ -18,7 +17,10 @@ macro_rules! marker_trait {
     ($trait:ident, $parent:ident) => {
         pub trait $trait<T: OutputType + Send>: $parent<T> {}
 
-        impl<T> IntoIterator for Box<dyn $trait<T>> where T: OutputType + Send {
+        impl<T> IntoIterator for Box<dyn $trait<T>>
+        where
+            T: OutputType + Send,
+        {
             type Item = Box<dyn $trait<T>>;
             type IntoIter = std::vec::IntoIter<Box<dyn $trait<T>>>;
 
@@ -48,7 +50,7 @@ marker_trait!(SelectContent);
 marker_trait!(TableContent);
 marker_trait!(TableColumnContent);
 
-declare_elements!{
+declare_elements! {
     html {
         xmlns: Uri,
     } with [head, body];
@@ -451,7 +453,7 @@ declare_elements!{
 #[test]
 fn test_data_attributes() {
     use crate as typed_html;
-    use crate::dom::DOMTree;
+    use crate::{dom::DOMTree, html};
 
     let frag: DOMTree<String> = html!(<div data-id="1234">"Boo!"</div>);
 
