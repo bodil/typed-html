@@ -1,6 +1,6 @@
 [package]
 name = "typed-html"
-version = "0.2.2"
+version = "0.3.0"
 edition = "2018"
 authors = ["Bodil Stokke <bodil@bodil.org>"]
 license = "MPL-2.0+"
@@ -19,7 +19,7 @@ maintenance = { status = "looking-for-maintainer" }
 all-features = true
 
 [dependencies]
-typed-html-macros = "0.2.2"
+typed-html-macros = { path = "../macros", version = "0.3" }
 strum = "0.18"
 strum_macros = "0.18"
 mime = "0.3.13"
