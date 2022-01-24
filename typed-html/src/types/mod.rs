@@ -287,6 +287,35 @@ pub enum Preload {
 }
 
 #[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
+
+pub enum PreserveAspectRatio {
+    #[strum(to_string = "none")]
+    None,
+    #[strum(to_string = "xMinYMin")]
+    XMinYMin,
+    #[strum(to_string = "xMidYMin")]
+    XMidYMin,
+    #[strum(to_string = "xMaxYMin")]
+    XMaxYMin,
+    #[strum(to_string = "xMinYMid")]
+    XMinYMid,
+    #[strum(to_string = "xMidYMid")]
+    XMidYMid,
+    #[strum(to_string = "xMaxYMid")]
+    XMaxYMid,
+    #[strum(to_string = "xMinYMax")]
+    XMinYMax,
+    #[strum(to_string = "xMidYMax")]
+    XMidYMax,
+    #[strum(to_string = "xMaxYMax")]
+    XMaxYMax,
+    #[strum(to_string = "meet")]
+    Meet,
+    #[strum(to_string = "slice")]
+    Slice,
+}
+
+#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
 pub enum ReferrerPolicy {
     #[strum(to_string = "no-referrer")]
     NoReferrer,
