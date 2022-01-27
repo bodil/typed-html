@@ -2,6 +2,7 @@
 
 #![recursion_limit = "1024"]
 #![deny(missing_docs)]
+#![allow(unused_braces)]
 
 pub mod controller;
 pub mod keys;

@@ -28,7 +28,7 @@ pub type Integrity = String;
 pub type Nonce = String;
 pub type Target = String;
 
-#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
+#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, IntoStaticStr)]
 pub enum AreaShape {
     #[strum(to_string = "rect")]
     Rectangle,
@@ -40,7 +40,7 @@ pub enum AreaShape {
     Default,
 }
 
-#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
+#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, IntoStaticStr)]
 pub enum BoolOrDefault {
     #[strum(to_string = "true")]
     True,
@@ -50,7 +50,7 @@ pub enum BoolOrDefault {
     False,
 }
 
-#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
+#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, IntoStaticStr)]
 pub enum ButtonType {
     #[strum(to_string = "submit")]
     Submit,
@@ -60,7 +60,7 @@ pub enum ButtonType {
     Button,
 }
 
-#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
+#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, IntoStaticStr)]
 pub enum Bool {
     #[strum(to_string = "true")]
     True,
@@ -78,7 +78,7 @@ impl From<bool> for Bool {
     }
 }
 
-#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
+#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, IntoStaticStr)]
 pub enum CrossOrigin {
     #[strum(to_string = "anonymous")]
     Anonymous,
@@ -86,7 +86,7 @@ pub enum CrossOrigin {
     UseCredentials,
 }
 
-#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
+#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, IntoStaticStr)]
 pub enum FormEncodingType {
     #[strum(to_string = "application/x-www-form-urlencoded")]
     UrlEncoded,
@@ -96,7 +96,7 @@ pub enum FormEncodingType {
     Text,
 }
 
-#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
+#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, IntoStaticStr)]
 pub enum FormMethod {
     #[strum(to_string = "post")]
     Post,
@@ -104,7 +104,7 @@ pub enum FormMethod {
     Get,
 }
 
-#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
+#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, IntoStaticStr)]
 pub enum FormDialogMethod {
     #[strum(to_string = "post")]
     Post,
@@ -114,7 +114,7 @@ pub enum FormDialogMethod {
     Dialog,
 }
 
-#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
+#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, IntoStaticStr)]
 pub enum HTTPEquiv {
     #[strum(to_string = "content-security-policy")]
     ContentSecurityPolicy,
@@ -122,7 +122,7 @@ pub enum HTTPEquiv {
     Refresh,
 }
 
-#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
+#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, IntoStaticStr)]
 pub enum ImageDecoding {
     #[strum(to_string = "sync")]
     Sync,
@@ -132,7 +132,7 @@ pub enum ImageDecoding {
     Auto,
 }
 
-#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
+#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, IntoStaticStr)]
 pub enum InputType {
     #[strum(to_string = "button")]
     Button,
@@ -180,7 +180,7 @@ pub enum InputType {
     Week,
 }
 
-#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
+#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, IntoStaticStr)]
 pub enum LinkType {
     #[strum(to_string = "alternate")]
     Alternate,
@@ -228,7 +228,7 @@ pub enum LinkType {
     Tag,
 }
 
-#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
+#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, IntoStaticStr)]
 pub enum Metadata {
     #[strum(to_string = "application-name")]
     ApplicationName,
@@ -254,7 +254,7 @@ pub enum Metadata {
     Viewport,
 }
 
-#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
+#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, IntoStaticStr)]
 pub enum OnOff {
     #[strum(to_string = "on")]
     On,
@@ -262,7 +262,7 @@ pub enum OnOff {
     Off,
 }
 
-#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
+#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, IntoStaticStr)]
 pub enum OrderedListType {
     #[strum(to_string = "a")]
     LowerCaseLetters,
@@ -276,7 +276,7 @@ pub enum OrderedListType {
     Numbers,
 }
 
-#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
+#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, IntoStaticStr)]
 pub enum Preload {
     #[strum(to_string = "none")]
     None,
@@ -286,7 +286,7 @@ pub enum Preload {
     Auto,
 }
 
-#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
+#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, IntoStaticStr)]
 pub enum ReferrerPolicy {
     #[strum(to_string = "no-referrer")]
     NoReferrer,
@@ -300,7 +300,7 @@ pub enum ReferrerPolicy {
     UnsafeUrl,
 }
 
-#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
+#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, IntoStaticStr)]
 pub enum Role {
     #[strum(to_string = "any")]
     Any,
@@ -440,7 +440,7 @@ pub enum Role {
     TreeGrid,
 }
 
-#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
+#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, IntoStaticStr)]
 pub enum Sandbox {
     #[strum(to_string = "allow-forms")]
     AllowForms,
@@ -466,7 +466,7 @@ pub enum Sandbox {
     AllowTopNavigationByUserNavigation,
 }
 
-#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
+#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, IntoStaticStr)]
 pub enum TableHeaderScope {
     #[strum(to_string = "row")]
     Row,
@@ -480,7 +480,7 @@ pub enum TableHeaderScope {
     Auto,
 }
 
-#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
+#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, IntoStaticStr)]
 pub enum TextDirection {
     #[strum(to_string = "ltr")]
     LeftToRight,
@@ -488,7 +488,7 @@ pub enum TextDirection {
     RightToLeft,
 }
 
-#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
+#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, IntoStaticStr)]
 pub enum VideoKind {
     #[strum(to_string = "subtitles")]
     Subtitles,
@@ -502,7 +502,7 @@ pub enum VideoKind {
     Metadata,
 }
 
-#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, AsStaticStr)]
+#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, IntoStaticStr)]
 pub enum Wrap {
     #[strum(to_string = "hard")]
     Hard,

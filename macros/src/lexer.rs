@@ -30,10 +30,7 @@ impl Token {
     }
 
     pub fn is_ident(&self) -> bool {
-        match self {
-            Token::Ident(_) => true,
-            _ => false,
-        }
+        matches!(self, Token::Ident(_))
     }
 }
 

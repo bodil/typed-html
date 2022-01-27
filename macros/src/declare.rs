@@ -35,7 +35,7 @@ impl Declare {
 
     fn attr_type_name(&self) -> TokenTree {
         Ident::new(
-            &format!("Attrs_{}", self.name.to_string()),
+            &format!("Attrs_{}", self.name),
             self.name.span(),
         )
         .into()
@@ -53,7 +53,7 @@ impl Declare {
     fn req_children(&self) -> impl Iterator<Item = (TokenTree, TokenTree, TokenTree)> + '_ {
         self.req_children.iter().map(|child| {
             let child_name: TokenTree =
-                Ident::new(&format!("child_{}", child.to_string()), child.span()).into();
+                Ident::new(&format!("child_{}", child), child.span()).into();
             let child_type: TokenTree = Ident::new(&child.to_string(), child.span()).into();
             let child_str = Literal::string(&child.to_string()).into();
             (child_name, child_type, child_str)

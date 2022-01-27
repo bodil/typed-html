@@ -100,10 +100,9 @@ fn extract_data_attrs(attrs: &mut StringyMap<Ident, TokenTree>) -> StringyMap<St
     let keys: Vec<Ident> = attrs.keys().cloned().collect();
     for key in keys {
         let key_name = key.to_string();
-        let prefix = "data_";
-        if key_name.starts_with(prefix) {
+        if let Some(key_name) = key_name.strip_prefix("data_") {
             let value = attrs.remove(&key).unwrap();
-            data.insert(key_name[prefix.len()..].to_string(), value);
+            data.insert(key_name.to_string(), value);
         }
     }
     data
@@ -116,9 +115,7 @@ fn extract_event_handlers(
     let keys: Vec<Ident> = attrs.keys().cloned().collect();
     for key in keys {
         let key_name = key.to_string();
-        let prefix = "on";
-        if key_name.starts_with(prefix) {
-            let event_name = &key_name[prefix.len()..];
+        if let Some(event_name) = key_name.strip_prefix("on") {
             let value = attrs.remove(&key).unwrap();
             events.insert(ident::new_raw(event_name, key.span()), value);
         }
@@ -148,8 +145,8 @@ fn is_string_literal(literal: &Literal) -> bool {
 #[allow(dead_code)]
 fn stringify_ident(ident: &Ident) -> String {
     let s = ident.to_string();
-    if s.starts_with("r#") {
-        s[2..].to_string()
+    if let Some(raw_s) = s.strip_prefix("r#") {
+        raw_s.to_string()
     } else {
         s
     }
