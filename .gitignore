@@ -1,3 +1,5 @@
 target/
 **/*.rs.bk
 Cargo.lock
+**/package-lock.json
+**/wasm-pack.log
