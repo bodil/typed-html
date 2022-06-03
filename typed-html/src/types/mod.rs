@@ -79,6 +79,24 @@ impl From<bool> for Bool {
 }
 
 #[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, IntoStaticStr)]
+pub enum EnumeratedBool {
+    #[strum(to_string = "true")]
+    True,
+    #[strum(to_string = "false")]
+    False,
+}
+
+impl From<bool> for EnumeratedBool {
+    fn from(v: bool) -> Self {
+        if v {
+            EnumeratedBool::True
+        } else {
+            EnumeratedBool::False
+        }
+    }
+}
+
+#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, IntoStaticStr)]
 pub enum CrossOrigin {
     #[strum(to_string = "anonymous")]
     Anonymous,

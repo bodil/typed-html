@@ -21,10 +21,10 @@ pub fn global_attrs(span: Span) -> StringyMap<Ident, TokenStream> {
 
         insert("accesskey", "String");
         insert("autocapitalize", "String");
-        insert("contenteditable", "crate::types::Bool");
+        insert("contenteditable", "crate::types::EnumeratedBool");
         insert("contextmenu", "crate::types::Id");
         insert("dir", "crate::types::TextDirection");
-        insert("draggable", "crate::types::Bool");
+        insert("draggable", "crate::types::EnumeratedBool");
         insert("hidden", "crate::types::Bool");
         insert("is", "String");
         insert("lang", "crate::types::LanguageTag");
