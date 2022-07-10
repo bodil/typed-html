@@ -27,6 +27,11 @@ pub fn global_attrs(span: Span) -> StringyMap<Ident, TokenStream> {
         insert("draggable", "crate::types::Bool");
         insert("hidden", "crate::types::Bool");
         insert("is", "String");
+        insert("itemid", "String");
+        insert("itemprop", "String");
+        insert("itemref", "String");
+        insert("itemscope", "crate::types::Bool");
+        insert("itemtype", "String");
         insert("lang", "crate::types::LanguageTag");
         insert("role", "crate::types::Role");
         insert("style", "String");
