@@ -299,26 +299,14 @@ impl Declare {
         }
 
         let print_children = if self.req_children.is_empty() {
-            if self.opt_children.is_some() {
-                if !SELF_CLOSING.contains(&elem_name.to_string().as_str()) {
-                    quote!(
-                        write!(f, ">")?;
-                        #print_opt_children
-                        write!(f, "</{}>", #name)
-                    )
-                } else {
-                    quote!(if self.children.is_empty() {
-                        write!(f, " />")
-                    } else {
-                        write!(f, ">")?;
-                        #print_opt_children
-                        write!(f, "</{}>", #name)
-                    })
-                }
-            } else if !SELF_CLOSING.contains(&elem_name.to_string().as_str()) {
-                quote!(write!(f, "></{}>", #name))
+            if SELF_CLOSING.contains(&elem_name.to_string().as_str()) {
+                quote!(write!(f, ">"))
             } else {
-                quote!(write!(f, "/>"))
+                quote!(
+                    write!(f, ">")?;
+                    #print_opt_children
+                    write!(f, "</{}>", #name)
+                )
             }
         } else {
             quote!(
