@@ -34,11 +34,7 @@ impl Declare {
     }
 
     fn attr_type_name(&self) -> TokenTree {
-        Ident::new(
-            &format!("Attrs_{}", self.name),
-            self.name.span(),
-        )
-        .into()
+        Ident::new(&format!("Attrs_{}", self.name), self.name.span()).into()
     }
 
     fn attrs(&self) -> impl Iterator<Item = (TokenTree, TokenStream, TokenTree)> + '_ {
@@ -170,7 +166,7 @@ impl Declare {
         for (attr_name, _, attr_str) in self.attrs() {
             push_attrs.extend(quote!(
                 if let Some(ref value) = self.attrs.#attr_name {
-                    attributes.push((#attr_str, value.to_string()));
+                    attributes.push((#attr_str, value.to_string_value()));
                 }
             ));
         }
@@ -219,7 +215,7 @@ impl Declare {
         for (attr_name, _, attr_str) in self.attrs() {
             push_attrs.extend(quote!(
                 if let Some(ref value) = self.attrs.#attr_name {
-                    out.push((#attr_str, value.to_string()));
+                    out.push((#attr_str, value.to_string_value()));
                 }
             ));
         }
@@ -337,10 +333,7 @@ impl Declare {
         for (attr_name, _, attr_str) in self.attrs() {
             print_attrs.extend(quote!(
                 if let Some(ref value) = self.attrs.#attr_name {
-                    let value = crate::escape_html_attribute(value.to_string());
-                    if !value.is_empty() {
-                        write!(f, " {}=\"{}\"", #attr_str, value)?;
-                    }
+                    value.write_attribute(#attr_str, f)?;
                 }
             ));
         }

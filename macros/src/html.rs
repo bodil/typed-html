@@ -379,7 +379,7 @@ impl Element {
             let key_str = TokenTree::from(Literal::string(&key_str));
             builder.extend(quote!(
                 let attr_value = dodrio::bumpalo::format!(
-                    in &#bump, "{}", element.attrs.#key.unwrap());
+                    in &#bump, "{}", typed_html::types::DisplayAttribute::to_string_value(&element.attrs.#key.unwrap()));
                 if !attr_value.is_empty() {
                     attr_list.push(dodrio::builder::attr(#key_str, attr_value.into_bump_str()));
                 }
