@@ -78,6 +78,7 @@ declare_elements! {
         content: String,
         http_equiv: HTTPEquiv,
         name: Metadata,
+        property: String, // This is non-standard, but used by the Open Graph protocol
     } in [MetadataContent];
     style {
         type: Mime,
