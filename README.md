@@ -10,7 +10,7 @@ for a fork instead of maintainership because not currently intending to use or
 maintain the Wasm compatibility (for now).
 
 [Bodil Stokke's]: https://github.com/bodil
-typed-html: https://github.com/bodil/typed-html
+[typed-html]: https://github.com/bodil/typed-html
 
 ## Company-focused Maintenance
 
