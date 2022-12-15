@@ -5,7 +5,7 @@
 use crate::dom::{Node, TextNode};
 use crate::types::*;
 use crate::OutputType;
-use typed_html_macros::declare_elements;
+use axohtml_macros::declare_elements;
 
 // Marker traits for element content groups
 
@@ -452,7 +452,7 @@ declare_elements! {
 
 #[test]
 fn test_data_attributes() {
-    use crate as typed_html;
+    use crate as axohtml;
     use crate::{dom::DOMTree, html};
 
     let frag: DOMTree<String> = html!(<div data-id="1234">"Boo!"</div>);

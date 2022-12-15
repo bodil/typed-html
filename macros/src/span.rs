@@ -1,6 +1,3 @@
-
-
-
 pub fn from_unstable(span: proc_macro::Span) -> proc_macro2::Span {
     let ident = proc_macro::Ident::new("_", span);
     let tt = proc_macro::TokenTree::Ident(ident);

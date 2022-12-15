@@ -23,7 +23,7 @@ impl Node {
             Node::Element(el) => el.into_token_stream(ty),
             Node::Text(text) => {
                 let text = TokenTree::Literal(text);
-                Ok(quote!(Box::new(typed_html::dom::TextNode::new(#text.to_string()))))
+                Ok(quote!(Box::new(axohtml::dom::TextNode::new(#text.to_string()))))
             }
             Node::Block(group) => {
                 let span = group.span();
@@ -271,12 +271,12 @@ impl Element {
         let mut type_annotation = TokenStream::new();
         if let Some(ty) = ty {
             let type_var = to_stream(ty.clone());
-            type_annotation.extend(quote!(: typed_html::elements::#typename<#type_var>));
+            type_annotation.extend(quote!(: axohtml::elements::#typename<#type_var>));
         }
 
         Ok(quote!(
             {
-                let mut element #type_annotation = typed_html::elements::#typename::new(#args);
+                let mut element #type_annotation = axohtml::elements::#typename::new(#args);
                 #body
                 Box::new(element)
             }
@@ -494,8 +494,8 @@ impl Element {
         Ok(quote!(
             {
                 #make_req_children
-                let mut element: typed_html::elements::#typename<typed_html::output::dodrio::Dodrio> =
-                      typed_html::elements::#typename::new(#args);
+                let mut element: axohtml::elements::#typename<axohtml::output::dodrio::Dodrio> =
+                      axohtml::elements::#typename::new(#args);
                 #set_attrs
                 #builder
             }

@@ -4,9 +4,9 @@ use std::marker::PhantomData;
 use stdweb::web::event::*;
 use stdweb::web::{self, Element, EventListenerHandle, IElement, IEventTarget, INode};
 
-use crate::OutputType;
 use crate::dom::VNode;
 use crate::events::EventHandler;
+use crate::OutputType;
 
 /// DOM output using the stdweb crate
 pub struct Stdweb;

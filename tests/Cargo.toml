@@ -1,5 +1,5 @@
 [package]
-name = "typed-html-tests"
+name = "axohtml-tests"
 version = "0.0.0"
 edition = "2018"
 authors = ["Bodil Stokke <bodil@bodil.org>"]
@@ -11,6 +11,6 @@ path = "main.rs"
 
 [dev-dependencies]
 compiletest_rs = { version = "0.7", features = ["stable"] }
-typed-html = { path = "../typed-html" }
-typed-html-macros = { path = "../macros" }
+axohtml = { path = "../typed-html" }
+axohtml-macros = { path = "../macros" }
 version_check = "0.9.1"

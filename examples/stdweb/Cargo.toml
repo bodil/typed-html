@@ -1,9 +1,0 @@
-[package]
-name = "typed-html-stdweb-test"
-version = "0.1.0"
-edition = "2018"
-authors = ["Bodil Stokke <bodil@bodil.org>"]
-
-[dependencies]
-typed-html = { path = "../../typed-html", features = ["stdweb"] }
-stdweb = "0.4.10"

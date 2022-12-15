@@ -6,20 +6,20 @@
 //!
 //! ```
 //! # #![recursion_limit = "128"]
-//! # use typed_html::html;
-//! # use typed_html::dom::{DOMTree, VNode};
-//! # use typed_html::types::Metadata;
+//! # use axohtml::html;
+//! # use axohtml::dom::{DOMTree, VNode};
+//! # use axohtml::types::Metadata;
 //! # fn main() {
 //! let mut doc: DOMTree<String> = html!(
 //!     <html>
 //!         <head>
-//!             <title>"Hello Kitty"</title>
-//!             <meta name=Metadata::Author content="Not Sanrio Co., Ltd"/>
+//!             <title>"Hello Axo"</title>
+//!             <meta name=Metadata::Author content="Axo Developer Co."/>
 //!         </head>
 //!         <body>
-//!             <h1>"Hello Kitty"</h1>
+//!             <h1>">o_o<"</h1>
 //!             <p class="official">
-//!                 "She is not a cat. She is a human girl."
+//!                 "The tool company for tool companies"
 //!             </p>
 //!             { (0..3).map(|_| html!(
 //!                 <p class="emphasis">
@@ -90,9 +90,9 @@
 //!
 //! ```
 //! # use std::convert::{TryFrom, TryInto};
-//! # use typed_html::html;
-//! # use typed_html::dom::DOMTree;
-//! # use typed_html::types::{Class, SpacedSet};
+//! # use axohtml::html;
+//! # use axohtml::dom::DOMTree;
+//! # use axohtml::types::{Class, SpacedSet};
 //! # fn main() -> Result<(), &'static str> {
 //! let classList: SpacedSet<Class> = ["foo", "bar", "baz"].try_into()?;
 //! # let doc: DOMTree<String> =
@@ -120,8 +120,8 @@
 //! ## Example
 //!
 //! ```
-//! # use typed_html::{html, text};
-//! # use typed_html::dom::DOMTree;
+//! # use axohtml::{html, text};
+//! # use axohtml::dom::DOMTree;
 //! # fn main() {
 //! # let doc: DOMTree<String> =
 //! html!(
@@ -147,14 +147,14 @@
 //! ensure you're not using any event handlers that can't be printed.
 //!
 //! ```
-//! # use typed_html::html;
-//! # use typed_html::dom::DOMTree;
+//! # use axohtml::html;
+//! # use axohtml::dom::DOMTree;
 //! # fn main() {
 //! let doc: DOMTree<String> = html!(
-//!     <p>"Hello Kitty"</p>
+//!     <p>"Hello Axo"</p>
 //! );
 //! let doc_str = doc.to_string();
-//! assert_eq!("<p>Hello Kitty</p>", doc_str);
+//! assert_eq!("<p>Hello Axo</p>", doc_str);
 //! # }
 //! ```
 //!
@@ -166,20 +166,14 @@
 //! DOM tree and use it to build an actual DOM tree with `stdweb` or pass it on to
 //! your favourite virtual DOM system.
 //!
-//! # Licence
+//! # License
 //!
-//! Copyright 2018 Bodil Stokke
+//! Copyright 2018 Bodil Stokke, 2022 Axo Developer Co.
 //!
 //! This software is subject to the terms of the Mozilla Public License, v. 2.0. If
 //! a copy of the MPL was not distributed with this file, You can obtain one at
 //! <http://mozilla.org/MPL/2.0/>.
 //!
-//! # Code of Conduct
-//!
-//! Please note that this project is released with a [Contributor Code of
-//! Conduct][coc]. By participating in this project you agree to abide by its terms.
-//!
-//! [coc]: https://www.contributor-covenant.org/version/1/4/code-of-conduct
 //! [JSX]: https://reactjs.org/docs/introducing-jsx.html
 //! [Display]: https://doc.rust-lang.org/std/fmt/trait.Display.html
 //! [String]: https://doc.rust-lang.org/std/string/struct.String.html
@@ -197,10 +191,10 @@ pub extern crate htmlescape;
 
 use std::fmt::Display;
 
-pub use typed_html_macros::html;
+pub use axohtml_macros::html;
 
 #[cfg(feature = "dodrio_macro")]
-pub use typed_html_macros::dodrio;
+pub use axohtml_macros::dodrio;
 
 pub mod dom;
 pub mod elements;

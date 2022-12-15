@@ -39,20 +39,6 @@ pub fn global_attrs(span: Span) -> StringyMap<Ident, TokenStream> {
 }
 
 pub static SELF_CLOSING: &[&str] = &[
-    "area",
-    "base",
-    "br",
-    "col",
-    "command",
-    "embed",
-    "hr",
-    "img",
-    "input",
-    "keygen",
-    "link",
-    "meta",
-    "param",
-    "source",
-    "track",
-    "wbr",
+    "area", "base", "br", "col", "command", "embed", "hr", "img", "input", "keygen", "link",
+    "meta", "param", "source", "track", "wbr",
 ];

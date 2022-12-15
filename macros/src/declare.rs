@@ -34,11 +34,7 @@ impl Declare {
     }
 
     fn attr_type_name(&self) -> TokenTree {
-        Ident::new(
-            &format!("Attrs_{}", self.name),
-            self.name.span(),
-        )
-        .into()
+        Ident::new(&format!("Attrs_{}", self.name), self.name.span()).into()
     }
 
     fn attrs(&self) -> impl Iterator<Item = (TokenTree, TokenStream, TokenTree)> + '_ {

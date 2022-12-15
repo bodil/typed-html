@@ -1,37 +1,21 @@
 [package]
-name = "typed-html"
-version = "0.2.2"
+name = "axohtml"
+version = "0.1.0"
 edition = "2018"
-authors = ["Bodil Stokke <bodil@bodil.org>"]
+authors = ["Axo Developer Co <ashley@axo.dev>", "Bodil Stokke <bodil@bodil.org>"]
 license = "MPL-2.0+"
 description = "Type checked JSX for Rust"
-repository = "https://github.com/bodil/typed-html"
-documentation = "http://docs.rs/typed-html/"
+repository = "https://github.com/axodotdev/axohtml"
+documentation = "http://docs.rs/axohtml/"
 readme = "../README.md"
-categories = ["template-engine", "wasm", "web-programming"]
-keywords = ["jsx", "html", "wasm"]
-
-[badges]
-travis-ci = { repository = "bodil/typed-html" }
-maintenance = { status = "looking-for-maintainer" }
-
-[package.metadata.docs.rs]
-all-features = true
+categories = ["template-engine", "web-programming"]
+keywords = ["jsx", "html"]
 
 [dependencies]
-typed-html-macros = { path = "../macros" }
+axohtml-macros = { path = "../macros" }
 strum = "0.23"
 strum_macros = "0.23"
 mime = "0.3.13"
 language-tags = "0.3"
 htmlescape = "0.3.1"
 proc-macro-nested = "0.1.3"
-stdweb = { version = "0.4.14", optional = true }
-dodrio = { version = "0.2.0", optional = true }
-web-sys = { version = "0.3.16", optional = true, features = [
-    "Event",
-    "Element"
-] }
-
-[features]
-dodrio_macro = ["web-sys", "dodrio", "typed-html-macros/dodrio"]

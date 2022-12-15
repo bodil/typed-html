@@ -1,13 +1,22 @@
 [![Build Status](https://travis-ci.org/bodil/typed-html.svg?branch=master)](https://travis-ci.org/bodil/typed-html)
 
-# typed-html
+# axohtml
 
-This crate provides the `html!` macro for building fully type checked HTML documents inside your
-Rust code using roughly [JSX] compatible syntax.
+This crate provides the `html!` macro for building fully type checked HTML
+documents inside your Rust code using roughly [JSX] compatible syntax. 
 
-## Not Currently Maintained
+This crate is a fork of the great [Bodil Stokke's] [typed-html] crate. Opted 
+for a fork instead of maintainership because not currently intending to use or
+maintain the Wasm compatibility (for now).
 
-This project is not currently being maintained. If you would like to take over maintainership, please [leave an issue](https://github.com/bodil/typed-html/issues/new).
+[Bodil Stokke's]: https://github.com/bodil
+typed-html: https://github.com/bodil/typed-html
+
+## Company-focused Maintenance
+
+This project is currently being maintained soley for use in [@axodotdev's]
+projects. Feel free to file issues or PRs but anticipate that they won't be
+prioritized.
 
 ## Quick Preview
 
@@ -15,21 +24,21 @@ This project is not currently being maintained. If you would like to take over m
 let mut doc: DOMTree<String> = html!(
     <html>
         <head>
-            <title>"Hello Kitty"</title>
-            <meta name=Metadata::Author content="Not Sanrio Co., Ltd"/>
+            <title>"Hello Axo"</title>
+            <meta name=Metadata::Author content="Axo Developer Co."/>
         </head>
         <body>
-            <h1>"Hello Kitty"</h1>
+            <h1>">o_o<"</h1>
             <p class="official">
-                "She is not a cat. She is a human girl."
+                "The tool company for tool companies"
             </p>
             { (0..3).map(|_| html!(
                 <p class="emphasis">
-                    "Her name is Kitty White."
+                    ">o_o<"
                 </p>
             )) }
             <p class="citation-needed">
-                "We still don't know how she eats."
+                "Every company should be a developer experience company"
             </p>
         </body>
     </html>
@@ -137,10 +146,10 @@ ensure you're not using any event handlers that can't be printed.
 
 ```rust
 let doc: DOMTree<String> = html!(
-    <p>"Hello Kitty"</p>
+    <p>"Hello Axo"</p>
 );
 let doc_str = doc.to_string();
-assert_eq!("<p>Hello Kitty</p>", doc_str);
+assert_eq!("<p>Hello Axo</p>", doc_str);
 ```
 
 ### Render to a virtual DOM
@@ -151,20 +160,15 @@ with every attribute value rendered into `String`s. You can walk this virtual
 DOM tree and use it to build an actual DOM tree with `stdweb` or pass it on to
 your favourite virtual DOM system.
 
-## Licence
+## License
 
-Copyright 2018 Bodil Stokke
 
 This software is subject to the terms of the Mozilla Public License, v. 2.0. If
 a copy of the MPL was not distributed with this file, You can obtain one at
 <http://mozilla.org/MPL/2.0/>.
 
-## Code of Conduct
+Copyright 2018 Bodil Stokke, 2022 Axo Developer Co.
 
-Please note that this project is released with a [Contributor Code of
-Conduct][coc]. By participating in this project you agree to abide by its terms.
-
-[coc]: https://www.contributor-covenant.org/version/1/4/code-of-conduct
 [JSX]: https://reactjs.org/docs/introducing-jsx.html
 [Display]: https://doc.rust-lang.org/std/fmt/trait.Display.html
 [String]: https://doc.rust-lang.org/std/string/struct.String.html

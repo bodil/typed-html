@@ -24,9 +24,8 @@ impl Id {
     /// Panics if the provided string is invalid.
     pub fn new<S: Borrow<str>>(id: S) -> Self {
         let id = id.borrow();
-        Self::from_str(id).unwrap_or_else(|err| {
-            panic!("typed_html::types::Id: {:?} is not a valid ID: {}", id, err)
-        })
+        Self::from_str(id)
+            .unwrap_or_else(|err| panic!("axohtml::types::Id: {:?} is not a valid ID: {}", id, err))
     }
 }
 
