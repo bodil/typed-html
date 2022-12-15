@@ -16,6 +16,8 @@ This project is currently being maintained soley for use in [@axodotdev's]
 projects. Feel free to file issues or PRs but anticipate that they won't be
 prioritized.
 
+[@axodotdev's]: https://github.com/axodotdev
+
 ## Quick Preview
 
 ```rust
