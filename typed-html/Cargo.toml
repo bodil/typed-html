@@ -1,8 +1,8 @@
 [package]
 name = "axohtml"
 version = "0.1.0"
-edition = "2018"
-authors = ["Axo Developer Co <ashley@axo.dev>", "Bodil Stokke <bodil@bodil.org>"]
+edition = "2021"
+authors = ["Axo Developer Co <hello@axo.dev>", "Bodil Stokke <bodil@bodil.org>"]
 license = "MPL-2.0+"
 description = "Type checked JSX for Rust"
 repository = "https://github.com/axodotdev/axohtml"
