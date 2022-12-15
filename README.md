@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/bodil/typed-html.svg?branch=master)](https://travis-ci.org/bodil/typed-html)
-
 # axohtml
 
 This crate provides the `html!` macro for building fully type checked HTML
