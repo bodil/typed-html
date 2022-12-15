@@ -163,8 +163,7 @@
 //! The DOM tree structure also implements a method called `vnode()`, which renders
 //! the tree to a tree of [`VNode`][VNode]s, which is a mirror of the generated tree
 //! with every attribute value rendered into `String`s. You can walk this virtual
-//! DOM tree and use it to build an actual DOM tree with `stdweb` or pass it on to
-//! your favourite virtual DOM system.
+//! DOM tree and pass it on to your favourite virtual DOM system.
 //!
 //! # License
 //!
@@ -193,13 +192,9 @@ use std::fmt::Display;
 
 pub use axohtml_macros::html;
 
-#[cfg(feature = "dodrio_macro")]
-pub use axohtml_macros::dodrio;
-
 pub mod dom;
 pub mod elements;
 pub mod events;
-pub mod output;
 pub mod types;
 
 /// Marker trait for outputs

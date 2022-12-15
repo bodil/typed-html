@@ -9,8 +9,8 @@ description = "Type checked JSX for Rust (proc_macro crate)"
 repository = "https://github.com/bodil/typed-html"
 documentation = "http://docs.rs/typed-html/"
 readme = "../README.md"
-categories = ["template-engine", "wasm", "web-programming"]
-keywords = ["jsx", "html", "wasm"]
+categories = ["template-engine", "web-programming"]
+keywords = ["jsx", "html"]
 
 [lib]
 proc-macro = true
@@ -24,6 +24,3 @@ quote = "1.0.2"
 [build-dependencies]
 lalrpop = "0.19"
 version_check = "0.9.1"
-
-[features]
-dodrio = []

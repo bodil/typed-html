@@ -60,26 +60,6 @@ impl Node {
             }
         }
     }
-
-    #[cfg(feature = "dodrio")]
-    pub fn into_dodrio_token_stream(
-        self,
-        bump: &Ident,
-        is_req_child: bool,
-    ) -> Result<TokenStream, TokenStream> {
-        match self {
-            Node::Element(el) => el.into_dodrio_token_stream(bump, is_req_child),
-            Node::Text(text) => Ok(dodrio_text_node(text)),
-            Node::Block(group) => {
-                let span = group.span();
-                let error =
-                    "you cannot use a block as a top level element or a required child element";
-                Err(quote_spanned! { span=>
-                    compile_error! { #error }
-                })
-            }
-        }
-    }
 }
 
 #[derive(Clone)]
@@ -87,12 +67,6 @@ pub struct Element {
     pub name: Ident,
     pub attributes: StringyMap<Ident, TokenTree>,
     pub children: Vec<Node>,
-}
-
-#[cfg(feature = "dodrio")]
-fn dodrio_text_node(text: Literal) -> TokenStream {
-    let text = TokenTree::Literal(text);
-    quote!(dodrio::builder::text(#text))
 }
 
 fn extract_data_attrs(attrs: &mut StringyMap<Ident, TokenTree>) -> StringyMap<String, TokenTree> {
