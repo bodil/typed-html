@@ -77,7 +77,7 @@ impl<'a, A: 'a + Ord + Clone> FromIterator<&'a A> for SpacedSet<A> {
     }
 }
 
-impl<'a, A: Ord + FromStr> FromStr for SpacedSet<A>
+impl<A: Ord + FromStr> FromStr for SpacedSet<A>
 where
     <A as FromStr>::Err: Debug,
 {
