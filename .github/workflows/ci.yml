@@ -1,33 +1,47 @@
-name: Continuous Integration
+name: Rust tests, clippy, style
+
 on:
-  push:
   pull_request:
+  push:
+    branches:
+      - main
   schedule:
-    - cron: "0 0 1,15 * *"
+    - cron: '11 7 * * 1,4'
+
+env:
+  RUSTFLAGS: -Dwarnings
 
 jobs:
+  fmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run cargo fmt
+        run: |
+          cargo fmt --all -- --check
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run cargo clippy
+        run: |
+          cargo clippy --workspace --tests --examples
+  docs:
+    runs-on: ubuntu-latest
+    env:
+      RUSTDOCFLAGS: -Dwarnings
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run cargo clippy
+        run: |
+          cargo doc --workspace --no-deps
   test:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
-        rust: [stable, beta, nightly]
-
     steps:
-      - uses: hecrj/setup-rust-action@v1
-        with:
-          rust-version: ${{ matrix.rust }}
-      - uses: actions/checkout@v1
-      - name: Run tests
-        run: cargo test --all-features
-
-  clippy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: hecrj/setup-rust-action@v1
-        with:
-          rust-version: stable
-          components: clippy
-      - uses: actions/checkout@v1
-      - name: Clippy
-        run: cargo clippy -- -D warnings
+      - uses: actions/checkout@v2
+      - name: Run cargo test
+        run: |
+          cargo test --workspace
