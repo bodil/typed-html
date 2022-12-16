@@ -13,8 +13,8 @@ maintain the Wasm compatibility (for now).
 ## Company-focused Maintenance
 
 This project is currently being maintained soley for use in [@axodotdev's]
-projects. Feel free to file issues or PRs but anticipate that they won't be
-prioritized.
+open source projects. Feel free to file issues or PRs but anticipate that they
+won't be prioritized (for now).
 
 [@axodotdev's]: https://github.com/axodotdev
 
@@ -157,8 +157,7 @@ assert_eq!("<p>Hello Axo</p>", doc_str);
 The DOM tree structure also implements a method called `vnode()`, which renders
 the tree to a tree of [`Node`][Node]s, which is a mirror of the generated tree
 with every attribute value rendered into `String`s. You can walk this virtual
-DOM tree and use it to build an actual DOM tree with `stdweb` or pass it on to
-your favourite virtual DOM system.
+DOM tree and pass it on to your favourite virtual DOM system.
 
 ## License
 
