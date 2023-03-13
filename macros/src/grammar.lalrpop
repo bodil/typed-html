@@ -272,8 +272,8 @@ IdentList = "[" <Separated<Ident, ",">> "]";
 
 Groups = "in" <TypePathList>;
 
-Children: (Vec<Ident>, Option<Vec<Token>>) = "with" <req:IdentList?> <opt:TypePath?> => {
-    (req.unwrap_or_else(|| Vec::new()), opt)
+Children: (Vec<Ident>, bool, Option<Vec<Token>>) = "with" <req:IdentList?> <has_dyn:"dyn"?> <opt:TypePath?> => {
+    (req.unwrap_or_else(|| Vec::new()), has_dyn.is_some(), opt)
 };
 
 Declaration: Declare = <name:HtmlIdent> <attrs:Attributes?> <groups:Groups?> <children:Children?> ";" => {
@@ -288,8 +288,9 @@ Declaration: Declare = <name:HtmlIdent> <attrs:Attributes?> <groups:Groups?> <ch
             decl.traits.push(to_stream(group));
         }
     }
-    if let Some((req_children, opt_children)) = children {
+    if let Some((req_children, has_dyn, opt_children)) = children {
         decl.req_children = req_children;
+        decl.opt_children_dyn = has_dyn;
         decl.opt_children = opt_children.map(to_stream);
     }
     decl
@@ -321,6 +322,7 @@ extern {
         "]" => Token::GroupClose(Delimiter::Bracket, _),
         "in" => Token::Keyword(lexer::Keyword::In, _),
         "with" => Token::Keyword(lexer::Keyword::With, _),
+        "dyn" => Token::Keyword(lexer::Keyword::Dyn, _),
         IdentToken => Token::Ident(_),
         LiteralToken => Token::Literal(_),
         ParenGroupToken => Token::Group(Delimiter::Parenthesis, _),

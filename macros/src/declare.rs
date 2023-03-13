@@ -15,6 +15,7 @@ pub struct Declare {
     pub attrs: StringyMap<Ident, TokenStream>,
     pub req_children: Vec<Ident>,
     pub opt_children: Option<TokenStream>,
+    pub opt_children_dyn: bool,
     pub traits: Vec<TokenStream>,
 }
 
@@ -24,6 +25,7 @@ impl Declare {
             attrs: global_attrs(name.span()),
             req_children: Vec::new(),
             opt_children: None,
+            opt_children_dyn: false,
             traits: Vec::new(),
             name,
         }
@@ -95,7 +97,12 @@ impl Declare {
 
         if let Some(child_constraint) = &self.opt_children {
             let child_constraint = child_constraint.clone();
-            body.extend(quote!(pub children: Vec<Box<#child_constraint<T>>>,));
+            let child_dyn = if self.opt_children_dyn {
+                quote!(dyn)
+            } else {
+                quote!()
+            };
+            body.extend(quote!(pub children: Vec<Box<#child_dyn #child_constraint<T>>>,));
         }
 
         quote!(
