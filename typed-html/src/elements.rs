@@ -54,8 +54,8 @@ declare_elements! {
     html {
         xmlns: Uri,
     } with [head, body];
-    head with [title] MetadataContent;
-    body with FlowContent;
+    head with [title] dyn MetadataContent;
+    body with dyn FlowContent;
 
     // Metadata
     base {
@@ -78,6 +78,7 @@ declare_elements! {
         content: String,
         http_equiv: HTTPEquiv,
         name: Metadata,
+        property: String, // This is non-standard, but used by the Open Graph protocol
     } in [MetadataContent];
     style {
         type: Mime,
@@ -96,11 +97,11 @@ declare_elements! {
         rel: SpacedList<LinkType>,
         target: Target,
         type: Mime,
-    } in [FlowContent, PhrasingContent, InteractiveContent] with FlowContent;
-    abbr in [FlowContent, PhrasingContent] with PhrasingContent;
-    address in [FlowContent] with FlowContent;
-    article in [FlowContent, SectioningContent] with FlowContent;
-    aside in [FlowContent, SectioningContent] with FlowContent;
+    } in [FlowContent, PhrasingContent, InteractiveContent] with dyn FlowContent;
+    abbr in [FlowContent, PhrasingContent] with dyn PhrasingContent;
+    address in [FlowContent] with dyn FlowContent;
+    article in [FlowContent, SectioningContent] with dyn FlowContent;
+    aside in [FlowContent, SectioningContent] with dyn FlowContent;
     audio {
         autoplay: Bool,
         controls: Bool,
@@ -109,13 +110,13 @@ declare_elements! {
         muted: Bool,
         preload: Preload,
         src: Uri,
-    } in [FlowContent, PhrasingContent, EmbeddedContent] with MediaContent;
-    b in [FlowContent, PhrasingContent] with PhrasingContent;
-    bdo in [FlowContent, PhrasingContent] with PhrasingContent;
-    bdi in [FlowContent, PhrasingContent] with PhrasingContent;
+    } in [FlowContent, PhrasingContent, EmbeddedContent] with dyn MediaContent;
+    b in [FlowContent, PhrasingContent] with dyn PhrasingContent;
+    bdo in [FlowContent, PhrasingContent] with dyn PhrasingContent;
+    bdi in [FlowContent, PhrasingContent] with dyn PhrasingContent;
     blockquote {
         cite: Uri,
-    } in [FlowContent] with FlowContent;
+    } in [FlowContent] with dyn FlowContent;
     br in [FlowContent, PhrasingContent];
     button {
         autofocus: Bool,
@@ -129,28 +130,28 @@ declare_elements! {
         name: Id,
         type: ButtonType,
         value: String,
-    } in [FlowContent, PhrasingContent, InteractiveContent, FormContent] with PhrasingContent;
+    } in [FlowContent, PhrasingContent, InteractiveContent, FormContent] with dyn PhrasingContent;
     canvas {
         height: usize,
         width: usize,
-    } in [FlowContent, PhrasingContent, EmbeddedContent] with FlowContent;
-    cite in [FlowContent, PhrasingContent] with PhrasingContent;
-    code in [FlowContent, PhrasingContent] with PhrasingContent;
+    } in [FlowContent, PhrasingContent, EmbeddedContent] with dyn FlowContent;
+    cite in [FlowContent, PhrasingContent] with dyn PhrasingContent;
+    code in [FlowContent, PhrasingContent] with dyn PhrasingContent;
     data {
         value: String,
-    } in [FlowContent, PhrasingContent] with PhrasingContent;
+    } in [FlowContent, PhrasingContent] with dyn PhrasingContent;
     datalist in [FlowContent, PhrasingContent] with option;
     del {
         cite: Uri,
         datetime: Datetime,
-    } in [FlowContent, PhrasingContent] with FlowContent;
+    } in [FlowContent, PhrasingContent] with dyn FlowContent;
     details {
         open: Bool,
-    } in [FlowContent, SectioningContent, InteractiveContent] with [summary] FlowContent;
-    dfn in [FlowContent, PhrasingContent] with PhrasingContent;
-    div in [FlowContent] with FlowContent;
-    dl in [FlowContent] with DescriptionListContent;
-    em in [FlowContent, PhrasingContent] with PhrasingContent;
+    } in [FlowContent, SectioningContent, InteractiveContent] with [summary] dyn FlowContent;
+    dfn in [FlowContent, PhrasingContent] with dyn PhrasingContent;
+    div in [FlowContent] with dyn FlowContent;
+    dl in [FlowContent] with dyn DescriptionListContent;
+    em in [FlowContent, PhrasingContent] with dyn PhrasingContent;
     embed {
         height: usize,
         src: Uri,
@@ -158,10 +159,10 @@ declare_elements! {
         width: usize,
     } in [FlowContent, PhrasingContent, EmbeddedContent, InteractiveContent];
     // FIXME the legend attribute should be optional
-    fieldset in [FlowContent, SectioningContent, FormContent] with [legend] FlowContent;
+    fieldset in [FlowContent, SectioningContent, FormContent] with [legend] dyn FlowContent;
     // FIXME the figcaption attribute should be optional
-    figure in [FlowContent, SectioningContent] with [figcaption] FlowContent;
-    footer in [FlowContent] with FlowContent;
+    figure in [FlowContent, SectioningContent] with [figcaption] dyn FlowContent;
+    footer in [FlowContent] with dyn FlowContent;
     form {
         accept-charset: SpacedList<CharacterEncoding>,
         action: Uri,
@@ -171,17 +172,17 @@ declare_elements! {
         name: Id,
         novalidate: Bool,
         target: Target,
-    } in [FlowContent] with FlowContent;
-    h1 in [FlowContent, HeadingContent, HGroupContent] with PhrasingContent;
-    h2 in [FlowContent, HeadingContent, HGroupContent] with PhrasingContent;
-    h3 in [FlowContent, HeadingContent, HGroupContent] with PhrasingContent;
-    h4 in [FlowContent, HeadingContent, HGroupContent] with PhrasingContent;
-    h5 in [FlowContent, HeadingContent, HGroupContent] with PhrasingContent;
-    h6 in [FlowContent, HeadingContent, HGroupContent] with PhrasingContent;
-    header in [FlowContent] with FlowContent;
-    hgroup in [FlowContent, HeadingContent] with HGroupContent;
+    } in [FlowContent] with dyn FlowContent;
+    h1 in [FlowContent, HeadingContent, HGroupContent] with dyn PhrasingContent;
+    h2 in [FlowContent, HeadingContent, HGroupContent] with dyn PhrasingContent;
+    h3 in [FlowContent, HeadingContent, HGroupContent] with dyn PhrasingContent;
+    h4 in [FlowContent, HeadingContent, HGroupContent] with dyn PhrasingContent;
+    h5 in [FlowContent, HeadingContent, HGroupContent] with dyn PhrasingContent;
+    h6 in [FlowContent, HeadingContent, HGroupContent] with dyn PhrasingContent;
+    header in [FlowContent] with dyn FlowContent;
+    hgroup in [FlowContent, HeadingContent] with dyn HGroupContent;
     hr in [FlowContent];
-    i in [FlowContent, PhrasingContent] with PhrasingContent;
+    i in [FlowContent, PhrasingContent] with dyn PhrasingContent;
     iframe {
         allow: FeaturePolicy,
         allowfullscreen: Bool,
@@ -193,7 +194,7 @@ declare_elements! {
         src: Uri,
         srcdoc: Uri,
         width: usize,
-    } in [FlowContent, PhrasingContent, EmbeddedContent, InteractiveContent] with FlowContent;
+    } in [FlowContent, PhrasingContent, EmbeddedContent, InteractiveContent] with dyn FlowContent;
     img {
         alt: String,
         crossorigin: CrossOrigin,
@@ -244,17 +245,17 @@ declare_elements! {
     ins {
         cite: Uri,
         datetime: Datetime,
-    } in [FlowContent, PhrasingContent] with FlowContent;
-    kbd in [FlowContent, PhrasingContent] with PhrasingContent;
+    } in [FlowContent, PhrasingContent] with dyn FlowContent;
+    kbd in [FlowContent, PhrasingContent] with dyn PhrasingContent;
     label {
         for: Id,
         form: Id,
-    } in [FlowContent, PhrasingContent, InteractiveContent, FormContent] with PhrasingContent;
-    main in [FlowContent] with FlowContent;
+    } in [FlowContent, PhrasingContent, InteractiveContent, FormContent] with dyn PhrasingContent;
+    main in [FlowContent] with dyn FlowContent;
     map {
         name: Id,
-    } in [FlowContent, PhrasingContent] with MapContent;
-    mark in [FlowContent, PhrasingContent] with PhrasingContent;
+    } in [FlowContent, PhrasingContent] with dyn MapContent;
+    mark in [FlowContent, PhrasingContent] with dyn PhrasingContent;
     // TODO the <math> element
     meter {
         value: isize,
@@ -264,9 +265,9 @@ declare_elements! {
         high: isize,
         optimum: isize,
         form: Id,
-    } in [FlowContent, PhrasingContent] with PhrasingContent;
-    nav in [FlowContent, SectioningContent] with FlowContent;
-    noscript in [MetadataContent, FlowContent, PhrasingContent] with Node;
+    } in [FlowContent, PhrasingContent] with dyn PhrasingContent;
+    nav in [FlowContent, SectioningContent] with dyn FlowContent;
+    noscript in [MetadataContent, FlowContent, PhrasingContent] with dyn Node;
     object {
         data: Uri,
         form: Id,
@@ -286,19 +287,19 @@ declare_elements! {
         for: SpacedSet<Id>,
         form: Id,
         name: Id,
-    } in [FlowContent, PhrasingContent, FormContent] with PhrasingContent;
-    p in [FlowContent] with PhrasingContent;
-    pre in [FlowContent] with PhrasingContent;
+    } in [FlowContent, PhrasingContent, FormContent] with dyn PhrasingContent;
+    p in [FlowContent] with dyn PhrasingContent;
+    pre in [FlowContent] with dyn PhrasingContent;
     progress {
         max: f64,
         value: f64,
-    } in [FlowContent, PhrasingContent] with PhrasingContent;
+    } in [FlowContent, PhrasingContent] with dyn PhrasingContent;
     q {
         cite: Uri,
-    } in [FlowContent, PhrasingContent] with PhrasingContent;
-    ruby in [FlowContent, PhrasingContent] with PhrasingContent;
-    s in [FlowContent, PhrasingContent] with PhrasingContent;
-    samp in [FlowContent, PhrasingContent] with PhrasingContent;
+    } in [FlowContent, PhrasingContent] with dyn PhrasingContent;
+    ruby in [FlowContent, PhrasingContent] with dyn PhrasingContent;
+    s in [FlowContent, PhrasingContent] with dyn PhrasingContent;
+    samp in [FlowContent, PhrasingContent] with dyn PhrasingContent;
     script {
         async: Bool,
         crossorigin: CrossOrigin,
@@ -310,7 +311,7 @@ declare_elements! {
         text: String,
         type: String, // TODO could be an enum
     } in [MetadataContent, FlowContent, PhrasingContent, TableColumnContent] with TextNode;
-    section in [FlowContent, SectioningContent] with FlowContent;
+    section in [FlowContent, SectioningContent] with dyn FlowContent;
     select {
         autocomplete: String,
         autofocus: Bool,
@@ -320,14 +321,14 @@ declare_elements! {
         name: Id,
         required: Bool,
         size: usize,
-    } in [FlowContent, PhrasingContent, InteractiveContent, FormContent] with SelectContent;
-    small in [FlowContent, PhrasingContent] with PhrasingContent;
-    span in [FlowContent, PhrasingContent] with PhrasingContent;
-    strong in [FlowContent, PhrasingContent] with PhrasingContent;
-    sub in [FlowContent, PhrasingContent] with PhrasingContent;
-    sup in [FlowContent, PhrasingContent] with PhrasingContent;
-    table in [FlowContent] with TableContent;
-    template in [MetadataContent, FlowContent, PhrasingContent, TableColumnContent] with Node;
+    } in [FlowContent, PhrasingContent, InteractiveContent, FormContent] with dyn SelectContent;
+    small in [FlowContent, PhrasingContent] with dyn PhrasingContent;
+    span in [FlowContent, PhrasingContent] with dyn PhrasingContent;
+    strong in [FlowContent, PhrasingContent] with dyn PhrasingContent;
+    sub in [FlowContent, PhrasingContent] with dyn PhrasingContent;
+    sup in [FlowContent, PhrasingContent] with dyn PhrasingContent;
+    table in [FlowContent] with dyn TableContent;
+    template in [MetadataContent, FlowContent, PhrasingContent, TableColumnContent] with dyn Node;
     textarea {
         autocomplete: OnOff,
         autofocus: Bool,
@@ -346,9 +347,9 @@ declare_elements! {
     } in [FlowContent, PhrasingContent, InteractiveContent, FormContent] with TextNode;
     time {
         datetime: Datetime,
-    } in [FlowContent, PhrasingContent] with PhrasingContent;
+    } in [FlowContent, PhrasingContent] with dyn PhrasingContent;
     ul in [FlowContent] with li;
-    var in [FlowContent, PhrasingContent] with PhrasingContent;
+    var in [FlowContent, PhrasingContent] with dyn PhrasingContent;
     video {
         autoplay: Bool,
         controls: Bool,
@@ -361,7 +362,7 @@ declare_elements! {
         poster: Uri,
         src: Uri,
         width: usize,
-    } in [FlowContent, PhrasingContent, EmbeddedContent] with MediaContent;
+    } in [FlowContent, PhrasingContent, EmbeddedContent] with dyn MediaContent;
     wbr in [FlowContent, PhrasingContent];
 
     // Non-group elements
@@ -376,20 +377,20 @@ declare_elements! {
         shape: AreaShape,
         target: Target,
     } in [MapContent];
-    caption in [TableContent] with FlowContent;
+    caption in [TableContent] with dyn FlowContent;
     col {
         span: usize,
     };
     colgroup {
         span: usize,
     } in [TableContent] with col;
-    dd in [DescriptionListContent] with FlowContent;
-    dt in [DescriptionListContent] with FlowContent;
-    figcaption with FlowContent;
-    legend with PhrasingContent;
+    dd in [DescriptionListContent] with dyn FlowContent;
+    dt in [DescriptionListContent] with dyn FlowContent;
+    figcaption with dyn FlowContent;
+    legend with dyn PhrasingContent;
     li {
         value: isize,
-    } with FlowContent;
+    } with dyn FlowContent;
     option {
         disabled: Bool,
         label: String,
@@ -408,13 +409,13 @@ declare_elements! {
         src: Uri,
         type: Mime,
     } in [MediaContent];
-    summary with PhrasingContent;
+    summary with dyn PhrasingContent;
     tbody in [TableContent] with tr;
     td {
         colspan: usize,
         headers: SpacedSet<Id>,
         rowspan: usize,
-    } in [TableColumnContent] with FlowContent;
+    } in [TableColumnContent] with dyn FlowContent;
     tfoot in [TableContent] with tr;
     th {
         abbr: String,
@@ -422,9 +423,9 @@ declare_elements! {
         headers: SpacedSet<Id>,
         rowspan: usize,
         scope: TableHeaderScope,
-    } in [TableColumnContent] with FlowContent;
+    } in [TableColumnContent] with dyn FlowContent;
     thead in [TableContent] with tr;
-    tr in [TableContent] with TableColumnContent;
+    tr in [TableContent] with dyn TableColumnContent;
     track {
         default: Bool,
         kind: VideoKind,
@@ -434,7 +435,7 @@ declare_elements! {
     } in [MediaContent];
 
     // Don't @ me
-    blink in [FlowContent, PhrasingContent] with PhrasingContent;
+    blink in [FlowContent, PhrasingContent] with dyn PhrasingContent;
     marquee {
         behavior: String, // FIXME enum
         bgcolor: String, // FIXME colour
@@ -447,7 +448,7 @@ declare_elements! {
         truespeed: Bool,
         vspace: String, // FIXME size
         width: String, // FIXME size
-    } in [FlowContent, PhrasingContent] with PhrasingContent;
+    } in [FlowContent, PhrasingContent] with dyn PhrasingContent;
 }
 
 #[test]

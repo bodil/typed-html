@@ -82,6 +82,7 @@ impl From<Group> for Token {
 pub enum Keyword {
     In,
     With,
+    Dyn,
 }
 
 pub fn keywordise(tokens: Vec<Token>) -> Vec<Token> {
@@ -94,6 +95,8 @@ pub fn keywordise(tokens: Vec<Token>) -> Vec<Token> {
                     Token::Keyword(Keyword::In, ident)
                 } else if name == "with" {
                     Token::Keyword(Keyword::With, ident)
+                } else if name == "dyn" {
+                    Token::Keyword(Keyword::Dyn, ident)
                 } else {
                     Token::Ident(ident)
                 }

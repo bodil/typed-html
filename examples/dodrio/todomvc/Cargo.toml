@@ -1,6 +1,6 @@
 [package]
 authors = ["Nick Fitzgerald <fitzgen@gmail.com>"]
-edition = "2018"
+edition = "2021"
 name = "dodrio-todomvc"
 version = "0.1.0"
 

@@ -28,6 +28,34 @@ pub type Integrity = String;
 pub type Nonce = String;
 pub type Target = String;
 
+pub trait DisplayAttribute {
+    fn write_attribute(
+        &self,
+        attr_str: &str,
+        f: &mut std::fmt::Formatter<'_>,
+    ) -> std::result::Result<(), std::fmt::Error>;
+
+    fn to_string_value(&self) -> String;
+}
+
+impl<Attribute: std::fmt::Display> DisplayAttribute for Attribute {
+    fn write_attribute(
+        &self,
+        attr_str: &str,
+        f: &mut std::fmt::Formatter<'_>,
+    ) -> std::result::Result<(), std::fmt::Error> {
+        let value = crate::escape_html_attribute(self.to_string());
+        if !value.is_empty() {
+            write!(f, " {}=\"{}\"", attr_str, value)?;
+        }
+        Ok(())
+    }
+
+    fn to_string_value(&self) -> String {
+        self.to_string()
+    }
+}
+
 #[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, IntoStaticStr)]
 pub enum AreaShape {
     #[strum(to_string = "rect")]
@@ -60,11 +88,9 @@ pub enum ButtonType {
     Button,
 }
 
-#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, IntoStaticStr)]
+#[derive(EnumString, PartialEq, Eq, PartialOrd, Ord, AsRefStr, IntoStaticStr)]
 pub enum Bool {
-    #[strum(to_string = "true")]
     True,
-    #[strum(to_string = "")]
     False,
 }
 
@@ -74,6 +100,44 @@ impl From<bool> for Bool {
             Bool::True
         } else {
             Bool::False
+        }
+    }
+}
+
+impl DisplayAttribute for Bool {
+    fn write_attribute(
+        &self,
+        attr_str: &str,
+        f: &mut std::fmt::Formatter<'_>,
+    ) -> std::result::Result<(), std::fmt::Error> {
+        match self {
+            Bool::True => write!(f, " {}", attr_str),
+            Bool::False => Ok(()),
+        }
+    }
+
+    fn to_string_value(&self) -> String {
+        match self {
+            Bool::True => "true".to_string(),
+            Bool::False => "false".to_string(),
+        }
+    }
+}
+
+#[derive(EnumString, Display, PartialEq, Eq, PartialOrd, Ord, AsRefStr, IntoStaticStr)]
+pub enum EnumeratedBool {
+    #[strum(to_string = "true")]
+    True,
+    #[strum(to_string = "false")]
+    False,
+}
+
+impl From<bool> for EnumeratedBool {
+    fn from(v: bool) -> Self {
+        if v {
+            EnumeratedBool::True
+        } else {
+            EnumeratedBool::False
         }
     }
 }
